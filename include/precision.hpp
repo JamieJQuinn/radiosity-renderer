@@ -1,0 +1,6 @@
+#IFNDEF PRECISION_H
+#DEFINE PRECISION_H
+
+typedef double real;
+
+#ENDIF

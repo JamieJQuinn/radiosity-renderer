@@ -1,4 +1,7 @@
 #include <iostream>
+
+#include "precision.hpp"
+
 using namespace std;
 
 #define HEMICUBE_GRID_SIZE 10
@@ -6,19 +9,10 @@ using namespace std;
 class Patch {
 };
 
-template <class T>
-class Buffer {
+class Vertex {
   public:
-    void set(int i, int j, T);
-    T get(int i, int j);
-    Buffer(int _width, int _height);
-    ~Buffer();
-  private:
-    int width; // in pixels
-    int height; // in pixels
-    T* buffer;
-    Buffer();
-};
+    real x, y, z;
+}
 
 template <class T>
 Buffer<T>::Buffer(int _width, int _height) {
