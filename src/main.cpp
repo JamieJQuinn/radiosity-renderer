@@ -15,7 +15,7 @@ class Vertex {
     real x, y, z;
 };
 
-
 int main() {
+  Buffer<int> b(10, 10);
   return 0;
 }
