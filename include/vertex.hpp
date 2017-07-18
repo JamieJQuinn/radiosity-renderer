@@ -18,43 +18,43 @@ class Vertex {
       y = _y;
       z = 0.0f;
     }
-    Vertex operator+(Vertex v) {
+    Vertex operator+(const Vertex& v) const {
       return Vertex(x + v.x, y + v.y, z + v.z);
     }
-    Vertex operator-(Vertex v) {
+    Vertex operator-(const Vertex& v) const {
       return Vertex(x - v.x, y - v.y, z - v.z);
     }
-    Vertex operator*(real r) {
+    Vertex operator*(const real& r) const {
       return Vertex(x*r, y*r, z*r);
     }
-    Vertex operator/(real r) {
+    Vertex operator/(const real& r) const {
       assert(r != 0.0f);
       return *this*(1.0f/r);
     }
-    Vertex cross(Vertex v) {
+    Vertex cross(const Vertex& v) const {
       return Vertex(
         y*v.z - z*v.y,
         z*v.x - x*v.z,
         x*v.y - y*v.x
       );
     }
-    real dot(Vertex v) {
+    real dot(const Vertex& v) const {
       return x*v.x + y*v.y + z*v.z;
     }
-    real length2() {
+    real length2() const {
       return this->dot(*this);
     }
-    real length() {
+    real length() const {
       return std::sqrt(length2());
     }
-    Vertex normalise() {
+    Vertex normalise() const {
       assert(length() > 0);
       return (*this)/length();
     }
-    bool operator==(Vertex v) {
+    bool operator==(const Vertex& v) const {
       return x == v.x and y == v.y and z == v.z;
     }
-    bool operator!=(Vertex v) {
+    bool operator!=(const Vertex& v) const {
       return !(*this == v);
     }
     Vertex(const Vertex& v) {
