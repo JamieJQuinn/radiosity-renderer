@@ -12,7 +12,7 @@ class Buffer {
     void fillTriangle(Vertex v1, Vertex v2, Vertex v3, T fillData);
     void fillLine(int x1, int x2, int y, T fillData);
     void fillAll(T fillData);
-  private:
+  protected:
     int width; // in pixels
     int height; // in pixels
     T* buffer;
