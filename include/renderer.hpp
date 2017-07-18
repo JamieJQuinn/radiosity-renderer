@@ -8,6 +8,7 @@
 class Renderer {
   public:
     Renderer(int _width, int _height);
+    Renderer(int _width, int _height, real initialZ);
 
     void fillTriangle(Triangle& t);
 

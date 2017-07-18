@@ -4,6 +4,13 @@
 #include "buffer.hpp"
 #include "vertex.hpp"
 
+Renderer::Renderer(int _width, int _height, real initialZ):
+  zBuffer(_width, _height, initialZ),
+  itemBuffer(_width, _height, NULL),
+  width(_width),
+  height(_height)
+{}
+
 Renderer::Renderer(int _width, int _height):
   zBuffer(_width, _height, 0.0f),
   itemBuffer(_width, _height, NULL),

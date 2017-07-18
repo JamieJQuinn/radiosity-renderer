@@ -28,7 +28,7 @@ TEST_CASE("fillTriangle works on single triangle (const z)", "[renderer]") {
   };
 
   int size = 20;
-  Renderer r (size, size);
+  Renderer r (size, size, 0.0f);
   Vertex v1(12, 2, 1);
   Vertex v2(5, 16, 1);
   Vertex v3(16, 10, 1);
@@ -67,7 +67,7 @@ TEST_CASE("fillTriangle works on single triangle (varying z)", "[renderer]") {
   };
 
   int size = 20;
-  Renderer r (size, size);
+  Renderer r (size, size, 0.0f);
   Vertex v1(12, 2, 1);
   Vertex v2(5, 16, 3);
   Vertex v3(16, 10, 2);
@@ -106,7 +106,7 @@ TEST_CASE("fillTriangle works on two triangles", "[renderer]") {
   };
 
   int size = 20;
-  Renderer r (size, size);
+  Renderer r (size, size, 0.0f);
   Vertex v1(12, 2, 1);
   Vertex v2(5, 16, 1);
   Vertex v3(16, 10, 1);
