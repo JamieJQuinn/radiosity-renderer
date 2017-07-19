@@ -40,16 +40,6 @@ void line(int x0, int y0, int x1, int y1, Buffer<T> &buffer, T fillValue) {
 template void line<TGAColor>(int, int, int, int, Buffer<TGAColor>&, TGAColor);
 
 template <class T>
-void horizontalLine(int x0, int x1, int y, Buffer<T> &buffer, T fillValue) {
-  if (x0>x1) {
-    std::swap(x0, x1);
-  }
-  for (int x=x0; x<=x1; x++) {
-    buffer.set(x, y, fillValue);
-  }
-}
-
-template <class T>
 void renderFromBuffer(const Buffer<T>& buffer, TGAImage& image) {
   for(int j=0; j<buffer.height; ++j) {
     for(int i=0; i<buffer.width; ++i) {
