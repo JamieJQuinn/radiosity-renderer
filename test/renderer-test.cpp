@@ -1,7 +1,7 @@
 #include "catch.hpp"
 #include "renderer.hpp"
 #include "triangle.hpp"
-#include "vertex.hpp"
+#include "geometry.hpp"
 
 TEST_CASE("fillTriangle works on single triangle (const z)", "[renderer]") {
   int solution[] = {
@@ -29,9 +29,9 @@ TEST_CASE("fillTriangle works on single triangle (const z)", "[renderer]") {
 
   int size = 20;
   Renderer r (size, size, 0.0f);
-  Vertex v1(12, 2, 1);
-  Vertex v2(5, 16, 1);
-  Vertex v3(16, 10, 1);
+  Vec3f v1(12, 2, 1);
+  Vec3f v2(5, 16, 1);
+  Vec3f v3(16, 10, 1);
   Triangle t(v1, v2, v3);
   r.fillTriangle(t);
 
@@ -68,9 +68,9 @@ TEST_CASE("fillTriangle works on single triangle (varying z)", "[renderer]") {
 
   int size = 20;
   Renderer r (size, size, 0.0f);
-  Vertex v1(12, 2, 1);
-  Vertex v2(5, 16, 3);
-  Vertex v3(16, 10, 2);
+  Vec3f v1(12, 2, 1);
+  Vec3f v2(5, 16, 3);
+  Vec3f v3(16, 10, 2);
   Triangle t(v1, v2, v3);
   r.fillTriangle(t);
 
@@ -107,15 +107,15 @@ TEST_CASE("fillTriangle works on two triangles", "[renderer]") {
 
   int size = 20;
   Renderer r (size, size, 0.0f);
-  Vertex v1(12, 2, 1);
-  Vertex v2(5, 16, 1);
-  Vertex v3(16, 10, 1);
+  Vec3f v1(12, 2, 1);
+  Vec3f v2(5, 16, 1);
+  Vec3f v3(16, 10, 1);
   Triangle t1(v1, v2, v3);
   r.fillTriangle(t1);
 
-  Vertex w1(7, 4, 2);
-  Vertex w2(4, 10, 2);
-  Vertex w3(16, 18, 2);
+  Vec3f w1(7, 4, 2);
+  Vec3f w2(4, 10, 2);
+  Vec3f w3(16, 18, 2);
   Triangle t2(w1, w2, w3);
   r.fillTriangle(t2);
 

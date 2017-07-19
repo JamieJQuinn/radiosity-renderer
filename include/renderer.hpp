@@ -2,7 +2,7 @@
 
 #include "precision.hpp"
 #include "buffer.hpp"
-#include "vertex.hpp"
+#include "geometry.hpp"
 #include "triangle.hpp"
 
 class Renderer {
@@ -23,6 +23,6 @@ class Renderer {
     int width, height;
 
     void fillLine(int x1, int x2, int y, real z, Triangle& tri);
-    void fillBottomFlatTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, Triangle& tri);
-    void fillTopFlatTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, Triangle& tri);
+    void fillBottomFlatTriangle(const Vec3f& v1, const Vec3f& v2, const Vec3f& v3, Triangle& tri);
+    void fillTopFlatTriangle(const Vec3f& v1, const Vec3f& v2, const Vec3f& v3, Triangle& tri);
 };

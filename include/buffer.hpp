@@ -1,5 +1,4 @@
 #pragma once
-#include "vertex.hpp"
 #include <cassert>
 
 template <class T>

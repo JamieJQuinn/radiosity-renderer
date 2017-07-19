@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vertex.hpp"
+#include "geometry.hpp"
 
 // Uses counter-clockwise normal system.
 // This is a right-handed rule, so if you curl your hand around the
@@ -9,8 +9,8 @@
 
 class Triangle {
   public:
-    Vertex v1, v2, v3, normal;
-    Triangle(Vertex& _v1, Vertex& _v2, Vertex& _v3):
+    Vec3f v1, v2, v3, normal;
+    Triangle(Vec3f& _v1, Vec3f& _v2, Vec3f& _v3):
       v1(_v1),
       v2(_v2),
       v3(_v3),

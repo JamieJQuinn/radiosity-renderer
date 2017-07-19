@@ -2,7 +2,7 @@
 #include "renderer.hpp"
 #include "precision.hpp"
 #include "buffer.hpp"
-#include "vertex.hpp"
+#include "geometry.hpp"
 
 Renderer::Renderer(int _width, int _height, real initialZ):
   zBuffer(_width, _height, initialZ),
@@ -46,9 +46,9 @@ void Renderer::fillTriangle(Triangle& tri) {
     return;
   }
 
-  Vertex &upper = tri.v1;
-  Vertex &mid = tri.v2.y <= tri.v3.y ? tri.v2 : tri.v3;
-  Vertex &lower = tri.v2.y <= tri.v3.y ? tri.v3 : tri.v2;
+  Vec3f &upper = tri.v1;
+  Vec3f &mid = tri.v2.y <= tri.v3.y ? tri.v2 : tri.v3;
+  Vec3f &lower = tri.v2.y <= tri.v3.y ? tri.v3 : tri.v2;
 
   // check for trivial case of bottom-flat triangle
   if (mid.y == lower.y)
@@ -72,7 +72,7 @@ void Renderer::fillTriangle(Triangle& tri) {
   else
   {
     // general case - split the triangle in a topflat and bottom-flat one
-    Vertex v4((int)(upper.x + ((real)(mid.y - upper.y) / (real)(lower.y - upper.y)) * (lower.x - upper.x)), mid.y);
+    Vec3f v4((int)(upper.x + ((real)(mid.y - upper.y) / (real)(lower.y - upper.y)) * (lower.x - upper.x)), mid.y, 0);
     if(v4.x < mid.x) {
       fillBottomFlatTriangle(upper, mid, v4, tri);
       fillTopFlatTriangle(v4, mid, lower, tri);
@@ -83,7 +83,7 @@ void Renderer::fillTriangle(Triangle& tri) {
   }
 }
 
-void Renderer::fillBottomFlatTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, Triangle& tri) {
+void Renderer::fillBottomFlatTriangle(const Vec3f& v1, const Vec3f& v2, const Vec3f& v3, Triangle& tri) {
   assert(v2.y == v3.y);
   assert(v1.y < v2.y);
 
@@ -93,7 +93,7 @@ void Renderer::fillBottomFlatTriangle(const Vertex& v1, const Vertex& v2, const 
   real curx1 = v1.x;
   real curx2 = v1.x;
 
-  real D = Vertex(tri.v1.x, tri.v1.y, tri.v1.z).dot(tri.normal);
+  real D = Vec3f(tri.v1.x, tri.v1.y, tri.v1.z).dot(tri.normal);
   real z = (D - tri.normal.x*curx2 - tri.normal.y*v1.y)/tri.normal.z;
   for (int scanlineY = v1.y; scanlineY <= v2.y; scanlineY++)
   {
@@ -104,7 +104,7 @@ void Renderer::fillBottomFlatTriangle(const Vertex& v1, const Vertex& v2, const 
   }
 }
 
-void Renderer::fillTopFlatTriangle(const Vertex& v1, const Vertex& v2, const Vertex& v3, Triangle& tri) {
+void Renderer::fillTopFlatTriangle(const Vec3f& v1, const Vec3f& v2, const Vec3f& v3, Triangle& tri) {
   assert(v1.y == v2.y);
   assert(v1.y < v3.y);
 
@@ -114,7 +114,7 @@ void Renderer::fillTopFlatTriangle(const Vertex& v1, const Vertex& v2, const Ver
   real curx1 = v3.x;
   real curx2 = v3.x;
 
-  real D = Vertex(tri.v1.x, tri.v1.y, tri.v1.z).dot(tri.normal);
+  real D = Vec3f(tri.v1.x, tri.v1.y, tri.v1.z).dot(tri.normal);
   real z = (D - tri.normal.x*curx2 - tri.normal.y*v3.y)/tri.normal.z;
   for (int scanlineY = v3.y; scanlineY > v1.y; scanlineY--)
   {
