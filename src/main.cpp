@@ -60,48 +60,66 @@ void renderFromBuffer(const Buffer<T>& buffer, TGAImage& image) {
 
 template void renderFromBuffer<TGAColor>(const Buffer<TGAColor>& buffer, TGAImage& image);
 
-Vec3f getBarycentricCoords(const Vec2i& A, const Vec2i& B, const Vec2i& C, const Vec2i& P) {
+Vec3f getBarycentricCoords(const Vec3f& A, const Vec3f& B, const Vec3f& C, const Vec3f& P) {
   Vec3f u = Vec3f(B.x - A.x, C.x - A.x, A.x - P.x).cross(Vec3f(B.y - A.y, C.y - A.y, A.y - P.y));
   if (std::abs(u.z)<1) return Vec3f(-1,1,1); // triangle is degenerate, in this case return smth with negative coordinates
   return Vec3f(1.f-(u.x+u.y)/u.z, u.y/u.z, u.x/u.z);
 }
 
 template <class T>
-void triangle(Vec2i *pts, Buffer<T> &buffer, T fillValue) {
+void triangle(Vec3f *pts, Buffer<float>& zBuffer, Buffer<T> &buffer, T fillValue) {
   // Create bounding box
-  Vec2i bboxmin(buffer.width-1, buffer.height-1);
-  Vec2i bboxmax(0, 0);
-  Vec2i clamp(buffer.width-1, buffer.height-1);
+  Vec2f bboxmin(buffer.width-1, buffer.height-1);
+  Vec2f bboxmax(0, 0);
+  Vec2f clamp(buffer.width-1, buffer.height-1);
   for (int i=0; i<3; i++) {
     for (int j=0; j<2; j++) {
       // clip against buffer sides
-      bboxmin[j] = std::max(0,        std::min(bboxmin[j], pts[i][j]));
+      bboxmin[j] = std::max(0.f, std::min(bboxmin[j], pts[i][j]));
       bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts[i][j]));
     }
   }
 
   // Check every pixel in bounding box
-  Vec2i P;
+  Vec3f P;
   for (P.x=bboxmin.x; P.x<=bboxmax.x; ++P.x) {
     for (P.y=bboxmin.y; P.y<=bboxmax.y; ++P.y) {
       Vec3f bc_screen = getBarycentricCoords(pts[0], pts[1], pts[2], P);
       if (bc_screen.x<0 || bc_screen.y<0 || bc_screen.z<0) continue;
-      buffer.set(P.x, P.y, fillValue);
+      P.z = 0;
+      for (int i=0; i<3; i++) P.z += pts[i].z*bc_screen[i];
+      buffer.set(int(P.x), int(P.y), fillValue);
+      if(zBuffer.get(int(P.x), int(P.y)) < P.z) {
+        buffer.set(int(P.x), int(P.y), fillValue);
+        zBuffer.set(int(P.x), int(P.y), P.z);
+      }
     }
   }
 }
 
-template void triangle<int>(Vec2i *pts, Buffer<int> &idBuffer, int fillValue);
+template void triangle(Vec3f *pts, Buffer<float>&, Buffer<TGAColor>&, TGAColor);
+
+void renderZBuffer(const Buffer<float>& zBuffer, TGAImage& image) {
+  for(int j=0; j<zBuffer.height; ++j) {
+    for(int i=0; i<zBuffer.width; ++i) {
+      float zVal = zBuffer.get(i, j);
+      TGAColor grey = TGAColor(zVal, zVal, zVal, 255);
+      image.set(i, j, grey);
+    }
+  }
+}
 
 int main(int argc, char** argv) {
-  Buffer<TGAColor> buffer(200, 200, black);
-  Vec2i pts[3] = {Vec2i(10,10), Vec2i(100, 30), Vec2i(190, 160)};
-  triangle(pts, buffer, red);
+  Buffer<TGAColor> buffer(200, 200, white);
+  Buffer<float> zBuffer(200, 200, 0);
+  Vec3f pts[3] = {Vec3f(10,10, 244), Vec3f(100, 30, 0), Vec3f(190, 160, 100)};
+  triangle(pts, zBuffer, buffer, red);
 
   TGAImage frame(200, 200, TGAImage::RGB);
-  renderFromBuffer(buffer, frame);
+  //renderFromBuffer(buffer, frame);
+  renderZBuffer(zBuffer, frame);
   frame.flip_vertically(); // to place the origin in the bottom left corner of the image
-  frame.write_tga_file("framebuffer.tga");
+  frame.write_tga_file("output.tga");
   return 0;
 }
 
