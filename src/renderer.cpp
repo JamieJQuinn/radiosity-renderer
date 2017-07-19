@@ -46,9 +46,9 @@ void Renderer::fillTriangle(Triangle& tri) {
     return;
   }
 
-  Vec3f &upper = tri.v1;
-  Vec3f &mid = tri.v2.y <= tri.v3.y ? tri.v2 : tri.v3;
-  Vec3f &lower = tri.v2.y <= tri.v3.y ? tri.v3 : tri.v2;
+  Vec3f upper = tri.v1;
+  Vec3f mid = tri.v2.y <= tri.v3.y ? tri.v2 : tri.v3;
+  Vec3f lower = tri.v2.y <= tri.v3.y ? tri.v3 : tri.v2;
 
   // check for trivial case of bottom-flat triangle
   if (mid.y == lower.y)

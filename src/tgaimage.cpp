@@ -1,9 +1,9 @@
 #include <iostream>
 #include <fstream>
-#include <string.h>
-#include <time.h>
-#include <math.h>
-#include "tgaimage.h"
+#include <cstring>
+#include <ctime>
+#include <cmath>
+#include "tgaimage.hpp"
 
 TGAImage::TGAImage() : data(NULL), width(0), height(0), bytespp(0) {
 }

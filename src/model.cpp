@@ -3,7 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
-#include "model.h"
+#include "model.hpp"
 
 Model::Model(const char *filename) : verts_(), faces_() {
     std::ifstream in;

@@ -11,8 +11,8 @@ class Buffer {
     void setup(int _width, int _height);
     ~Buffer();
     void fillAll(T fillData);
-  protected:
     int width, height; // in pixels
+  protected:
     T* buffer;
     Buffer();
     Buffer(const Buffer&);
@@ -43,8 +43,9 @@ Buffer<T>::~Buffer() {
 
 template <class T>
 void Buffer<T>::set(int i, int j, const T& item) {
-  assert((i < width and i >= 0) and (j < height and j >= 0));
-  buffer[j*width + i] = item;
+  if((i < width and i >= 0) and (j < height and j >= 0)) {
+    buffer[j*width + i] = item;
+  }
 }
 
 template <class T>
