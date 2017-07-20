@@ -1,5 +1,6 @@
 #pragma once
 #include <cassert>
+#include <iostream>
 
 template <class T>
 class Buffer {
@@ -12,6 +13,7 @@ class Buffer {
     ~Buffer();
     void fillAll(T fillData);
     int width, height; // in pixels
+    template <class t> friend std::ostream& operator<<(std::ostream& s, Buffer<t>& b);
   protected:
     T* buffer;
     Buffer();
@@ -60,4 +62,14 @@ void Buffer<T>::fillAll(T fillData) {
       set(i, j, fillData);
     }
   }
+}
+
+template <class t> std::ostream& operator<<(std::ostream& s, Buffer<t>& b) {
+  for(int j=0; j<b.height; ++j) {
+    for(int i=0; i<b.width; ++i) {
+      s << b.get(i, j) << ",";
+    }
+    s << std::endl;
+  }
+  return s;
 }
