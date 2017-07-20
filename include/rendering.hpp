@@ -1,14 +1,21 @@
 #pragma once
 
+#include <iostream>
+
 #include "tgaimage.hpp"
 #include "geometry.hpp"
 #include "buffer.hpp"
 #include "model.hpp"
 
 void renderColourBuffer(const Buffer<TGAColor>& buffer, TGAImage& image);
+void renderColourBuffer(const Buffer<TGAColor>& buffer, std::string filename);
 void renderZBuffer(const Buffer<float>& zBuffer, TGAImage& image);
+void renderZBuffer(const Buffer<float>& zBuffer, std::string filename);
 void renderWireFrame(const Model& model, Buffer<TGAColor>& buffer, const Matrix& MVP);
 Vec3f getBarycentricCoords(const Vec3f& A, const Vec3f& B, const Vec3f& C, const Vec3f& P);
+
+Matrix viewportRelative(int x, int y, int w, int h, int depth);
+Matrix viewportAbsolute(int x0, int y0, int x1, int y1, int depth);
 
 template <class T>
 void renderLine(int x0, int y0, int x1, int y1, Buffer<T> &buffer, const T& fillValue) {
@@ -56,7 +63,6 @@ void renderTriangle(Vec3f *pts, Buffer<zBufferType>& zBuffer, Buffer<fillType> &
       if (bc_screen.x<0 || bc_screen.y<0 || bc_screen.z<0) continue;
       P.z = 0;
       for (int i=0; i<3; i++) P.z += pts[i].z*bc_screen[i];
-      buffer.set(int(P.x), int(P.y), fillValue);
       if(zBuffer.get(int(P.x), int(P.y)) < P.z) {
         buffer.set(int(P.x), int(P.y), fillValue);
         zBuffer.set(int(P.x), int(P.y), P.z);

@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "rendering.hpp"
 #include "tgaimage.hpp"
 #include "geometry.hpp"
@@ -12,14 +14,29 @@ void renderColourBuffer(const Buffer<TGAColor>& buffer, TGAImage& image) {
   }
 }
 
+void renderColourBuffer(const Buffer<TGAColor>& buffer, std::string filename) {
+  TGAImage frame(buffer.width, buffer.height, TGAImage::RGB);
+  renderColourBuffer(buffer, frame);
+  frame.flip_vertically(); // to place the origin in the bottom left corner of the image
+  frame.write_tga_file(filename.c_str());
+}
+
 void renderZBuffer(const Buffer<float>& zBuffer, TGAImage& image) {
+  float maxZ = zBuffer.max();
   for(int j=0; j<zBuffer.height; ++j) {
     for(int i=0; i<zBuffer.width; ++i) {
-      float zVal = zBuffer.get(i, j);
+      float zVal = 255*zBuffer.get(i, j)/maxZ;
       TGAColor grey = TGAColor(zVal, zVal, zVal, 255);
       image.set(i, j, grey);
     }
   }
+}
+
+void renderZBuffer(const Buffer<float>& zBuffer, std::string filename) {
+  TGAImage frame(zBuffer.width, zBuffer.height, TGAImage::RGB);
+  renderZBuffer(zBuffer, frame);
+  frame.flip_vertically(); // to place the origin in the bottom left corner of the image
+  frame.write_tga_file(filename.c_str());
 }
 
 Vec3f getBarycentricCoords(const Vec3f& A, const Vec3f& B, const Vec3f& C, const Vec3f& P) {
@@ -38,4 +55,20 @@ void renderWireFrame(const Model& model, Buffer<TGAColor>& buffer, const Matrix&
       renderLine(v0.x, v0.y, v1.x, v1.y, buffer, white);
     }
   }
+}
+
+Matrix viewportRelative(int x, int y, int w, int h, int depth) {
+  Matrix m = Matrix::identity(4);
+  m.set(0, 3, x+w/2.f);
+  m.set(1, 3, y+h/2.f);
+  m.set(2, 3, depth/2.f);
+
+  m.set(0, 0, w/2.f);
+  m.set(1, 1, h/2.f);
+  m.set(2, 2, depth/2.f);
+  return m;
+}
+
+Matrix viewportAbsolute(int x0, int y0, int x1, int y1, int depth) {
+  return viewportRelative(x0, y0, x1-x0, y1-y0, depth);
 }

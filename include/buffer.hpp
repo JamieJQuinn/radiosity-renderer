@@ -10,6 +10,7 @@ class Buffer {
     Buffer(int _width, int _height);
     Buffer(int _width, int _height, T initial);
     void setup(int _width, int _height);
+    T max() const;
     ~Buffer();
     void fillAll(T fillData);
     int width, height; // in pixels
@@ -19,6 +20,17 @@ class Buffer {
     Buffer();
     Buffer(const Buffer&);
 };
+
+template <class T>
+T Buffer<T>::max() const {
+  T max = buffer[0];
+  for(int i=1; i<width*height; ++i) {
+    if(buffer[i] > max) {
+      max = buffer[i];
+    }
+  }
+  return max;
+}
 
 template <class T>
 Buffer<T>::Buffer(int _width, int _height) {
