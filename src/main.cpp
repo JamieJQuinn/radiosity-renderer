@@ -9,6 +9,18 @@
 template void renderLine(int, int, int, int, Buffer<TGAColor>&, const TGAColor&);
 template void renderTriangle(Vec3f*, Buffer<float>&, Buffer<TGAColor>&, const TGAColor&);
 
+Matrix viewport(int x, int y, int w, int h, int depth) {
+  Matrix m = Matrix::identity(4);
+  m.set(0, 3, x+w/2.f);
+  m.set(1, 3, y+h/2.f);
+  m.set(2, 3, depth/2.f);
+
+  m.set(0, 0, w/2.f);
+  m.set(1, 1, h/2.f);
+  m.set(2, 2, depth/2.f);
+  return m;
+}
+
 void testZBuffer() {
   const TGAColor white = TGAColor(255, 255, 255, 255);
   const TGAColor red   = TGAColor(255, 0,   0,   255);
@@ -24,62 +36,50 @@ void testZBuffer() {
   frame.write_tga_file("output.tga");
 }
 
-void testWireFrame() {
+void testOrthographicWireFrame() {
   const TGAColor black   = TGAColor(0, 0,   0,   255);
   const TGAColor red   = TGAColor(255, 0,   0,   255);
   const TGAColor green   = TGAColor(0, 255,   0,   255);
   int size = 800;
-  Model* model = new Model("test/simple_box.obj");
 
+  Model model("test/simple_box.obj");
+
+  Matrix MVP = viewport(size/4, size/4, size/2, size/2, 255);
   Buffer<TGAColor> buffer(size, size, black);
-  renderWireFrame(model, buffer, size, size);
-  renderLine(size/2, size/2, 3*size/4, size/2, buffer, red);
-  renderLine(size/2, size/2, size/2, 3*size/4, buffer, green);
+
+  renderWireFrame(model, buffer, MVP);
 
   TGAImage image(size, size, TGAImage::RGB);
   renderColourBuffer(buffer, image);
   image.flip_vertically();
   image.write_tga_file("output.tga");
-  delete model;
 }
 
+void testPerspectiveWireFrame() {
+  const TGAColor black   = TGAColor(0, 0,   0,   255);
+  const TGAColor red   = TGAColor(255, 0,   0,   255);
+  const TGAColor green   = TGAColor(0, 255,   0,   255);
+  int size = 800;
 
+  Model model("test/simple_box.obj");
 
-//Matrix viewport(int x, int y, int w, int h, int depth) {
-  //Matrix m = Matrix::identity(4);
-  //m[0][3] = x+w/2.f;
-  //m[1][3] = y+h/2.f;
-  //m[2][3] = depth/2.f;
+  Vec3f camera(0,0,3);
+  Matrix P = Matrix::identity(4);
+  P.set(3, 2, -1.f/camera.z);
+  Matrix V = viewport(size/4, size/4, size/2, size/2, 255);
+  Matrix MVP = V*P;
+  Buffer<TGAColor> buffer(size, size, black);
 
-  //m[0][0] = w/2.f;
-  //m[1][1] = h/2.f;
-  //m[2][2] = depth/2.f;
-  //return m;
-//}
+  renderWireFrame(model, buffer, MVP);
 
-//void testPerspective() {
-  //Vec3f camera(0,0,3);
-
-  //const TGAColor black   = TGAColor(0, 0,   0,   255);
-  //const TGAColor red   = TGAColor(255, 0,   0,   255);
-  //const TGAColor green   = TGAColor(0, 255,   0,   255);
-  //int size = 800;
-  //Model* model = new Model("test/simple_box.obj");
-
-  //Buffer<TGAColor> buffer(size, size, black);
-  //renderWireFrame(model, buffer, size, size);
-  //renderLine(size/2, size/2, 3*size/4, size/2, buffer, red);
-  //renderLine(size/2, size/2, size/2, 3*size/4, buffer, green);
-
-  //TGAImage image(size, size, TGAImage::RGB);
-  //renderColourBuffer(buffer, image);
-  //image.flip_vertically();
-  //image.write_tga_file("output.tga");
-  //delete model;
-//}
+  TGAImage image(size, size, TGAImage::RGB);
+  renderColourBuffer(buffer, image);
+  image.flip_vertically();
+  image.write_tga_file("output.tga");
+}
 
 int main(int argc, char** argv) {
-  testWireFrame();
+  testPerspectiveWireFrame();
 
   return 0;
 }
