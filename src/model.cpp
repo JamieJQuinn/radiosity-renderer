@@ -27,6 +27,9 @@ Model::Model(const char *filename) : verts_(), faces_() {
         idx--; // in wavefront obj all indices start at 1, not zero
         f.push_back(idx);
       }
+      if(f.size() == 4) {
+        std::swap(f[2], f[3]);
+      }
       faces_.push_back(f);
     }
   }

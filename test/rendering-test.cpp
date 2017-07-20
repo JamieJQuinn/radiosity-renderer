@@ -3,6 +3,7 @@
 #include "catch.hpp"
 #include "rendering.hpp"
 #include "geometry.hpp"
+#include "colours.hpp"
 
 TEST_CASE("fillTriangle works on single triangle (const z)", "[renderer]") {
   int solution[] = {
@@ -29,8 +30,6 @@ TEST_CASE("fillTriangle works on single triangle (const z)", "[renderer]") {
   };
 
   int size = 20;
-  const TGAColor white = TGAColor(255, 255, 255, 255);
-  const TGAColor red = TGAColor(255, 0, 0, 255);
   Buffer<TGAColor> buffer(size, size, white);
   Buffer<float> zBuffer(size, size, 0);
   Vec3f pts[3] = {Vec3f(12, 2, 1), Vec3f(5, 16, 1), Vec3f(16, 10, 1)};
@@ -71,8 +70,6 @@ TEST_CASE("fillTriangle works on single triangle (varying z)", "[renderer]") {
   };
 
   int size = 20;
-  const TGAColor white = TGAColor(255, 255, 255, 255);
-  const TGAColor red = TGAColor(255, 0, 0, 255);
   Buffer<TGAColor> buffer(size, size, white);
   Buffer<float> zBuffer(size, size, 0);
   Vec3f pts[3] = {Vec3f(12, 2, 1), Vec3f(5, 16, 5), Vec3f(16, 10, 9)};
@@ -113,9 +110,6 @@ TEST_CASE("fillTriangle works on two triangles", "[renderer]") {
   };
 
   int size = 20;
-  const TGAColor white = TGAColor(255, 255, 255, 255);
-  const TGAColor red = TGAColor(255, 0, 0, 255);
-  const TGAColor blue = TGAColor(0, 0, 255, 255);
   Buffer<TGAColor> buffer(size, size, white);
   Buffer<float> zBuffer(size, size, 0);
   Vec3f pts1[3] = {Vec3f(12, 2, 1), Vec3f(5, 16, 1), Vec3f(16, 10, 1)};
@@ -158,9 +152,6 @@ TEST_CASE("fillTriangle works on two intersecting triangles", "[renderer]") {
   };
 
   int size = 20;
-  const TGAColor white = TGAColor(255, 255, 255, 255);
-  const TGAColor red = TGAColor(255, 0, 0, 255);
-  const TGAColor blue = TGAColor(0, 0, 255, 255);
   Buffer<TGAColor> buffer(size, size, white);
   Buffer<float> zBuffer(size, size, 0);
   Vec3f pts1[3] = {Vec3f(4, 2, 9), Vec3f(4, 18, 9), Vec3f(18, 10, 1)};
