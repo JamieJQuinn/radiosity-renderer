@@ -13,7 +13,7 @@ class Buffer {
     ~Buffer();
     void fillAll(T fillData);
     int width, height; // in pixels
-    template <class t> friend std::ostream& operator<<(std::ostream& s, Buffer<t>& b);
+    template <class> friend std::ostream& operator<<(std::ostream& s, Buffer<t>& b);
   protected:
     T* buffer;
     Buffer();
