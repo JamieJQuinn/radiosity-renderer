@@ -2,7 +2,6 @@
 
 #include "catch.hpp"
 #include "rendering.hpp"
-#include "triangle.hpp"
 #include "geometry.hpp"
 
 TEST_CASE("fillTriangle works on single triangle (const z)", "[renderer]") {
