@@ -7,7 +7,7 @@
 #include "rendering.hpp"
 
 int main(int argc, char** argv) {
-  const TGAColor black   = TGAColor(0, 0,   0,   255);
+  const TGAColor black = TGAColor(0, 0, 0, 255);
   int size = 800;
 
   Model model("data/scene.obj");

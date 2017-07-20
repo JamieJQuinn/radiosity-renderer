@@ -6,7 +6,7 @@
 #include "rendering.hpp"
 
 TEST_CASE("Test orthographic projection", "[projection]") {
-  const TGAColor black   = TGAColor(0, 0,   0,   255);
+  const TGAColor black = TGAColor(0, 0, 0, 255);
   int size = 800;
 
   Model model("test/simple_box.obj");
@@ -20,7 +20,7 @@ TEST_CASE("Test orthographic projection", "[projection]") {
 }
 
 TEST_CASE("Test perspective projection", "[projection]") {
-  const TGAColor black   = TGAColor(0, 0,   0,   255);
+  const TGAColor black = TGAColor(0, 0, 0, 255);
   int size = 800;
 
   Model model("test/simple_box.obj");
