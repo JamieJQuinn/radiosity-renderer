@@ -28,23 +28,14 @@ Vec3f getBarycentricCoords(const Vec3f& A, const Vec3f& B, const Vec3f& C, const
   return Vec3f(1.f-(u.x+u.y)/u.z, u.x/u.z, u.y/u.z);
 }
 
-void renderWireFrame(const Model* model, Buffer<TGAColor>& buffer) {
-  renderWireFrame(model, buffer, 800, 800);
-}
-void renderWireFrame(const Model* model, Buffer<TGAColor>& buffer, int width, int height) {
-  //const TGAColor black   = TGAColor(0, 0,   0,   255);
+void renderWireFrame(const Model& model, Buffer<TGAColor>& buffer, const Matrix& MVP) {
   const TGAColor white = TGAColor(255, 255, 255, 255);
-  for (int i=0; i<model->nfaces(); i++) {
-    std::vector<int> face = model->face(i);
+  for (int i=0; i<model.nfaces(); i++) {
+    std::vector<int> face = model.face(i);
     for (int j=0; j<3; j++) {
-      Vec3f v0 = model->vert(face[j]);
-      Vec3f v1 = model->vert(face[(j+1)%3]);
-      int x0 = (v0.x+1.)*width/2.;
-      int y0 = (v0.y+1.)*height/2.;
-      int x1 = (v1.x+1.)*width/2.;
-      int y1 = (v1.y+1.)*height/2.;
-      renderLine(x0, y0, x1, y1, buffer, white);
+      Vec3f v0 = m2v(MVP*v2m(model.vert(face[j])));
+      Vec3f v1 = m2v(MVP*v2m(model.vert(face[(j+1)%3])));
+      renderLine(v0.x, v0.y, v1.x, v1.y, buffer, white);
     }
   }
-
 }

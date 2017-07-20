@@ -7,8 +7,7 @@
 
 void renderColourBuffer(const Buffer<TGAColor>& buffer, TGAImage& image);
 void renderZBuffer(const Buffer<float>& zBuffer, TGAImage& image);
-void renderWireFrame(const Model* model, Buffer<TGAColor>& buffer, int width, int height);
-void renderWireFrame(const Model* model, Buffer<TGAColor>& buffer);
+void renderWireFrame(const Model& model, Buffer<TGAColor>& buffer, const Matrix& MVP);
 Vec3f getBarycentricCoords(const Vec3f& A, const Vec3f& B, const Vec3f& C, const Vec3f& P);
 
 template <class T>
