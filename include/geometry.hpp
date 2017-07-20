@@ -63,18 +63,18 @@ template <class t> std::ostream& operator<<(std::ostream& s, Vec3<t>& v) {
   return s;
 }
 
-const int DEFAULT_ALLOC = 4;
+const int DEFAULT_MATRIX_SIZE = 4;
 
 class Matrix {
   float* m;
   int rows, cols;
 public:
-  Matrix(int r=DEFAULT_ALLOC, int c=DEFAULT_ALLOC, float fillValue=0.f);
+  Matrix(int r=DEFAULT_MATRIX_SIZE, int c=DEFAULT_MATRIX_SIZE, float fillValue=0.f);
   inline int nrows() const {return rows;}
   inline int ncols() const {return cols;}
 
   void setAll(float f);
-  static Matrix identity(int dimensions);
+  static Matrix identity(int dimensions=DEFAULT_MATRIX_SIZE);
   float get(int i, int j) const;
   void set(int i, int j, float value);
   Matrix operator*(const Matrix& a) const;

@@ -54,6 +54,11 @@ void renderWireFrame(const Model& model, Buffer<TGAColor>& buffer, const Matrix&
       Vec3f v1 = m2v(MVP*v2m(model.vert(face[(j+1)%3])));
       renderLine(v0.x, v0.y, v1.x, v1.y, buffer, white);
     }
+    for (int j=2; j<4; j++) {
+      Vec3f v0 = m2v(MVP*v2m(model.vert(face[j])));
+      Vec3f v1 = m2v(MVP*v2m(model.vert(face[(j+1)%4])));
+      renderLine(v0.x, v0.y, v1.x, v1.y, buffer, white);
+    }
   }
 }
 
@@ -71,4 +76,19 @@ Matrix viewportRelative(int x, int y, int w, int h, int depth) {
 
 Matrix viewportAbsolute(int x0, int y0, int x1, int y1, int depth) {
   return viewportRelative(x0, y0, x1-x0, y1-y0, depth);
+}
+
+Matrix lookAt(Vec3f eye, Vec3f centre, Vec3f up) {
+  Vec3f z = (eye-centre).normalise();
+  Vec3f x = up.cross(z).normalise();
+  Vec3f y = z.cross(x).normalise();
+  Matrix Minv = Matrix::identity();
+  Matrix Tr   = Matrix::identity();
+  for (int i=0; i<3; i++) {
+    Minv.set(0, i, x[i]);
+    Minv.set(1, i, y[i]);
+    Minv.set(2, i, z[i]);
+    Tr.set(i, 3, -centre[i]);
+  }
+  return Minv*Tr;
 }

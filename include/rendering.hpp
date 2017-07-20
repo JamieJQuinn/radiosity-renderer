@@ -16,6 +16,7 @@ Vec3f getBarycentricCoords(const Vec3f& A, const Vec3f& B, const Vec3f& C, const
 
 Matrix viewportRelative(int x, int y, int w, int h, int depth);
 Matrix viewportAbsolute(int x0, int y0, int x1, int y1, int depth);
+Matrix lookAt(Vec3f eye, Vec3f centre, Vec3f up);
 
 template <class T>
 void renderLine(int x0, int y0, int x1, int y1, Buffer<T> &buffer, const T& fillValue) {
