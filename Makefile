@@ -32,7 +32,7 @@ clean:
 
 .PHONY: test
 test: all $(BUILD_DIR)/$(TEST_EXECUTABLE)
-	cd $(BUILD_DIR); ./$(TEST_EXECUTABLE)
+	$(BUILD_DIR)/$(TEST_EXECUTABLE)
 
 $(BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp
 	$(CC) $(CFLAGS) $< -o $@
