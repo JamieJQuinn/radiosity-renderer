@@ -54,9 +54,9 @@ void renderWireFrame(const Model& model, Buffer<TGAColor>& buffer, const Matrix&
       Vec3f v1 = m2v(MVP*v2m(model.vert(face[(j+1)%3])));
       renderLine(v0.x, v0.y, v1.x, v1.y, buffer, white);
     }
-    for (int j=2; j<4; j++) {
+    for (int j=0; j<2; j++) {
       Vec3f v0 = m2v(MVP*v2m(model.vert(face[j])));
-      Vec3f v1 = m2v(MVP*v2m(model.vert(face[(j+1)%4])));
+      Vec3f v1 = m2v(MVP*v2m(model.vert(face[j+2])));
       renderLine(v0.x, v0.y, v1.x, v1.y, buffer, white);
     }
   }
