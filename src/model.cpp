@@ -27,11 +27,13 @@ Model::Model(const char *filename) : verts_(), faces_() {
       norms_.push_back(n);
     } else if (!line.compare(0, 2, "f ")) {
       std::vector<Vec3i> f;
-      int itrash, idx;
+      int iuv, inorm, ivert;
       iss >> trash;
-      while (iss >> idx >> trash >> itrash >> trash >> itrash) {
-        idx--; // in wavefront obj all indices start at 1, not zero
-        f.push_back(Vec3i(idx, 0, 0));
+      while (iss >> ivert >> trash >> iuv >> trash >> inorm) {
+        ivert--; // in wavefront obj all indices start at 1, not zero
+        iuv--;
+        inorm--;
+        f.push_back(Vec3i(ivert, iuv, inorm));
       }
       if(f.size() == 4) {
         std::swap(f[2], f[3]);
