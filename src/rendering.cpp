@@ -5,6 +5,7 @@
 #include "geometry.hpp"
 #include "buffer.hpp"
 #include "model.hpp"
+#include "colours.hpp"
 
 void renderColourBuffer(const Buffer<TGAColor>& buffer, TGAImage& image) {
   for(int j=0; j<buffer.height; ++j) {
@@ -46,17 +47,13 @@ Vec3f getBarycentricCoords(const Vec3f& A, const Vec3f& B, const Vec3f& C, const
 }
 
 void renderWireFrame(const Model& model, Buffer<TGAColor>& buffer, const Matrix& MVP) {
-  const TGAColor white = TGAColor(255, 255, 255, 255);
   for (int i=0; i<model.nfaces(); i++) {
-    std::vector<int> face = model.face(i);
-    for (int j=0; j<3; j++) {
-      Vec3f v0 = m2v(MVP*v2m(model.vert(face[j])));
-      Vec3f v1 = m2v(MVP*v2m(model.vert(face[(j+1)%3])));
-      renderLine(v0.x, v0.y, v1.x, v1.y, buffer, white);
-    }
-    for (int j=0; j<2; j++) {
-      Vec3f v0 = m2v(MVP*v2m(model.vert(face[j])));
-      Vec3f v1 = m2v(MVP*v2m(model.vert(face[j+2])));
+    std::vector<Vec3i> face = model.face(i);
+    std::swap(face[0], face[1]);
+    int nVerts = face.size();
+    for (int j=0; j<nVerts; j++) {
+      Vec3f v0 = m2v(MVP*v2m(model.vert(face[j].ivert)));
+      Vec3f v1 = m2v(MVP*v2m(model.vert(face[(j+1)%nVerts].ivert)));
       renderLine(v0.x, v0.y, v1.x, v1.y, buffer, white);
     }
   }

@@ -19,13 +19,19 @@ Model::Model(const char *filename) : verts_(), faces_() {
       Vec3f v;
       for (int i=0;i<3;i++) iss >> v.raw[i];
       verts_.push_back(v);
+    } else if (!line.compare(0, 3, "vn ")) {
+      iss >> trash >> trash;
+      Vec3f n;
+      for (int i=0;i<3;i++) iss >> n[i];
+      n.normalise();
+      norms_.push_back(n);
     } else if (!line.compare(0, 2, "f ")) {
-      std::vector<int> f;
+      std::vector<Vec3i> f;
       int itrash, idx;
       iss >> trash;
       while (iss >> idx >> trash >> itrash >> trash >> itrash) {
         idx--; // in wavefront obj all indices start at 1, not zero
-        f.push_back(idx);
+        f.push_back(Vec3i(idx, 0, 0));
       }
       if(f.size() == 4) {
         std::swap(f[2], f[3]);
@@ -47,10 +53,15 @@ int Model::nfaces() const {
   return (int)faces_.size();
 }
 
-const std::vector<int> Model::face(int idx) const {
+const std::vector<Vec3i> Model::face(int idx) const {
   return faces_[idx];
 }
 
 const Vec3f Model::vert(int i) const {
   return verts_[i];
+}
+
+const Vec3f Model::norm(int iface, int nvert) const {
+    int idx = faces_[iface][nvert][2];
+    return norms_[idx];
 }
