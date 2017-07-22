@@ -36,7 +36,7 @@ TEST_CASE("Test perspective projection", "[projection]") {
   renderColourBuffer(buffer, "test/perspective_projection.tga");
 }
 
-TEST_CASE("Test model view", "[camera]") {
+TEST_CASE("Test moving the camera (perspective)", "[camera]") {
   int size = 800;
 
   Model model("test/simple_box.obj");
@@ -57,7 +57,7 @@ TEST_CASE("Test model view", "[camera]") {
   renderColourBuffer(buffer, "test/model_view.tga");
 }
 
-TEST_CASE("Test model view (orthographic)", "[camera]") {
+TEST_CASE("Test moving the camera (orthographic)", "[camera]") {
   int size = 800;
 
   Model model("test/simple_box.obj");
@@ -76,7 +76,7 @@ TEST_CASE("Test model view (orthographic)", "[camera]") {
   renderColourBuffer(buffer, "test/model_view_orthographic.tga");
 }
 
-TEST_CASE("Test model view (filled triangles)", "[camera]") {
+TEST_CASE("Test moving the camera (filled triangles)", "[camera]") {
   int size = 800;
 
   Model model("test/simple_box.obj");
@@ -120,7 +120,7 @@ TEST_CASE("Test model view (filled triangles)", "[camera]") {
   renderColourBuffer(buffer, "test/model_view_filled.tga");
 }
 
-TEST_CASE("Test model view (filled triangles, shaded)", "[camera]") {
+TEST_CASE("Test moving the camera (filled triangles, shaded)", "[camera]") {
   int size = 800;
 
   Model model("test/simple_box.obj");
