@@ -50,6 +50,14 @@ struct TGAColor {
 		}
 	}
 
+  TGAColor operator*(float f) const {
+    TGAColor temp(*this);
+    for(int i=0; i<4; ++i) {
+      temp.raw[i]*=f;
+    }
+    return temp;
+  }
+
 	TGAColor & operator =(const TGAColor &c) {
 		if (this != &c) {
 			bytespp = c.bytespp;
