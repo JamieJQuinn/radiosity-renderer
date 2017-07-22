@@ -7,6 +7,7 @@ INCLUDE_DIR=include
 
 SOURCES=$(wildcard $(SRC_DIR)/*.cpp)
 OBJECTS=$(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SOURCES))
+DEPENDENCIES=$(wildcard $(INCLUDE_DIR)/*.hpp)
 EXECUTABLE=radiosity
 
 TEST_DIR=test
@@ -20,7 +21,7 @@ all: $(BUILD_DIR) $(BUILD_DIR)/$(EXECUTABLE)
 $(BUILD_DIR)/$(EXECUTABLE): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(DEPENDENCIES)
 	$(CC) $(CFLAGS) $< -o $@
 
 $(BUILD_DIR):
