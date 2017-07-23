@@ -25,6 +25,11 @@ Model::Model(const char *filename) : verts_(), faces_() {
       for (int i=0;i<3;i++) iss >> n[i];
       n.normalise();
       norms_.push_back(n);
+    } else if (!line.compare(0, 3, "vt ")) {
+      iss >> trash >> trash;
+      Vec3f uv;
+      for (int i=0;i<2;i++) iss >> uv[i];
+      uv_.push_back(uv);
     } else if (!line.compare(0, 2, "f ")) {
       std::vector<Vec3i> f;
       int iuv, inorm, ivert;
@@ -64,6 +69,11 @@ const Vec3f Model::vert(int i) const {
 }
 
 const Vec3f Model::norm(int iface, int nvert) const {
-    int idx = faces_[iface][nvert][2];
+    int idx = faces_[iface][nvert].inorm;
     return norms_[idx];
+}
+
+const Vec3f Model::uv(int iface, int nvert) const {
+    int idx = faces_[iface][nvert].iuv;
+    return uv_[idx];
 }

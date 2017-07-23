@@ -44,6 +44,12 @@ void renderLine(int x0, int y0, int x1, int y1, Buffer<T> &buffer, const T& fill
 
 template <class fillType, class zBufferType>
 void renderTriangle(Vec3f *pts, Buffer<zBufferType>& zBuffer, Buffer<fillType> &buffer, const fillType& fillValue) {
+  float intensities[3] = {1, 1, 1};
+  renderTriangle(pts, intensities, zBuffer, buffer, fillValue);
+}
+
+template <class fillType>
+void renderTriangle(Vec3f *pts, Buffer<fillType> &buffer, const fillType& fillValue) {
   // Create bounding box
   Vec2f bboxmin(buffer.width-1, buffer.height-1);
   Vec2f bboxmax(0, 0);
@@ -62,18 +68,13 @@ void renderTriangle(Vec3f *pts, Buffer<zBufferType>& zBuffer, Buffer<fillType> &
     for (P.y=bboxmin.y; P.y<=bboxmax.y; ++P.y) {
       Vec3f bc_screen = getBarycentricCoords(pts[0], pts[1], pts[2], P);
       if (bc_screen.x<0 || bc_screen.y<0 || bc_screen.z<0) continue;
-      P.z = 0;
-      for (int i=0; i<3; i++) P.z += pts[i].z*bc_screen[i];
-      if(zBuffer.get(int(P.x), int(P.y)) < P.z) {
-        buffer.set(int(P.x), int(P.y), fillValue);
-        zBuffer.set(int(P.x), int(P.y), P.z);
-      }
+      buffer.set(int(P.x), int(P.y), fillValue);
     }
   }
 }
 
 template <class fillType, class zBufferType>
-void renderTriangle(Vec3f *pts, float *intensities, Buffer<zBufferType>& zBuffer, Buffer<fillType> &buffer, const fillType& fillValue) {
+void renderTriangle(const Vec3f *pts, const float *intensities, Buffer<zBufferType>& zBuffer, Buffer<fillType> &buffer, const fillType& fillValue) {
   // Create bounding box
   Vec2f bboxmin(buffer.width-1, buffer.height-1);
   Vec2f bboxmax(0, 0);
