@@ -13,6 +13,7 @@ void renderZBuffer(const Buffer<float>& zBuffer, TGAImage& image);
 void renderZBuffer(const Buffer<float>& zBuffer, std::string filename);
 void renderWireFrame(const Model& model, Buffer<TGAColor>& buffer, const Matrix& MVP);
 void calcFormFactorPerCell(const int sideLengthInPixels, Buffer<float>& topFace, Buffer<float>& sideFace);
+void calcFormFactors(const Buffer<int>& itemBuffer, const Buffer<float>& factorsPerCell, std::vector<float>& formFactors);
 Vec3f getBarycentricCoords(const Vec3f& A, const Vec3f& B, const Vec3f& C, const Vec3f& P);
 
 Matrix viewportRelative(int x, int y, int w, int h, int depth);

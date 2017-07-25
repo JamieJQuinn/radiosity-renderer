@@ -169,7 +169,7 @@ TEST_CASE("fillTriangle works on two intersecting triangles", "[renderer]") {
   renderColourBuffer(buffer, "test/two_tri_intersect_colour.tga");
 }
 
-TEST_CASE("Test calculation of projected area", "[camera]") {
+TEST_CASE("Test calculation of form factors", "[form_factors]") {
   int size = 50;
 
   Model model("test/simple_box.obj");
@@ -186,9 +186,9 @@ TEST_CASE("Test calculation of projected area", "[camera]") {
 
   Buffer<int> itemBuffer(size, size, 0);
   Buffer<float> zBuffer(size, size, -255);
-  std::vector<int> areas(model.nfaces()+1, 0);
+  std::vector<float> formFactors(model.nfaces()+1, 0.f);
 
-  // Go through all faces
+  // Create item buffer
   for (int i=0; i<model.nfaces(); ++i) {
     std::vector<Vec3i> face = model.face(i);
     Vec3f screen_coords[4];
@@ -207,17 +207,19 @@ TEST_CASE("Test calculation of projected area", "[camera]") {
       renderTriangle(screen_coords+1, zBuffer, itemBuffer, i+1);
     }
   }
-  //std::cout << itemBuffer << std::endl;
 
-  // Count up total area in terms of # cells
-  for(int j=0; j<itemBuffer.height; ++j) {
-    for(int i=0; i<itemBuffer.width; ++i) {
-      int idx = itemBuffer.get(i, j);
-      areas[idx] += 1;
-    }
-  }
+  Buffer<float> topFace(size, size);
+  Buffer<float> sideFace(size, size/2);
+  calcFormFactorPerCell(size, topFace, sideFace);
 
-  for(int i=0; i<model.nfaces()+1; ++i) {
-    std::cout << i << ": " << areas[i] << std::endl;
-  }
+  calcFormFactors(itemBuffer, topFace, formFactors);
+}
+
+TEST_CASE("Test calculation of form factors per cell", "[form_factors]") {
+  int size = 200;
+  Buffer<float> topFace(size, size);
+  Buffer<float> sideFace(size, size/2);
+  calcFormFactorPerCell(size, topFace, sideFace);
+
+  REQUIRE(topFace.sum() + 4*sideFace.sum() == Approx(1.0f));
 }

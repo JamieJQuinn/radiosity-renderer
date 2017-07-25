@@ -109,14 +109,23 @@ void calcFormFactorPerCell(const int sideLengthInPixels, Buffer<float>& topFace,
     }
   }
 
-  float initialZ = -1.f + pixelLength/2.f;
+  float initialZ = pixelLength/2.f;
   for(int j=0; j<sideLengthInPixels/2; ++j) {
     for(int i=0; i<sideLengthInPixels; ++i) {
-      float z = initialZ + pixelLength*i;
-      float y = initialY + pixelLength*j;
+      float z = initialZ + pixelLength*j;
+      float y = initialY + pixelLength*i;
       float r = z*z + y*y + 1.f;
       float factor = z*dA/(r*r*M_PI);
       sideFace.set(i, j, factor);
+    }
+  }
+}
+
+void calcFormFactors(const Buffer<int>& itemBuffer, const Buffer<float>& factorsPerCell, std::vector<float>& formFactors) {
+  for(int j=0; j<itemBuffer.height; ++j) {
+    for(int i=0; i<itemBuffer.width; ++i) {
+      int idx = itemBuffer.get(i, j);
+      formFactors[idx] += factorsPerCell.get(i, j);
     }
   }
 }
