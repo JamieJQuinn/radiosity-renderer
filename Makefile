@@ -38,5 +38,5 @@ test: all $(BUILD_DIR)/$(TEST_EXECUTABLE)
 $(BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp
 	$(CC) $(CFLAGS) $< -o $@
 
-$(BUILD_DIR)/$(TEST_EXECUTABLE): $(TEST_OBJECTS)
+$(BUILD_DIR)/$(TEST_EXECUTABLE): $(TEST_OBJECTS) $(OBJECTS)
 	$(CC) $(LDFLAGS) $(filter-out $(BUILD_DIR)/main.o, $(OBJECTS)) $(TEST_OBJECTS) -o $@
