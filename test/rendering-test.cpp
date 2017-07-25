@@ -168,3 +168,56 @@ TEST_CASE("fillTriangle works on two intersecting triangles", "[renderer]") {
   renderZBuffer(zBuffer, "test/two_tri_intersect_zbuffer.tga");
   renderColourBuffer(buffer, "test/two_tri_intersect_colour.tga");
 }
+
+TEST_CASE("Test calculation of projected area", "[camera]") {
+  int size = 50;
+
+  Model model("test/simple_box.obj");
+
+  Vec3f eye(-2, -2.5, 3);
+  Vec3f centre(0,0,0);
+  Vec3f up(0, 1, 0);
+  Matrix modelView = lookAt(eye, centre, up);
+
+  Matrix P = Matrix::identity(4);
+  P.set(3, 2, -1.f/(eye-centre).norm());
+  Matrix V = viewportRelative(size/4, size/4, size/2, size/2, 255);
+  Matrix MVP = V*P*modelView;
+
+  Buffer<int> itemBuffer(size, size, 0);
+  Buffer<float> zBuffer(size, size, -255);
+  std::vector<int> areas(model.nfaces()+1, 0);
+
+  // Go through all faces
+  for (int i=0; i<model.nfaces(); ++i) {
+    std::vector<Vec3i> face = model.face(i);
+    Vec3f screen_coords[4];
+    Vec3f world_coords[4];
+    for (int j=0; j<4; j++) {
+      Vec3f v = model.vert(face[j].ivert);
+      screen_coords[j] = m2v(MVP*v2m(v));
+      world_coords[j] = v;
+    }
+    Vec3f n = (world_coords[2]-world_coords[0]).cross(world_coords[1]-world_coords[0]);
+    n.normalise();
+    float intensity = n.dot(eye-centre);
+    if (intensity<0) {
+      // Render to ID itembuffer
+      renderTriangle(screen_coords, zBuffer, itemBuffer, i+1);
+      renderTriangle(screen_coords+1, zBuffer, itemBuffer, i+1);
+    }
+  }
+  //std::cout << itemBuffer << std::endl;
+
+  // Count up total area in terms of # cells
+  for(int j=0; j<itemBuffer.height; ++j) {
+    for(int i=0; i<itemBuffer.width; ++i) {
+      int idx = itemBuffer.get(i, j);
+      areas[idx] += 1;
+    }
+  }
+
+  for(int i=0; i<model.nfaces()+1; ++i) {
+    std::cout << i << ": " << areas[i] << std::endl;
+  }
+}

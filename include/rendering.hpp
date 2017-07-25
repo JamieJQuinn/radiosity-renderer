@@ -42,12 +42,40 @@ void renderLine(int x0, int y0, int x1, int y1, Buffer<T> &buffer, const T& fill
   }
 }
 
+// No interpolation of fillValue
 template <class fillType, class zBufferType>
 void renderTriangle(Vec3f *pts, Buffer<zBufferType>& zBuffer, Buffer<fillType> &buffer, const fillType& fillValue) {
-  float intensities[3] = {1, 1, 1};
-  renderTriangle(pts, intensities, zBuffer, buffer, fillValue);
+  // Create bounding box
+  Vec2f bboxmin(buffer.width-1, buffer.height-1);
+  Vec2f bboxmax(0, 0);
+  Vec2f clamp(buffer.width-1, buffer.height-1);
+  for (int i=0; i<3; i++) {
+    for (int j=0; j<2; j++) {
+      // clip against buffer sides
+      bboxmin[j] = std::max(0.f, std::min(bboxmin[j], pts[i][j]));
+      bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts[i][j]));
+    }
+  }
+
+  // Check every pixel in bounding box
+  Vec3f P;
+  for (P.x=bboxmin.x; P.x<=bboxmax.x; ++P.x) {
+    for (P.y=bboxmin.y; P.y<=bboxmax.y; ++P.y) {
+      Vec3f bc_screen = getBarycentricCoords(pts[0], pts[1], pts[2], P);
+      if (bc_screen.x<0 || bc_screen.y<0 || bc_screen.z<0) continue;
+      P.z = 0;
+      for (int i=0; i<3; i++) {
+        P.z += pts[i].z*bc_screen[i];
+      }
+      if(zBuffer.get(int(P.x), int(P.y)) < P.z) {
+        buffer.set(int(P.x), int(P.y), fillValue);
+        zBuffer.set(int(P.x), int(P.y), P.z);
+      }
+    }
+  }
 }
 
+// No ZBuffer
 template <class fillType>
 void renderTriangle(Vec3f *pts, Buffer<fillType> &buffer, const fillType& fillValue) {
   // Create bounding box
@@ -73,6 +101,7 @@ void renderTriangle(Vec3f *pts, Buffer<fillType> &buffer, const fillType& fillVa
   }
 }
 
+// ZBuffer & Interpolation
 template <class fillType, class zBufferType>
 void renderTriangle(const Vec3f *pts, const float *intensities, Buffer<zBufferType>& zBuffer, Buffer<fillType> &buffer, const fillType& fillValue) {
   // Create bounding box
