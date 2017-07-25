@@ -11,6 +11,7 @@ class Buffer {
     Buffer(int _width, int _height, T initial);
     void setup(int _width, int _height);
     T max() const;
+    T sum() const;
     ~Buffer();
     void fillAll(T fillData);
     int width, height; // in pixels
@@ -30,6 +31,15 @@ T Buffer<T>::max() const {
     }
   }
   return max;
+}
+
+template <class T>
+T Buffer<T>::sum() const {
+  T sum = buffer[0];
+  for(int i=1; i<width*height; ++i) {
+    sum += buffer[i];
+  }
+  return sum;
 }
 
 template <class T>
