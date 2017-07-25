@@ -185,28 +185,9 @@ TEST_CASE("Test calculation of form factors", "[form_factors]") {
   Matrix MVP = V*P*modelView;
 
   Buffer<int> itemBuffer(size, size, 0);
-  Buffer<float> zBuffer(size, size, -255);
   std::vector<float> formFactors(model.nfaces()+1, 0.f);
 
-  // Create item buffer
-  for (int i=0; i<model.nfaces(); ++i) {
-    std::vector<Vec3i> face = model.face(i);
-    Vec3f screen_coords[4];
-    Vec3f world_coords[4];
-    for (int j=0; j<4; j++) {
-      Vec3f v = model.vert(face[j].ivert);
-      screen_coords[j] = m2v(MVP*v2m(v));
-      world_coords[j] = v;
-    }
-    Vec3f n = (world_coords[2]-world_coords[0]).cross(world_coords[1]-world_coords[0]);
-    n.normalise();
-    float intensity = n.dot(eye-centre);
-    if (intensity<0) {
-      // Render to ID itembuffer
-      renderTriangle(screen_coords, zBuffer, itemBuffer, i+1);
-      renderTriangle(screen_coords+1, zBuffer, itemBuffer, i+1);
-    }
-  }
+  renderModel(itemBuffer, model, MVP);
 
   Buffer<float> topFace(size, size);
   Buffer<float> sideFace(size, size/2);

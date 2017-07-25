@@ -94,29 +94,9 @@ TEST_CASE("Test moving the camera (filled triangles)", "[camera]") {
   Buffer<TGAColor> buffer(size, size, black);
   Buffer<float> zBuffer(size, size, -255);
 
-  TGAColor colours[] = {white, red, blue, green, yellow, TGAColor(200, 200, 200, 255)};
-  int colourIndex = 0;
+  renderModel(buffer, model, MVP);
 
-  for (int i=0; i<model.nfaces(); ++i) {
-    std::vector<Vec3i> face = model.face(i);
-    Vec3f screen_coords[4];
-    Vec3f world_coords[4];
-    for (int j=0; j<4; j++) {
-      Vec3f v = model.vert(face[j].ivert);
-      screen_coords[j] = m2v(MVP*v2m(v));
-      world_coords[j] = v;
-    }
-    Vec3f n = (world_coords[2]-world_coords[0]).cross(world_coords[1]-world_coords[0]);
-    n.normalise();
-    float intensity = n.dot(eye-centre);
-    if (intensity<0) {
-      renderTriangle(screen_coords, zBuffer, buffer, colours[colourIndex]);
-      renderTriangle(screen_coords+1, zBuffer, buffer, colours[colourIndex+1]);
-      colourIndex+=2;
-    }
-  }
-
-  renderZBuffer(zBuffer, "test/model_view_filled_zbuffer.tga");
+  //renderZBuffer(zBuffer, "test/model_view_filled_zbuffer.tga");
   renderColourBuffer(buffer, "test/model_view_filled.tga");
 }
 
