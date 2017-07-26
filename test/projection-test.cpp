@@ -9,7 +9,7 @@
 TEST_CASE("Test orthographic projection", "[projection]") {
   int size = 800;
 
-  Model model("test/simple_box.obj");
+  Model model("test/simple_box.obj", "test/simple_box.mtl");
 
   Matrix MVP = viewportRelative(size/4, size/4, size/2, size/2, 255);
   Buffer<TGAColor> buffer(size, size, black);
@@ -22,7 +22,7 @@ TEST_CASE("Test orthographic projection", "[projection]") {
 TEST_CASE("Test perspective projection", "[projection]") {
   int size = 800;
 
-  Model model("test/simple_box.obj");
+  Model model("test/simple_box.obj", "test/simple_box.mtl");
 
   Vec3f camera(0,0,3);
   Matrix P = Matrix::identity(4);
@@ -36,10 +36,25 @@ TEST_CASE("Test perspective projection", "[projection]") {
   renderColourBuffer(buffer, "test/perspective_projection.tga");
 }
 
+TEST_CASE("Test non-symmetric perspective projection", "[projection]") {
+  int xLength = 50;
+  int yLength = 25;
+
+  Model model("test/simple_box.obj", "test/simple_box.mtl");
+
+  Vec3f eye(-2, -2.5, 3);
+  Vec3f centre(0,0,0);
+  Vec3f up(0, 1, 0);
+  Matrix modelView = lookAt(eye, centre, up);
+
+  Matrix P = Matrix::identity(4);
+  P.set(3, 2, -1.f/(eye-centre).norm());
+}
+
 TEST_CASE("Test moving the camera (perspective)", "[camera]") {
   int size = 800;
 
-  Model model("test/simple_box.obj");
+  Model model("test/simple_box.obj", "test/simple_box.mtl");
 
   Vec3f eye(2, 2.5, 3);
   Vec3f centre(0,0,0);
@@ -60,7 +75,7 @@ TEST_CASE("Test moving the camera (perspective)", "[camera]") {
 TEST_CASE("Test moving the camera (orthographic)", "[camera]") {
   int size = 800;
 
-  Model model("test/simple_box.obj");
+  Model model("test/simple_box.obj", "test/simple_box.mtl");
 
   Vec3f eye(2, 2.5, 3);
   Vec3f centre(0,0,0);
@@ -79,7 +94,7 @@ TEST_CASE("Test moving the camera (orthographic)", "[camera]") {
 TEST_CASE("Test moving the camera (filled triangles)", "[camera]") {
   int size = 800;
 
-  Model model("test/simple_box.obj");
+  Model model("test/simple_box.obj", "test/simple_box.mtl");
 
   Vec3f eye(2, 2.5, 3);
   Vec3f centre(0,0,0);
@@ -94,7 +109,7 @@ TEST_CASE("Test moving the camera (filled triangles)", "[camera]") {
   Buffer<TGAColor> buffer(size, size, black);
   Buffer<float> zBuffer(size, size, -255);
 
-  renderModel(buffer, model, MVP);
+  renderTestModel(buffer, model, MVP);
 
   //renderZBuffer(zBuffer, "test/model_view_filled_zbuffer.tga");
   renderColourBuffer(buffer, "test/model_view_filled.tga");
@@ -103,7 +118,7 @@ TEST_CASE("Test moving the camera (filled triangles)", "[camera]") {
 TEST_CASE("Test moving the camera (filled triangles, shaded)", "[camera]") {
   int size = 800;
 
-  Model model("test/simple_box.obj");
+  Model model("test/simple_box.obj", "test/simple_box.mtl");
 
   Vec3f eye(2, 2.5, 3);
   Vec3f centre(0,0,0);
@@ -122,7 +137,7 @@ TEST_CASE("Test moving the camera (filled triangles, shaded)", "[camera]") {
   int colourIndex = 0;
 
   for (int i=0; i<model.nfaces(); ++i) {
-    std::vector<Vec3i> face = model.face(i);
+    Face face = model.face(i);
     Vec3f screen_coords[4];
     Vec3f world_coords[4];
     for (int j=0; j<4; j++) {
@@ -150,9 +165,9 @@ TEST_CASE("Test moving the camera (filled triangles, shaded)", "[camera]") {
 TEST_CASE("Test viewing subdivided model", "[model]") {
   int size = 800;
 
-  Model model("test/simple_box_subdivided.obj");
+  Model model("test/simple_box_subdivided.obj", "test/simple_box_subdivided.mtl");
 
-  Vec3f eye(2, 2.5, 3);
+  Vec3f eye(-2, -2.5, -3);
   Vec3f centre(0,0,0);
   Vec3f up(0, 1, 0);
   Matrix modelView = lookAt(eye, centre, up);
@@ -163,9 +178,9 @@ TEST_CASE("Test viewing subdivided model", "[model]") {
   Matrix MVP = V*P*modelView;
 
   Buffer<TGAColor> buffer(size, size, black);
-  renderWireFrame(model, buffer, MVP);
+  renderTestModel(buffer, model, MVP);
 
-  renderColourBuffer(buffer, "test/simple_box_subdivided.tga");
+  renderColourBuffer(buffer, "test/simple_box_subdivided_filled.tga");
 }
 
 TEST_CASE("Test viewing subdivided model from inside (filled triangles)", "[camera]") {

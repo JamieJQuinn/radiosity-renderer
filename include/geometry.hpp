@@ -28,6 +28,7 @@ template <class t> struct Vec3 {
   union {
     struct {t x, y, z, dummy1;};
     struct { t ivert, iuv, inorm, dummy2; };
+    struct { t r, g, b, dummy3; };
     t raw[4];
   };
   Vec3() : x(0), y(0), z(0) {}

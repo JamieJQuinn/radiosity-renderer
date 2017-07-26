@@ -20,7 +20,7 @@ void outputRadiosity(const std::vector<TGAColor>& radiosity, const std::string& 
 }
 
 TEST_CASE("Output radiosity text file", "[output]") {
-  Model model("test/simple_box.obj");
+  Model model("test/simple_box.obj", "test/simple_box.mtl");
   std::vector<TGAColor> radiosity;
   int nFaces = model.nfaces();
 
@@ -35,14 +35,14 @@ TEST_CASE("Output radiosity text file", "[output]") {
 }
 
 TEST_CASE("Output texture based on input uv coords", "[output]") {
-  Model model("test/simple_box.obj");
+  Model model("test/simple_box.obj", "test/simple_box.mtl");
   int size = 1200;
   Buffer<TGAColor> buffer(size, size, black);
   TGAColor colours[] = {white, black, red, green, blue, yellow};
 
   int colourIndex = 0;
   for (int i=0; i<model.nfaces(); ++i) {
-    std::vector<Vec3i> face = model.face(i);
+    Face face = model.face(i);
     Vec3f screen_coords[4];
     // Get uv coords of face in buffer space
     for (int j=0; j<4; j++) {

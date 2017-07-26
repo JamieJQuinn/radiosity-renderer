@@ -49,7 +49,7 @@ Vec3f getBarycentricCoords(const Vec3f& A, const Vec3f& B, const Vec3f& C, const
 
 void renderWireFrame(const Model& model, Buffer<TGAColor>& buffer, const Matrix& MVP) {
   for (int i=0; i<model.nfaces(); i++) {
-    std::vector<Vec3i> face = model.face(i);
+    Face face = model.face(i);
     std::swap(face[0], face[1]);
     int nVerts = face.size();
     for (int j=0; j<nVerts; j++) {
@@ -72,23 +72,17 @@ Matrix viewportRelative(int x, int y, int w, int h, int depth) {
   return m;
 }
 
-Matrix viewportAbsolute(int x0, int y0, int x1, int y1, int depth) {
-  return viewportRelative(x0, y0, x1-x0, y1-y0, depth);
-}
-
 Matrix lookAt(Vec3f eye, Vec3f centre, Vec3f up) {
   Vec3f z = (eye-centre).normalise();
   Vec3f x = up.cross(z).normalise();
   Vec3f y = z.cross(x).normalise();
   Matrix Minv = Matrix::identity();
-  Matrix Tr   = Matrix::identity();
   for (int i=0; i<3; i++) {
     Minv.set(0, i, x[i]);
     Minv.set(1, i, y[i]);
     Minv.set(2, i, z[i]);
-    Tr.set(i, 3, -centre[i]);
   }
-  return Minv*Tr;
+  return Minv;
 }
 
 void calcFormFactorPerCell(const int sideLengthInPixels, Buffer<float>& topFace, Buffer<float>& sideFace) {
@@ -133,7 +127,7 @@ void calcFormFactors(const Buffer<int>& itemBuffer, const Buffer<float>& factors
 void renderModel(Buffer<int>& buffer, const Model& model, const Matrix& MVP) {
   Buffer<float> zBuffer(buffer.width, buffer.height, -1);
   for (int i=0; i<model.nfaces(); ++i) {
-    std::vector<Vec3i> face = model.face(i);
+    Face face = model.face(i);
     Vec3f screen_coords[4];
     for (int j=0; j<4; j++) {
       Vec3f v = model.vert(face[j].ivert);
@@ -148,25 +142,50 @@ void renderModel(Buffer<int>& buffer, const Model& model, const Matrix& MVP) {
   }
 }
 
-void renderModel(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP) {
-
+void renderTestModel(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP) {
   TGAColor colours[] = {white, red, blue, green, yellow, TGAColor(200, 200, 200, 255)};
   int colourIndex = 0;
 
-  Buffer<float> zBuffer(buffer.width, buffer.height, -1);
+  Buffer<float> zBuffer(buffer.width, buffer.height, -255);
   for (int i=0; i<model.nfaces(); ++i) {
-    std::vector<Vec3i> face = model.face(i);
+    Face face = model.face(i);
     Vec3f screen_coords[4];
     for (int j=0; j<4; j++) {
       Vec3f v = model.vert(face[j].ivert);
       screen_coords[j] = m2v(MVP*v2m(v));
     }
     Vec3f n = (screen_coords[2]-screen_coords[0]).cross(screen_coords[1]-screen_coords[0]);
-    if (n.z<0) {
-      // Render to ID itembuffer
+    bool isInFront = true;
+    for(int j=0; j<4; ++j) {
+      isInFront = isInFront and screen_coords[j].z > 0.f;
+    }
+    if (n.z<0 and isInFront) {
       renderTriangle(screen_coords, zBuffer, buffer, colours[colourIndex%6]);
       renderTriangle(screen_coords+1, zBuffer, buffer, colours[(colourIndex+1)%6]);
       colourIndex += 2;
+    }
+  }
+}
+
+void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP) {
+  Buffer<float> zBuffer(buffer.width, buffer.height, -255);
+  for (int i=0; i<model.nfaces(); ++i) {
+    Face face = model.face(i);
+    Vec3f matColour = model.material(face.matIdx).reflectivity*255;
+    Vec3f screen_coords[4];
+    for (int j=0; j<4; j++) {
+      Vec3f v = model.vert(face[j].ivert);
+      screen_coords[j] = m2v(MVP*v2m(v));
+    }
+    Vec3f n = (screen_coords[2]-screen_coords[0]).cross(screen_coords[1]-screen_coords[0]);
+    bool isInFront = true;
+    for(int j=0; j<4; ++j) {
+      isInFront = isInFront and screen_coords[j].z > 0.f;
+    }
+    if (n.z<0 and isInFront) {
+      TGAColor colour = TGAColor(matColour.r, matColour.g, matColour.b, 255);
+      renderTriangle(screen_coords, zBuffer, buffer, colour);
+      renderTriangle(screen_coords+1, zBuffer, buffer, colour);
     }
   }
 }

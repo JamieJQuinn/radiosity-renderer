@@ -17,9 +17,8 @@ void calcFormFactors(const Buffer<int>& itemBuffer, const Buffer<float>& factors
 Vec3f getBarycentricCoords(const Vec3f& A, const Vec3f& B, const Vec3f& C, const Vec3f& P);
 void renderModel(Buffer<int>& buffer, const Model& model, const Matrix& MVP);
 void renderModel(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP);
-
-template <class T>
-void renderModel(Buffer<T>& buffer, const Model& model, const Matrix& MVP, const Vec3f& cameraDir);
+void renderTestModel(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP);
+void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP);
 
 Matrix viewportRelative(int x, int y, int w, int h, int depth);
 Matrix viewportAbsolute(int x0, int y0, int x1, int y1, int depth);

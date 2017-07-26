@@ -172,7 +172,7 @@ TEST_CASE("fillTriangle works on two intersecting triangles", "[renderer]") {
 TEST_CASE("Test calculation of form factors", "[form_factors]") {
   int size = 50;
 
-  Model model("test/simple_box.obj");
+  Model model("test/simple_box.obj", "test/simple_box.mtl");
 
   Vec3f eye(-2, -2.5, 3);
   Vec3f centre(0,0,0);

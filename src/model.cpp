@@ -3,13 +3,50 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
-#include "model.hpp"
+#include <unordered_map>
 
-Model::Model(const char *filename) : verts_(), faces_() {
+#include "model.hpp"
+#include "material.hpp"
+#include "face.hpp"
+
+Model::Model(const char *objFilename, const char *mtlFilename) : verts_(), faces_() {
   std::ifstream in;
-  in.open (filename, std::ifstream::in);
+
+  // Setup materials
+  int materialsCount = 0;
+  std::unordered_map<std::string, int> materialsTable;
+  in.open (mtlFilename, std::ifstream::in);
   if (in.fail()) return;
   std::string line;
+  while (!in.eof()) {
+    std::getline(in, line);
+    std::istringstream iss(line.c_str());
+    char trash;
+    if (!line.compare(0, 6, "newmtl")) {
+      char trash6[6];
+      iss >> trash6;
+      std::string matName;
+      iss >> matName;
+      materialsTable.insert({matName, materialsCount});
+      materials_.push_back(Material());
+      materialsCount++;
+    } else if (!line.compare(0, 3, "Kd ")) {
+      iss >> trash >> trash;
+      float r, g, b;
+      iss >> r >> g >> b;
+      materials_[materials_.size()-1].reflectivity = Vec3f(r, g, b);
+    } else if (!line.compare(0, 3, "Ke ")) {
+      iss >> trash >> trash;
+      float r, g, b;
+      iss >> r >> g >> b;
+      materials_[materials_.size()-1].emissivity = Vec3f(r, g, b);
+    }
+  }
+  in.close();
+
+  in.open (objFilename, std::ifstream::in);
+  if (in.fail()) return;
+  int matIdx = 0;
   while (!in.eof()) {
     std::getline(in, line);
     std::istringstream iss(line.c_str());
@@ -25,20 +62,27 @@ Model::Model(const char *filename) : verts_(), faces_() {
       for (int i=0;i<3;i++) iss >> n[i];
       n.normalise();
       norms_.push_back(n);
+    } else if (!line.compare(0, 6, "usemtl")) {
+      char trash6[6];
+      iss >> trash6;
+      std::string matName;
+      iss >> matName;
+      matIdx = materialsTable[matName];
     } else if (!line.compare(0, 3, "vt ")) {
       iss >> trash >> trash;
       Vec3f uv;
       for (int i=0;i<2;i++) iss >> uv[i];
       uv_.push_back(uv);
     } else if (!line.compare(0, 2, "f ")) {
-      std::vector<Vec3i> f;
+      Face f;
+      f.matIdx = matIdx;
       int iuv, inorm, ivert;
       iss >> trash;
       while (iss >> ivert >> trash >> iuv >> trash >> inorm) {
         ivert--; // in wavefront obj all indices start at 1, not zero
         iuv--;
         inorm--;
-        f.push_back(Vec3i(ivert, iuv, inorm));
+        f.push_back(ivert, iuv, inorm);
       }
       if(f.size() == 4) {
         std::swap(f[2], f[3]);
@@ -60,7 +104,7 @@ int Model::nfaces() const {
   return (int)faces_.size();
 }
 
-const std::vector<Vec3i> Model::face(int idx) const {
+const Face Model::face(int idx) const {
   return faces_[idx];
 }
 
@@ -76,4 +120,8 @@ const Vec3f Model::norm(int iface, int nvert) const {
 const Vec3f Model::uv(int iface, int nvert) const {
     int idx = faces_[iface][nvert].iuv;
     return uv_[idx];
+}
+
+const Material& Model::material(int idx) const {
+    return materials_[idx];
 }
