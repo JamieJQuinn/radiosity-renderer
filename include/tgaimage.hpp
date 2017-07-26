@@ -52,7 +52,7 @@ struct TGAColor {
 
   TGAColor operator*(float f) const {
     TGAColor temp(*this);
-    for(int i=0; i<4; ++i) {
+    for(int i=0; i<3; ++i) {
       temp.raw[i]*=f;
     }
     return temp;
