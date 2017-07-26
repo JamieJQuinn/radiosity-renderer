@@ -171,44 +171,26 @@ TEST_CASE("Test viewing subdivided model", "[model]") {
 TEST_CASE("Test viewing subdivided model from inside (filled triangles)", "[camera]") {
   int size = 800;
 
-  Model model("test/simple_box_subdivided.obj");
+  Model model("test/simple_box_subdivided.obj", "test/simple_box_subdivided.mtl");
 
-  Vec3f eye(0.5f, 0.0f, 0.0f);
-  Vec3f centre(-0.5,0,0);
-  Vec3f up(0, 1, 0);
-  Matrix modelView = lookAt(eye, centre, up);
+  Vec3f eye(1.0f, 0.5f, 0.25f);
+  Vec3f dir(0, 1.0f, 0);
+  Vec3f centre(eye-dir);
+  Vec3f up(-1.f, 0, 0);
+  Matrix translation = Matrix::identity(4);
+  for(int i=0; i<3; ++i) {
+    translation.set(i, 3, -eye[i]);
+  }
+  Matrix view = lookAt(eye, centre, up)*translation;
 
-  Matrix P = Matrix::identity(4);
-  P.set(3, 2, -1.f/(eye-centre).norm());
-  Matrix V = viewportRelative(size/4, size/4, size/2, size/2, 255);
-  Matrix MVP = V*P*modelView;
+  Matrix projection = Matrix::identity(4);
+  projection.set(3, 2, -1.f/(eye-centre).norm());
+  Matrix viewport = viewportRelative(size/4, size/4, size/2, size/2, 255);
+  Matrix MVP = viewport*projection*view;
 
   Buffer<TGAColor> buffer(size, size, black);
-  Buffer<float> zBuffer(size, size, 0);
 
-  for (int i=0; i<model.nfaces(); ++i) {
-    std::vector<Vec3i> face = model.face(i);
-    Vec3f screen_coords[4];
-    Vec3f world_coords[4];
-    for (int j=0; j<4; j++) {
-      Vec3f v = model.vert(face[j].ivert);
-      screen_coords[j] = m2v(MVP*v2m(v));
-      world_coords[j] = v;
-    }
-    Vec3f n = (world_coords[2]-world_coords[0]).cross(world_coords[1]-world_coords[0]);
-    n.normalise();
-    float intensity = n.dot(eye-centre);
-    int bitmask = 0;
-    for(int i=0; i<4; ++i) {
-      bitmask += (screen_coords[0].z < 255);
-      bitmask += (screen_coords[0].z > 0);
-    }
-    if(bitmask == 8){
-      renderTriangle(screen_coords, zBuffer, buffer, red);
-      renderTriangle(screen_coords+1, zBuffer, buffer, yellow);
-    }
-  }
+  renderTestModel(buffer, model, MVP);
 
-  renderZBuffer(zBuffer, "test/simple_box_subdivided_inside_filled_zbuffer.tga");
   renderColourBuffer(buffer, "test/simple_box_subdivided_inside_filled.tga");
 }
