@@ -36,21 +36,6 @@ TEST_CASE("Test perspective projection", "[projection]") {
   renderColourBuffer(buffer, "test/perspective_projection.tga");
 }
 
-TEST_CASE("Test non-symmetric perspective projection", "[projection]") {
-  int xLength = 50;
-  int yLength = 25;
-
-  Model model("test/simple_box.obj", "test/simple_box.mtl");
-
-  Vec3f eye(-2, -2.5, 3);
-  Vec3f centre(0,0,0);
-  Vec3f up(0, 1, 0);
-  Matrix modelView = lookAt(eye, centre, up);
-
-  Matrix P = Matrix::identity(4);
-  P.set(3, 2, -1.f/(eye-centre).norm());
-}
-
 TEST_CASE("Test moving the camera (perspective)", "[camera]") {
   int size = 800;
 
