@@ -15,11 +15,14 @@ private:
 public:
   Model(const char *objFilename, const char *mtlFilename = "");
   ~Model();
+  // TODO fix names
   int nverts() const;
   int nfaces() const;
-  const Vec3f vert(int i) const;
-  const Vec3f norm(int i, int j) const;
-  const Vec3f uv(int iface, int nvert) const;
+  // TODO cleanup these functions - make consistent
+  Vec3f vert(int i) const;
+  Vec3f norm(int i, int j) const;
+  Vec3f uv(int iface, int nvert) const;
   const Material& material(int iface) const;
   const Face face(int idx) const;
+  Vec3f centreOf(int faceIdx) const;
 };

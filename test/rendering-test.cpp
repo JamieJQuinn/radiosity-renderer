@@ -193,7 +193,7 @@ TEST_CASE("Test calculation of form factors", "[form_factors]") {
   Buffer<float> sideFace(size, size/2);
   calcFormFactorPerCell(size, topFace, sideFace);
 
-  calcFormFactors(itemBuffer, topFace, formFactors);
+  calcFormFactorsFromBuffer(itemBuffer, topFace, formFactors);
 }
 
 TEST_CASE("Test calculation of form factors per cell", "[form_factors]") {

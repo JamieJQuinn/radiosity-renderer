@@ -108,20 +108,30 @@ const Face Model::face(int idx) const {
   return faces_[idx];
 }
 
-const Vec3f Model::vert(int i) const {
+Vec3f Model::vert(int i) const {
   return verts_[i];
 }
 
-const Vec3f Model::norm(int iface, int nvert) const {
+Vec3f Model::norm(int iface, int nvert) const {
     int idx = faces_[iface][nvert].inorm;
     return norms_[idx];
 }
 
-const Vec3f Model::uv(int iface, int nvert) const {
+Vec3f Model::uv(int iface, int nvert) const {
     int idx = faces_[iface][nvert].iuv;
     return uv_[idx];
 }
 
 const Material& Model::material(int idx) const {
     return materials_[idx];
+}
+
+Vec3f Model::centreOf(int faceIdx) const {
+  Face f = face(faceIdx);
+  int size = f.size();
+  Vec3f total(0, 0, 0);
+  for(int i=0; i<size; ++i) {
+    total = total + vert(f[i].ivert);
+  }
+  return total*(1.f/size);
 }

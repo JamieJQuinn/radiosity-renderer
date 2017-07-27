@@ -53,16 +53,13 @@ TEST_CASE("Test moving the camera (filled triangles, shaded)", "[camera]") {
     for (int j=0; j<4; j++) {
       Vec3f v = model.vert(face[j].ivert);
       screen_coords[j] = m2v(MVP*v2m(v));
-      world_coords[j] = v;
     }
-    Vec3f n = (world_coords[2]-world_coords[0]).cross(world_coords[1]-world_coords[0]);
-    n.normalise();
-    float intensity = n.dot(eye-centre);
+    Vec3f n = (screen_coords[2]-screen_coords[0]).cross(screen_coords[1]-screen_coords[0]);
     float intensities[4];
     for(int j=0; j<4; ++j) {
       intensities[j] = std::max(1.f-((eye-world_coords[j]).norm()-2.f)/5.f, 0.f);
     }
-    if (intensity<0) {
+    if (n.z<0) {
       renderTriangle(screen_coords, intensities, zBuffer, buffer, colours[colourIndex]);
       renderTriangle(screen_coords+1, intensities+1, zBuffer, buffer, colours[colourIndex+1]);
       colourIndex+=2;

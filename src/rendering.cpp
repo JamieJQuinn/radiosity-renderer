@@ -115,7 +115,7 @@ void calcFormFactorPerCell(const int sideLengthInPixels, Buffer<float>& topFace,
   }
 }
 
-void calcFormFactors(const Buffer<int>& itemBuffer, const Buffer<float>& factorsPerCell, std::vector<float>& formFactors) {
+void calcFormFactorsFromBuffer(const Buffer<int>& itemBuffer, const Buffer<float>& factorsPerCell, std::vector<float>& formFactors) {
   for(int j=0; j<itemBuffer.height; ++j) {
     for(int i=0; i<itemBuffer.width; ++i) {
       int idx = itemBuffer.get(i, j);
@@ -134,7 +134,11 @@ void renderModel(Buffer<int>& buffer, const Model& model, const Matrix& MVP) {
       screen_coords[j] = m2v(MVP*v2m(v));
     }
     Vec3f n = (screen_coords[2]-screen_coords[0]).cross(screen_coords[1]-screen_coords[0]);
-    if (n.z<0) {
+    bool isInFront = true;
+    for(int j=0; j<4; ++j) {
+      isInFront = isInFront and screen_coords[j].z > 0.f;
+    }
+    if (n.z<0 and isInFront) {
       // Render to ID itembuffer
       renderTriangle(screen_coords, zBuffer, buffer, i+1);
       renderTriangle(screen_coords+1, zBuffer, buffer, i+1);
