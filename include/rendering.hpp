@@ -20,8 +20,10 @@ void renderModel(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP
 void renderTestModel(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP);
 void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP);
 
-Matrix viewportRelative(int x, int y, int w, int h, int depth);
-Matrix viewportAbsolute(int x0, int y0, int x1, int y1, int depth);
+Vec3f calcNormal(const Vec3f& v1, const Vec3f& v2, const Vec3f& v3);
+
+Matrix viewportRelative(int x, int y, int w, int h, int depth=1.0f);
+Matrix viewportAbsolute(int x0, int y0, int x1, int y1, int depth=1.0f);
 Matrix lookAt(Vec3f eye, Vec3f centre, Vec3f up);
 
 template <class T>

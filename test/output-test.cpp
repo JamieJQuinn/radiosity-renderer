@@ -43,14 +43,13 @@ TEST_CASE("Output texture based on input uv coords", "[output]") {
   int colourIndex = 0;
   for (int i=0; i<model.nfaces(); ++i) {
     Face face = model.face(i);
-    Vec3f screen_coords[4];
+    Vec3f screen_coords[3];
     // Get uv coords of face in buffer space
-    for (int j=0; j<4; j++) {
+    for (int j=0; j<3; j++) {
       screen_coords[j] = model.uv(i, j)*size;
     }
     // Render square face
     renderTriangle(screen_coords, buffer, colours[colourIndex%6]);
-    renderTriangle(screen_coords+1, buffer, colours[colourIndex%6]);
     colourIndex+=1;
   }
 

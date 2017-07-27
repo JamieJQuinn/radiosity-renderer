@@ -19,7 +19,7 @@ void renderColourBuffer(const Buffer<TGAColor>& buffer, TGAImage& image) {
 void renderColourBuffer(const Buffer<TGAColor>& buffer, std::string filename) {
   TGAImage frame(buffer.width, buffer.height, TGAImage::RGB);
   renderColourBuffer(buffer, frame);
-  frame.flip_vertically(); // to place the origin in the bottom left corner of the image
+  frame.flip_vertically();
   frame.write_tga_file(filename.c_str());
 }
 
@@ -37,7 +37,7 @@ void renderZBuffer(const Buffer<float>& zBuffer, TGAImage& image) {
 void renderZBuffer(const Buffer<float>& zBuffer, std::string filename) {
   TGAImage frame(zBuffer.width, zBuffer.height, TGAImage::RGB);
   renderZBuffer(zBuffer, frame);
-  frame.flip_vertically(); // to place the origin in the bottom left corner of the image
+  frame.flip_vertically();
   frame.write_tga_file(filename.c_str());
 }
 
@@ -124,24 +124,28 @@ void calcFormFactorsFromBuffer(const Buffer<int>& itemBuffer, const Buffer<float
   }
 }
 
+Vec3f calcNormal(const Vec3f& v1, const Vec3f& v2, const Vec3f& v3) {
+  // right handed normal
+  return (v3-v1).cross(v2-v1).normalise();
+}
+
 void renderModel(Buffer<int>& buffer, const Model& model, const Matrix& MVP) {
-  Buffer<float> zBuffer(buffer.width, buffer.height, -1);
+  Buffer<float> zBuffer(buffer.width, buffer.height, 0);
   for (int i=0; i<model.nfaces(); ++i) {
     Face face = model.face(i);
-    Vec3f screen_coords[4];
-    for (int j=0; j<4; j++) {
+    Vec3f screen_coords[3];
+    for (int j=0; j<3; j++) {
       Vec3f v = model.vert(face[j].ivert);
       screen_coords[j] = m2v(MVP*v2m(v));
     }
-    Vec3f n = (screen_coords[2]-screen_coords[0]).cross(screen_coords[1]-screen_coords[0]);
+    Vec3f n = calcNormal(screen_coords[0], screen_coords[1], screen_coords[2]);
     bool isInFront = true;
-    for(int j=0; j<4; ++j) {
+    for(int j=0; j<3; ++j) {
       isInFront = isInFront and screen_coords[j].z > 0.f;
     }
     if (n.z<0 and isInFront) {
       // Render to ID itembuffer
       renderTriangle(screen_coords, zBuffer, buffer, i+1);
-      renderTriangle(screen_coords+1, zBuffer, buffer, i+1);
     }
   }
 }
@@ -150,46 +154,44 @@ void renderTestModel(Buffer<TGAColor>& buffer, const Model& model, const Matrix&
   TGAColor colours[] = {white, red, blue, green, yellow, TGAColor(200, 200, 200, 255)};
   int colourIndex = 0;
 
-  Buffer<float> zBuffer(buffer.width, buffer.height, -255);
+  Buffer<float> zBuffer(buffer.width, buffer.height, 0);
   for (int i=0; i<model.nfaces(); ++i) {
     Face face = model.face(i);
-    Vec3f screen_coords[4];
-    for (int j=0; j<4; j++) {
+    Vec3f screen_coords[3];
+    for (int j=0; j<3; j++) {
       Vec3f v = model.vert(face[j].ivert);
       screen_coords[j] = m2v(MVP*v2m(v));
     }
-    Vec3f n = (screen_coords[2]-screen_coords[0]).cross(screen_coords[1]-screen_coords[0]);
+    Vec3f n = calcNormal(screen_coords[0], screen_coords[1], screen_coords[2]);
     bool isInFront = true;
-    for(int j=0; j<4; ++j) {
+    for(int j=0; j<3; ++j) {
       isInFront = isInFront and screen_coords[j].z > 0.f;
     }
     if (n.z<0 and isInFront) {
       renderTriangle(screen_coords, zBuffer, buffer, colours[colourIndex%6]);
-      renderTriangle(screen_coords+1, zBuffer, buffer, colours[(colourIndex+1)%6]);
-      colourIndex += 2;
+      colourIndex++;
     }
   }
 }
 
 void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP) {
-  Buffer<float> zBuffer(buffer.width, buffer.height, -255);
+  Buffer<float> zBuffer(buffer.width, buffer.height, 0);
   for (int i=0; i<model.nfaces(); ++i) {
     Face face = model.face(i);
     Vec3f matColour = model.material(face.matIdx).reflectivity*255;
-    Vec3f screen_coords[4];
-    for (int j=0; j<4; j++) {
+    TGAColor colour = TGAColor(matColour.r, matColour.g, matColour.b, 255);
+    Vec3f screen_coords[3];
+    for (int j=0; j<3; j++) {
       Vec3f v = model.vert(face[j].ivert);
       screen_coords[j] = m2v(MVP*v2m(v));
     }
-    Vec3f n = (screen_coords[2]-screen_coords[0]).cross(screen_coords[1]-screen_coords[0]);
+    Vec3f n = calcNormal(screen_coords[0], screen_coords[1], screen_coords[2]);
     bool isInFront = true;
-    for(int j=0; j<4; ++j) {
+    for(int j=0; j<3; ++j) {
       isInFront = isInFront and screen_coords[j].z > 0.f;
     }
     if (n.z<0 and isInFront) {
-      TGAColor colour = TGAColor(matColour.r, matColour.g, matColour.b, 255);
       renderTriangle(screen_coords, zBuffer, buffer, colour);
-      renderTriangle(screen_coords+1, zBuffer, buffer, colour);
     }
   }
 }

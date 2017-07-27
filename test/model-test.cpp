@@ -4,28 +4,24 @@
 #include "geometry.hpp"
 #include "rendering.hpp"
 #include "colours.hpp"
+#include "hemicube.hpp"
 
 TEST_CASE("Test loading of materials", "[model]") {
-  int size = 800;
-
   Model model("test/scene.obj", "test/scene.mtl");
 
-  Vec3f eye(-1.f, 2.0f, 1.0f);
-  Vec3f dir(-1.0f, 0, 0);
-  Vec3f centre(eye-dir);
-  Vec3f up(0, 1, 0);
-  Matrix translation = Matrix::identity(4);
-  for(int i=0; i<3; ++i) {
-    translation.set(i, 3, -eye[i]);
-  }
-  Matrix view = lookAt(eye, centre, up)*translation;
+  int gridSize = 500;
 
-  Matrix projection = Matrix::identity(4);
-  projection.set(3, 2, -1.f);
-  Matrix viewport = viewportRelative(0, 0, size, size, 255);
-  Matrix MVP = viewport*projection*view;
+  // Choose random face
+  int faceIdx = 0;
 
-  Buffer<TGAColor> buffer(size, size, black);
+  Face f = model.face(faceIdx);
+  Vec3f up = model.vert(f[1].ivert) - model.vert(f[0].ivert);
+  Vec3f dir = model.norm(faceIdx, 0)*up.norm();
+  Vec3f eye = model.centreOf(faceIdx) + dir*0.01f;
+
+  Matrix MVP = formHemicubeMVP(eye, dir, up, gridSize);
+
+  Buffer<TGAColor> buffer(gridSize, gridSize, black);
 
   renderTestModelReflectivity(buffer, model, MVP);
 
@@ -44,7 +40,7 @@ TEST_CASE("Test viewing subdivided model", "[model]") {
 
   Matrix P = Matrix::identity(4);
   P.set(3, 2, -1.f/(eye-centre).norm());
-  Matrix V = viewportRelative(size/4, size/4, size/2, size/2, 255);
+  Matrix V = viewportRelative(size/4, size/4, size/2, size/2);
   Matrix MVP = V*P*modelView;
 
   Buffer<TGAColor> buffer(size, size, black);
