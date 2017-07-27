@@ -6,17 +6,30 @@
 #include "buffer.hpp"
 #include "rendering.hpp"
 
+Matrix formProjection(float l, float r, float b, float t, float n, float f) {
+  Matrix p;
+  p.set(0, 0, 2.f*n/(r-l));
+  p.set(1, 1, 2.f*n/(t-b));
+  p.set(0, 2, -(r+l)/(r-l));
+  p.set(1, 2, -(t+b)/(t-b));
+  p.set(2, 2,  (f+n)/(f-n));
+  p.set(3, 2, 1);
+  p.set(2, 3, -2.f*f*n/(f-n));
+
+  return p;
+}
+
 Matrix formHemicubeMVP(const Vec3f& eye, const Vec3f& dir, const Vec3f& up, int size) {
-  Vec3f centre(eye-dir);
   Matrix translation = Matrix::identity(4);
   for(int i=0; i<3; ++i) {
     translation.set(i, 3, -eye[i]);
   }
-  Matrix view = lookAt(eye, centre, up)*translation;
+  Matrix view = lookAt(Vec3f(0, 0, 0), dir, up)*translation;
 
-  Matrix projection = Matrix::identity(4);
-  projection.set(3, 2, -1.f/(dir).norm());
-  Matrix viewport = viewportRelative(0, 0, size, size, 255);
+  Matrix projection = formProjection(-1, 1, -1, 1, 1, 10.f);
+  //Matrix projection = Matrix::identity(4);
+  //projection.set(3, 2, -1.0f);
+  Matrix viewport = viewportRelative(0, 0, size, size, 1);
   return viewport*projection*view;
 }
 

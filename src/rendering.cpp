@@ -130,7 +130,7 @@ Vec3f calcNormal(const Vec3f& v1, const Vec3f& v2, const Vec3f& v3) {
 }
 
 void renderModel(Buffer<int>& buffer, const Model& model, const Matrix& MVP) {
-  Buffer<float> zBuffer(buffer.width, buffer.height, 0);
+  Buffer<float> zBuffer(buffer.width, buffer.height, -1);
   for (int i=0; i<model.nfaces(); ++i) {
     Face face = model.face(i);
     Vec3f screen_coords[3];
@@ -154,7 +154,7 @@ void renderTestModel(Buffer<TGAColor>& buffer, const Model& model, const Matrix&
   TGAColor colours[] = {white, red, blue, green, yellow, TGAColor(200, 200, 200, 255)};
   int colourIndex = 0;
 
-  Buffer<float> zBuffer(buffer.width, buffer.height, 0);
+  Buffer<float> zBuffer(buffer.width, buffer.height, -1);
   for (int i=0; i<model.nfaces(); ++i) {
     Face face = model.face(i);
     Vec3f screen_coords[3];
@@ -188,7 +188,7 @@ void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, c
     Vec3f n = calcNormal(screen_coords[0], screen_coords[1], screen_coords[2]);
     bool isInFront = true;
     for(int j=0; j<3; ++j) {
-      isInFront = isInFront and screen_coords[j].z > 0.f;
+      isInFront = isInFront and screen_coords[j].z < 1.0f;
     }
     if (n.z<0 and isInFront) {
       renderTriangle(screen_coords, zBuffer, buffer, colour);
