@@ -27,9 +27,7 @@ Matrix formHemicubeMVP(const Vec3f& eye, const Vec3f& dir, const Vec3f& up, int 
   Matrix view = lookAt(Vec3f(0, 0, 0), dir, up)*translation;
 
   Matrix projection = formProjection(-1, 1, -1, 1, 1, 10.f);
-  //Matrix projection = Matrix::identity(4);
-  //projection.set(3, 2, -1.0f);
-  Matrix viewport = viewportRelative(0, 0, size, size, 1);
+  Matrix viewport = viewportRelative(0, 0, size, size);
   return viewport*projection*view;
 }
 
