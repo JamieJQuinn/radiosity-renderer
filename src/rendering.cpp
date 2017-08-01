@@ -126,7 +126,7 @@ void calcFormFactorsFromBuffer(const Buffer<int>& itemBuffer, const Buffer<float
 
 Vec3f calcNormal(const Vec3f& v1, const Vec3f& v2, const Vec3f& v3) {
   // right handed normal
-  return (v3-v1).cross(v2-v1).normalise();
+  return (v2-v1).cross(v3-v1).normalise();
 }
 
 void renderModel(Buffer<int>& buffer, const Model& model, const Matrix& MVP) {

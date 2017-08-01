@@ -6,6 +6,29 @@
 #include "colours.hpp"
 #include "hemicube.hpp"
 
+void verifyModelNormalsConsistent(std::string objFilename, std::string mtlFilename) {
+  Model model(objFilename.c_str(), mtlFilename.c_str());
+
+  for (int i=0; i<model.nfaces(); ++i) {
+    Face face = model.face(i);
+    Vec3f world_coords[3];
+    for (int j=0; j<3; j++) {
+      world_coords[j] = model.vert(face[j].ivert);
+    }
+    Vec3f n = calcNormal(world_coords[0], world_coords[1], world_coords[2]);
+    for(int j=0; j<3; ++j) {
+      REQUIRE(n[j] == Approx(model.norm(i, 0)[j]));
+    }
+  }
+}
+
+TEST_CASE("Test model normals are same as normals calculated from winding", "[model]") {
+  verifyModelNormalsConsistent("test/scene.obj", "test/scene.mtl");
+  verifyModelNormalsConsistent("test/scene_subdivided.obj", "test/scene_subdivided.mtl");
+  verifyModelNormalsConsistent("test/simple_box.obj", "test/simple_box.mtl");
+  verifyModelNormalsConsistent("test/simple_box_subdivided.obj", "test/simple_box_subdivided.mtl");
+}
+
 TEST_CASE("Test loading of materials", "[model]") {
   Model model("test/scene.obj", "test/scene.mtl");
 
