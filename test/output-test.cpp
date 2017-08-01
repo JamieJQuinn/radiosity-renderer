@@ -26,8 +26,9 @@ TEST_CASE("Output radiosity text file", "[output]") {
 
   // generate fake radiosity
   for(int i=0; i<nFaces; ++i) {
-    float intensity = float(i)/nFaces*255;
-    radiosity.push_back(TGAColor(intensity, intensity, intensity, 255));
+    Face face = model.face(i);
+    Vec3f matColour = model.material(face.matIdx).reflectivity*255;
+    radiosity.push_back(TGAColor(matColour.r, matColour.g, matColour.b, 255));
   }
 
   // print out radiosity per face
@@ -38,9 +39,7 @@ TEST_CASE("Output texture based on input uv coords", "[output]") {
   Model model("test/simple_box.obj", "test/simple_box.mtl");
   int size = 1200;
   Buffer<TGAColor> buffer(size, size, black);
-  TGAColor colours[] = {white, black, red, green, blue, yellow};
 
-  int colourIndex = 0;
   for (int i=0; i<model.nfaces(); ++i) {
     Face face = model.face(i);
     Vec3f screen_coords[3];
@@ -48,9 +47,10 @@ TEST_CASE("Output texture based on input uv coords", "[output]") {
     for (int j=0; j<3; j++) {
       screen_coords[j] = model.uv(i, j)*size;
     }
-    // Render square face
-    renderTriangle(screen_coords, buffer, colours[colourIndex%6]);
-    colourIndex+=1;
+
+    Vec3f matColour = model.material(face.matIdx).reflectivity*255;
+    TGAColor colour = TGAColor(matColour.r, matColour.g, matColour.b, 255);
+    renderTriangle(screen_coords, buffer, colour);
   }
 
   renderColourBuffer(buffer, "test/simple_box_texture.tga");
