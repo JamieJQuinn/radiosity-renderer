@@ -17,7 +17,6 @@ void calcFormFactorsFromBuffer(const Buffer<int>& itemBuffer, const Buffer<float
 Vec3f getBarycentricCoords(const Vec3f& A, const Vec3f& B, const Vec3f& C, const Vec3f& P);
 void renderModel(Buffer<int>& buffer, const Model& model, const Matrix& MVP);
 void renderModel(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP);
-void renderTestModel(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP);
 void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP);
 
 Vec3f calcNormal(const Vec3f& v1, const Vec3f& v2, const Vec3f& v3);

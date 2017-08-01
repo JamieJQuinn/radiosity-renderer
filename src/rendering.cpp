@@ -150,9 +150,6 @@ void renderModel(Buffer<int>& buffer, const Model& model, const Matrix& MVP) {
   }
 }
 
-void renderTestModel(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP) {
-  TGAColor colours[] = {white, red, blue, green, yellow, TGAColor(200, 200, 200, 255)};
-  int colourIndex = 0;
 
   Buffer<float> zBuffer(buffer.width, buffer.height, -1);
   for (int i=0; i<model.nfaces(); ++i) {

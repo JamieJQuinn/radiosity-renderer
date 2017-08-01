@@ -56,9 +56,9 @@ TEST_CASE("Test viewing subdivided model", "[model]") {
 
   Model model("test/simple_box_subdivided.obj", "test/simple_box_subdivided.mtl");
 
-  Vec3f eye(-2, -2.5, -3);
+  Vec3f eye(2, 2.5, 3);
   Vec3f centre(0,0,0);
-  Vec3f up(0, 1, 0);
+  Vec3f up(0, 0, 1);
   Matrix modelView = lookAt(eye, centre, up);
 
   Matrix P = Matrix::identity(4);
@@ -67,7 +67,7 @@ TEST_CASE("Test viewing subdivided model", "[model]") {
   Matrix MVP = V*P*modelView;
 
   Buffer<TGAColor> buffer(size, size, black);
-  renderTestModel(buffer, model, MVP);
+  renderTestModelReflectivity(buffer, model, MVP);
 
-  renderColourBuffer(buffer, "test/simple_box_subdivided_filled.tga");
+  renderColourBuffer(buffer, "test/simple_box_subdivided.tga");
 }
