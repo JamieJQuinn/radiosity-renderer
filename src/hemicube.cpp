@@ -10,10 +10,10 @@ Matrix formProjection(float l, float r, float b, float t, float n, float f) {
   Matrix p;
   p.set(0, 0, 2.f*n/(r-l));
   p.set(1, 1, 2.f*n/(t-b));
-  p.set(0, 2, -(r+l)/(r-l));
-  p.set(1, 2, -(t+b)/(t-b));
-  p.set(2, 2,  (f+n)/(f-n));
-  p.set(3, 2, 1);
+  p.set(0, 2, (r+l)/(r-l));
+  p.set(1, 2, (t+b)/(t-b));
+  p.set(2, 2,  -(f+n)/(f-n));
+  p.set(3, 2, -1);
   p.set(2, 3, -2.f*f*n/(f-n));
 
   return p;
