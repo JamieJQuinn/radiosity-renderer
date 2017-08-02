@@ -56,7 +56,7 @@ TEST_CASE("Test viewing subdivided model", "[model]") {
 
   Model model("test/simple_box_subdivided.obj", "test/simple_box_subdivided.mtl");
 
-  Vec3f eye(2, 2.5, 3);
+  Vec3f eye(-1.5, -1, -3);
   Vec3f centre(0,0,0);
   Vec3f up(0, 0, 1);
   Matrix modelView = lookAt(eye, centre, up);
