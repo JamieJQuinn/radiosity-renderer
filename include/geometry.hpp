@@ -21,7 +21,7 @@ template <class t> struct Vec2 {
   inline const t& operator[](const int i) const {return raw[i];}
   t norm2 () const { return x*x+y*y; }
   t norm () const { return std::sqrt(norm2()); }
-  template <class > friend std::ostream& operator<<(std::ostream& s, Vec2<t>& v);
+  template <class > friend std::ostream& operator<<(std::ostream& s, const Vec2<t>& v);
 };
 
 template <class t> struct Vec3 {
@@ -46,7 +46,7 @@ template <class t> struct Vec3 {
   t norm2 () const { return x*x+y*y+z*z; }
   t norm () const { return std::sqrt(norm2()); }
   Vec3<t> & normalise(t l=1) { *this = (*this)*(l/norm()); return *this; }
-  template <class > friend std::ostream& operator<<(std::ostream& s, Vec3<t>& v);
+  template <class > friend std::ostream& operator<<(std::ostream& s, const Vec3<t>& v);
 };
 
 typedef Vec2<float> Vec2f;
@@ -54,12 +54,12 @@ typedef Vec2<int>   Vec2i;
 typedef Vec3<float> Vec3f;
 typedef Vec3<int>   Vec3i;
 
-template <class t> std::ostream& operator<<(std::ostream& s, Vec2<t>& v) {
+template <class t> std::ostream& operator<<(std::ostream& s, const Vec2<t>& v) {
   s << "(" << v.x << ", " << v.y << ")\n";
   return s;
 }
 
-template <class t> std::ostream& operator<<(std::ostream& s, Vec3<t>& v) {
+template <class t> std::ostream& operator<<(std::ostream& s, const Vec3<t>& v) {
   s << "(" << v.x << ", " << v.y << ", " << v.z << ")\n";
   return s;
 }
