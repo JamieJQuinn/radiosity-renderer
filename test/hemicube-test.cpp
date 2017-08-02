@@ -24,7 +24,7 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
   //Vec3f eye = model.centreOf(faceIdx) + dir*0.01f;
 
   Vec3f up(0,0,1);
-  Vec3f eye(0.2f,-0.1f,0.3f);
+  Vec3f eye(0.2f,-1.f,0.3f);
 
   Matrix MVP = formHemicubeMVP(eye, dir, up, gridSize);
   Buffer<TGAColor> buffer(gridSize, gridSize, black);
@@ -46,7 +46,7 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
 
   for(int j=0; j<gridSize/2; ++j) {
     for(int i=0; i<gridSize; ++i) {
-      mainBuffer.set(gridSize/2+i, j+3*gridSize/2, buffer.get(i, j));
+      mainBuffer.set(gridSize/2+i, j+3*gridSize/2, buffer.get(i, j+gridSize/2));
     }
   }
 
@@ -74,7 +74,7 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
 
   for(int j=0; j<gridSize/2; ++j) {
     for(int i=0; i<gridSize; ++i) {
-      mainBuffer.set(j+3*gridSize/2, i+gridSize/2, buffer.get(i, j));
+      mainBuffer.set(j+3*gridSize/2, i+gridSize/2, buffer.get(i, j+gridSize/2));
     }
   }
 
