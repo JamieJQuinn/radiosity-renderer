@@ -19,7 +19,7 @@ void renderColourBuffer(const Buffer<TGAColor>& buffer, TGAImage& image) {
 void renderColourBuffer(const Buffer<TGAColor>& buffer, std::string filename) {
   TGAImage frame(buffer.width, buffer.height, TGAImage::RGB);
   renderColourBuffer(buffer, frame);
-  frame.flip_horizontally();
+  frame.flip_vertically();
   frame.write_tga_file(filename.c_str());
 }
 
@@ -37,7 +37,7 @@ void renderZBuffer(const Buffer<float>& zBuffer, TGAImage& image) {
 void renderZBuffer(const Buffer<float>& zBuffer, std::string filename) {
   TGAImage frame(zBuffer.width, zBuffer.height, TGAImage::RGB);
   renderZBuffer(zBuffer, frame);
-  frame.flip_horizontally();
+  frame.flip_vertically();
   frame.write_tga_file(filename.c_str());
 }
 
@@ -249,18 +249,18 @@ void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, c
 
     Vec3f n = calcNormal(screen_coords[0], screen_coords[1], screen_coords[2]);
     renderTriangle(screen_coords, zBuffer, buffer, colour);
-    //if(n.z>0.f) {
-      ////// ======= SIMPLE APPROACH
-      //bool isInFront = true;
-      //for(int j=0; j<3; ++j) {
-        //isInFront = isInFront and screen_coords[j].z < 1.f;
-      //}
-      ////isInFront = true;
-      //if(isInFront) {
-        //renderTriangle(screen_coords, zBuffer, buffer, colour);
-      //}
+    if(n.z>0.f) {
+      // ======= SIMPLE APPROACH
+      bool isInFront = true;
+      for(int j=0; j<3; ++j) {
+        isInFront = isInFront and screen_coords[j].z < 1.f;
+      }
+      //isInFront = true;
+      if(isInFront) {
+        renderTriangle(screen_coords, zBuffer, buffer, colour);
+      }
 
-      ////clipAndRenderTriangle(screen_coords, zBuffer, buffer, colour);
-    //}
+      //clipAndRenderTriangle(screen_coords, zBuffer, buffer, colour);
+    }
   }
 }
