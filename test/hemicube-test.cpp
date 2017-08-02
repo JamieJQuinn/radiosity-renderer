@@ -42,11 +42,11 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
   buffer.fillAll(black);
   renderTestModelReflectivity(buffer, model, MVP);
 
-  renderColourBuffer(buffer, "test/hemicubeMVP_down.tga");
+  renderColourBuffer(buffer, "test/hemicubeMVP_up.tga");
 
   for(int j=0; j<gridSize/2; ++j) {
     for(int i=0; i<gridSize; ++i) {
-      mainBuffer.set(gridSize/2+i, j, buffer.get(i, j+gridSize/2));
+      mainBuffer.set(gridSize/2+i, j+3*gridSize/2, buffer.get(i, j));
     }
   }
 
@@ -56,11 +56,11 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
   buffer.fillAll(black);
   renderTestModelReflectivity(buffer, model, MVP);
 
-  renderColourBuffer(buffer, "test/hemicubeMVP_up.tga");
+  renderColourBuffer(buffer, "test/hemicubeMVP_down.tga");
 
   for(int j=0; j<gridSize/2; ++j) {
     for(int i=0; i<gridSize; ++i) {
-      mainBuffer.set(gridSize/2+i, j+3*gridSize/2, buffer.get(i, j));
+      mainBuffer.set(gridSize/2+i, j, buffer.get(i, j+gridSize/2));
     }
   }
 
@@ -70,11 +70,11 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
   buffer.fillAll(black);
   renderTestModelReflectivity(buffer, model, MVP);
 
-  renderColourBuffer(buffer, "test/hemicubeMVP_left.tga");
+  renderColourBuffer(buffer, "test/hemicubeMVP_right.tga");
 
   for(int j=0; j<gridSize/2; ++j) {
     for(int i=0; i<gridSize; ++i) {
-      mainBuffer.set(j, i+gridSize/2, buffer.get(i, gridSize/2+j));
+      mainBuffer.set(j+3*gridSize/2, i+gridSize/2, buffer.get(i, j));
     }
   }
 
@@ -84,14 +84,13 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
   buffer.fillAll(black);
   renderTestModelReflectivity(buffer, model, MVP);
 
-  renderColourBuffer(buffer, "test/hemicubeMVP_right.tga");
+  renderColourBuffer(buffer, "test/hemicubeMVP_left.tga");
 
   for(int j=0; j<gridSize/2; ++j) {
     for(int i=0; i<gridSize; ++i) {
-      mainBuffer.set(j+3*gridSize/2, i+gridSize/2, buffer.get(gridSize-i, j));
+      mainBuffer.set(j, i+gridSize/2, buffer.get(gridSize-i, gridSize/2+j));
     }
   }
-
 
   renderColourBuffer(mainBuffer, "test/hemicubeMVP.tga");
 }
