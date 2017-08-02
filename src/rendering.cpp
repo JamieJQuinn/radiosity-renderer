@@ -248,7 +248,6 @@ void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, c
     transformFace(screen_coords, face, model, MVP);
 
     Vec3f n = calcNormal(screen_coords[0], screen_coords[1], screen_coords[2]);
-    renderTriangle(screen_coords, zBuffer, buffer, colour);
     if(n.z>0.f) {
       // ======= SIMPLE APPROACH
       bool isInFront = true;
