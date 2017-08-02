@@ -70,7 +70,7 @@ TEST_CASE("Test viewing subdivided model", "[model]") {
 TEST_CASE("Test viewing subdivided scene", "[model]") {
   Model model("test/scene_subdivided.obj", "test/scene_subdivided.mtl");
 
-  Vec3f eye(4, 5, 6);
+  Vec3f eye(-4, -5, 6);
   Vec3f dir = eye*-1;
   Vec3f up(0, 0, 1);
   int size = 800;
