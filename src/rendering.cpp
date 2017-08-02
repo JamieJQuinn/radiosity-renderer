@@ -150,24 +150,91 @@ void renderModel(Buffer<int>& buffer, const Model& model, const Matrix& MVP) {
   }
 }
 
+Vec3f clipAgainstZPlane(const Vec3f* screen_coords)  {
+  Vec3f t;
+  for(int i=0; i<3; ++i) {
+    t[i] = screen_coords[i].z - 1.f/(screen_coords[i].z - screen_coords[(i+1)%3].z);
+  }
+  return t;
+}
 
-  Buffer<float> zBuffer(buffer.width, buffer.height, -1);
-  for (int i=0; i<model.nfaces(); ++i) {
-    Face face = model.face(i);
-    Vec3f screen_coords[3];
-    for (int j=0; j<3; j++) {
-      Vec3f v = model.vert(face[j].ivert);
-      screen_coords[j] = m2v(MVP*v2m(v));
+float clipLineZ(const Vec3f& v0, const Vec3f& v1) {
+  return (v0.z - 1.0f)/(v0.z - v1.z);
+}
+
+bool isVertexInFront(const Vec3f& v) {
+  return v.z < 1.f;
+}
+
+Vec3f interpolate(const Vec3f& v0, const Vec3f& v1, float t) {
+  return v0 + (v1-v0)*t;
+}
+
+TGAColor getFaceColour(const Face& face, const Model& model) {
+  Vec3f matColour = model.material(face.matIdx).reflectivity*255;
+  return TGAColor(matColour.r, matColour.g, matColour.b, 255);
+}
+
+template <class fillType, class zBufferType>
+void clipAndRenderTriangle(Vec3f *screen_coords, Buffer<zBufferType>& zBuffer, Buffer<fillType> &buffer, const fillType& fillValue) {
+  // Figure out intersection points
+  float intersectPts[3];
+  bool isIntersecting[3];
+  bool intersectsAnywhere = false;
+  for(int j=0; j<3; ++j) {
+    intersectPts[j] = clipLineZ(screen_coords[j], screen_coords[(j+1)%3]);
+    isIntersecting[j] = intersectPts[j] > 0.f and intersectPts[j] < 1.f;
+    intersectsAnywhere = intersectsAnywhere or isIntersecting[j];
+  }
+
+  // Use intersections to deduce clipping strategy
+  if( not intersectsAnywhere ) {
+    // Full triangle is in front or behind
+    if(isVertexInFront(screen_coords[0])) {
+      // In front; render full triangle
+      renderTriangle(screen_coords, zBuffer, buffer, fillValue);
     }
-    Vec3f n = calcNormal(screen_coords[0], screen_coords[1], screen_coords[2]);
-    bool isInFront = true;
+  } else {
+    // figure out how clipping should be done
     for(int j=0; j<3; ++j) {
-      isInFront = isInFront and screen_coords[j].z > 0.f;
+      if( not isIntersecting[j] ) {
+        // Find non-intersecting edge pts
+        Vec3f &edge1 = screen_coords[j];
+        if(isVertexInFront(edge1)) {
+          // Gotta split triangle into two
+          Vec3f temp = screen_coords[(j+2)%3];
+          screen_coords[(j+2)%3] = interpolate(
+              screen_coords[(j+1)%3],
+              screen_coords[(j+2)%3],
+              intersectPts[(j+1)%3]);
+          renderTriangle(screen_coords, zBuffer, buffer, fillValue);
+          screen_coords[(j+1)%3] = screen_coords[(j+2)%3];
+          screen_coords[(j+2)%3] = interpolate(
+              temp,
+              screen_coords[j],
+              intersectPts[(j+2)%3]);
+          renderTriangle(screen_coords, zBuffer, buffer, fillValue);
+        } else {
+          // Render one tri with intersection points
+          screen_coords[j] = interpolate(
+              screen_coords[(j-1)%3],
+              screen_coords[j],
+              intersectPts[j]);
+          screen_coords[(j+1)%3] = interpolate(
+              screen_coords[(j+1)%3],
+              screen_coords[(j+2)%3],
+              intersectPts[(j+1)%3]);
+          renderTriangle(screen_coords, zBuffer, buffer, fillValue);
+        }
+      }
     }
-    if (n.z<0 and isInFront) {
-      renderTriangle(screen_coords, zBuffer, buffer, colours[colourIndex%6]);
-      colourIndex++;
-    }
+  }
+}
+
+void transformFace(Vec3f* outScreenCoords, const Face& face, const Model& model, const Matrix& MVP) {
+  for (int j=0; j<3; j++) {
+    Vec3f v = model.vert(face[j].ivert);
+    outScreenCoords[j] = m2v(MVP*v2m(v));
   }
 }
 
@@ -175,20 +242,24 @@ void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, c
   Buffer<float> zBuffer(buffer.width, buffer.height, 0);
   for (int i=0; i<model.nfaces(); ++i) {
     Face face = model.face(i);
-    Vec3f matColour = model.material(face.matIdx).reflectivity*255;
-    TGAColor colour = TGAColor(matColour.r, matColour.g, matColour.b, 255);
+    TGAColor colour = getFaceColour(face, model);
+
     Vec3f screen_coords[3];
-    for (int j=0; j<3; j++) {
-      Vec3f v = model.vert(face[j].ivert);
-      screen_coords[j] = m2v(MVP*v2m(v));
-    }
+    transformFace(screen_coords, face, model, MVP);
+
     Vec3f n = calcNormal(screen_coords[0], screen_coords[1], screen_coords[2]);
-    bool isInFront = true;
-    for(int j=0; j<3; ++j) {
-      isInFront = isInFront and screen_coords[j].z < 1.0f;
-    }
-    if (n.z<0 and isInFront) {
-      renderTriangle(screen_coords, zBuffer, buffer, colour);
+    if(n.z>0.f) {
+      // ======= SIMPLE APPROACH
+      bool isInFront = true;
+      for(int j=0; j<3; ++j) {
+        isInFront = isInFront and screen_coords[j].z < 1.f;
+      }
+      //isInFront = true;
+      if(isInFront) {
+        renderTriangle(screen_coords, zBuffer, buffer, colour);
+      }
+
+      //clipAndRenderTriangle(screen_coords, zBuffer, buffer, colour);
     }
   }
 }

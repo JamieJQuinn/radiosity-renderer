@@ -19,6 +19,10 @@ Matrix formProjection(float l, float r, float b, float t, float n, float f) {
   return p;
 }
 
+Matrix formRightAngledProjection(float n, float f) {
+  return formProjection(-n, n, -n, n, n, f);
+}
+
 Matrix formHemicubeMVP(const Vec3f& eye, const Vec3f& dir, const Vec3f& up, int size) {
   Matrix translation = Matrix::identity(4);
   for(int i=0; i<3; ++i) {
@@ -26,7 +30,7 @@ Matrix formHemicubeMVP(const Vec3f& eye, const Vec3f& dir, const Vec3f& up, int 
   }
   Matrix view = lookAt(Vec3f(0, 0, 0), dir, up)*translation;
 
-  Matrix projection = formProjection(-1, 1, -1, 1, 1, 10.f);
+  Matrix projection = formRightAngledProjection(0.05, 10);
   Matrix viewport = viewportRelative(0, 0, size, size);
   return viewport*projection*view;
 }
