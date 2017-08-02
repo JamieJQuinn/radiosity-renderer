@@ -30,7 +30,7 @@ TEST_CASE("Test model normals are same as normals calculated from winding", "[mo
 }
 
 TEST_CASE("Test loading of materials", "[model]") {
-  Model model("test/scene.obj", "test/scene.mtl");
+  Model model("test/scene_subdivided.obj", "test/scene_subdivided.mtl");
 
   int gridSize = 500;
 
@@ -67,22 +67,46 @@ TEST_CASE("Test viewing subdivided model", "[model]") {
 }
 
 TEST_CASE("Test viewing subdivided scene", "[model]") {
-  int size = 800;
-
   Model model("test/scene_subdivided.obj", "test/scene_subdivided.mtl");
 
-  Vec3f eye(-1.5, -1, -3);
-  Vec3f centre(0,0,0);
+  Vec3f eye(4, 5, 6);
+  Vec3f dir = eye*-1;
   Vec3f up(0, 0, 1);
-  Matrix modelView = lookAt(eye, centre, up);
-
-  Matrix P = Matrix::identity(4);
-  P.set(3, 2, -1.f/(eye-centre).norm());
-  Matrix V = viewportRelative(size/4, size/4, size/2, size/2);
-  Matrix MVP = V*P*modelView;
+  int size = 800;
+  Matrix MVP = formHemicubeMVP(eye, dir, up, size);
 
   Buffer<TGAColor> buffer(size, size, black);
   renderTestModelReflectivity(buffer, model, MVP);
 
-  renderColourBuffer(buffer, "test/simple_box_subdivided.tga");
+  renderColourBuffer(buffer, "test/scene_subdivided_outside.tga");
+}
+
+TEST_CASE("Test viewing simple scene", "[model]") {
+  Model model("test/scene.obj", "test/scene.mtl");
+
+  Vec3f eye(4, 5, 6);
+  Vec3f dir = eye*-1;
+  Vec3f up(0, 0, 1);
+  int size = 800;
+  Matrix MVP = formHemicubeMVP(eye, dir, up, size);
+
+  Buffer<TGAColor> buffer(size, size, black);
+  renderTestModelReflectivity(buffer, model, MVP);
+
+  renderColourBuffer(buffer, "test/scene_outside.tga");
+}
+
+TEST_CASE("Test viewing two boxes with different normals", "[model]") {
+  Model model("test/dual_cube_different_normals.obj", "test/dual_cube_different_normals.mtl");
+
+  Vec3f eye(2, 4, 3);
+  Vec3f dir = eye*-1;
+  Vec3f up(0, 0, 1);
+  int size = 800;
+  Matrix MVP = formHemicubeMVP(eye, dir, up, size);
+
+  Buffer<TGAColor> buffer(size, size, black);
+  renderTestModelReflectivity(buffer, model, MVP);
+
+  renderColourBuffer(buffer, "test/dual_cube_different_normals.tga");
 }
