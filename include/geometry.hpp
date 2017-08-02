@@ -86,3 +86,7 @@ public:
 
 Vec3f m2v(const Matrix& m);
 Matrix v2m(const Vec3f& v);
+Matrix formTranslation(const Vec3f& translationVector);
+Vec3f applyTransform(const Matrix& matrix, const Vec3f& v);
+Matrix formRightAngledProjection(float n, float f);
+Matrix formProjection(float l, float r, float b, float t, float n, float f);

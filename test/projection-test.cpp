@@ -39,6 +39,32 @@ TEST_CASE("Test moving the camera (perspective)", "[camera]") {
   renderColourBuffer(buffer, "test/moved_camera.tga");
 }
 
+TEST_CASE("Ensure MVP retains z order", "[projection]") {
+  Vec3f eye(2, 2.5, 3);
+  Vec3f dir = (eye*-1).normalise();
+  Vec3f up(0, 0, 1);
+  int size = 800;
+
+  Vec3f v(1,1,1);
+  Vec3f w(-1,-1,-1);
+
+  Matrix translation = formTranslation(eye*-1);
+  Matrix view = lookAt(Vec3f(0, 0, 0), dir, up)*translation;
+  Vec3f vAfterView = applyTransform(view, v);
+  Vec3f wAfterView = applyTransform(view, w);
+  REQUIRE(vAfterView.z > wAfterView.z);
+
+  Matrix projection = formRightAngledProjection(0.05f, 1.0f);
+  Vec3f vAfterProjection = applyTransform(projection, vAfterView);
+  Vec3f wAfterProjection = applyTransform(projection, wAfterView);
+  REQUIRE(vAfterProjection.z > wAfterProjection.z);
+
+  Matrix viewport = viewportRelative(0, 0, size, size);
+  Vec3f vAfterViewport = applyTransform(viewport, vAfterProjection);
+  Vec3f wAfterViewport = applyTransform(viewport, wAfterProjection);
+  REQUIRE(vAfterViewport.z > wAfterViewport.z);
+}
+
 TEST_CASE("Test moving the camera (filled triangles)", "[camera]") {
   Model model("test/simple_box.obj", "test/simple_box.mtl");
 

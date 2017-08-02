@@ -52,9 +52,24 @@ TEST_CASE("Test loading of materials", "[model]") {
 }
 
 TEST_CASE("Test viewing subdivided model", "[model]") {
+  Model model("test/simple_box_subdivided.obj", "test/simple_box_subdivided.mtl");
+
+  Vec3f eye(-1.5, -1, -3);
+  Vec3f dir = eye*-1;
+  Vec3f up(0, 0, 1);
+  int size = 800;
+  Matrix MVP = formHemicubeMVP(eye, dir, up, size);
+
+  Buffer<TGAColor> buffer(size, size, black);
+  renderTestModelReflectivity(buffer, model, MVP);
+
+  renderColourBuffer(buffer, "test/simple_box_subdivided_inside_normals.tga");
+}
+
+TEST_CASE("Test viewing subdivided scene", "[model]") {
   int size = 800;
 
-  Model model("test/simple_box_subdivided.obj", "test/simple_box_subdivided.mtl");
+  Model model("test/scene_subdivided.obj", "test/scene_subdivided.mtl");
 
   Vec3f eye(-1.5, -1, -3);
   Vec3f centre(0,0,0);

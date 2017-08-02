@@ -77,3 +77,33 @@ Matrix v2m(const Vec3f& v) {
   m.set(3, 0, 1.f);
   return m;
 }
+
+Matrix formProjection(float l, float r, float b, float t, float n, float f) {
+  Matrix p;
+  p.set(0, 0, 2.f*n/(r-l));
+  p.set(1, 1, 2.f*n/(t-b));
+  p.set(0, 2, -(r+l)/(r-l));
+  p.set(1, 2, -(t+b)/(t-b));
+  p.set(2, 2,  (f+n)/(f-n));
+  p.set(3, 2, 1);
+  p.set(2, 3, -2.f*f*n/(f-n));
+
+  return p;
+}
+
+Matrix formRightAngledProjection(float n, float f) {
+  return formProjection(-n, n, -n, n, n, f);
+}
+
+Vec3f applyTransform(const Matrix& matrix, const Vec3f& v) {
+  return m2v(matrix*v2m(v));
+}
+
+Matrix formTranslation(const Vec3f& translationVector) {
+  Matrix translation = Matrix::identity(4);
+  for(int i=0; i<3; ++i) {
+    translation.set(i, 3, translationVector[i]);
+  }
+  return translation;
+}
+
