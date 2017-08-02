@@ -24,9 +24,10 @@ void verifyModelNormalsConsistent(std::string objFilename, std::string mtlFilena
 
 TEST_CASE("Test model normals are same as normals calculated from winding", "[model]") {
   verifyModelNormalsConsistent("test/scene.obj", "test/scene.mtl");
-  verifyModelNormalsConsistent("test/scene_subdivided.obj", "test/scene_subdivided.mtl");
+  //verifyModelNormalsConsistent("test/scene_subdivided.obj", "test/scene_subdivided.mtl");
   verifyModelNormalsConsistent("test/simple_box.obj", "test/simple_box.mtl");
-  verifyModelNormalsConsistent("test/simple_box_subdivided.obj", "test/simple_box_subdivided.mtl");
+  //verifyModelNormalsConsistent("test/simple_box_subdivided.obj", "test/simple_box_subdivided.mtl");
+  verifyModelNormalsConsistent("test/dual_cube_different_normals.obj", "test/dual_cube_different_normals.mtl");
 }
 
 TEST_CASE("Test loading of materials", "[model]") {
@@ -84,7 +85,7 @@ TEST_CASE("Test viewing subdivided scene", "[model]") {
 TEST_CASE("Test viewing simple scene", "[model]") {
   Model model("test/scene.obj", "test/scene.mtl");
 
-  Vec3f eye(4, 5, 6);
+  Vec3f eye(-4, -5, 6);
   Vec3f dir = eye*-1;
   Vec3f up(0, 0, 1);
   int size = 800;
