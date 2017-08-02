@@ -9,7 +9,7 @@
 Matrix formHemicubeMVP(const Vec3f& eye, const Vec3f& dir, const Vec3f& up, int size) {
   Matrix translation = formTranslation(eye*-1);
   Matrix view = lookAt(Vec3f(0, 0, 0), dir, up)*translation;
-  Matrix projection = formRightAngledProjection(0.05f, 1.0f);
+  Matrix projection = formRightAngledProjection(0.05f, 10.0f);
   Matrix viewport = viewportRelative(0, 0, size, size);
   return viewport*projection*view;
 }

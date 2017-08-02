@@ -54,15 +54,31 @@ TEST_CASE("Ensure MVP retains z order", "[projection]") {
   Vec3f wAfterView = applyTransform(view, w);
   REQUIRE(vAfterView.z > wAfterView.z);
 
-  Matrix projection = formRightAngledProjection(0.05f, 1.0f);
+  std::cout << vAfterView << wAfterView;
+
+  Matrix projection = formRightAngledProjection(0.5f, 100.0f);
   Vec3f vAfterProjection = applyTransform(projection, vAfterView);
   Vec3f wAfterProjection = applyTransform(projection, wAfterView);
   REQUIRE(vAfterProjection.z > wAfterProjection.z);
+
+  std::cout << vAfterProjection << wAfterProjection;
+
+  REQUIRE(vAfterProjection.z > -1.f);
+  REQUIRE(vAfterProjection.z < 1.f);
+  REQUIRE(wAfterProjection.z > -1.f);
+  REQUIRE(wAfterProjection.z < 1.f);
 
   Matrix viewport = viewportRelative(0, 0, size, size);
   Vec3f vAfterViewport = applyTransform(viewport, vAfterProjection);
   Vec3f wAfterViewport = applyTransform(viewport, wAfterProjection);
   REQUIRE(vAfterViewport.z > wAfterViewport.z);
+
+  std::cout << vAfterViewport << wAfterViewport;
+
+  REQUIRE(vAfterViewport.z > 0.f);
+  REQUIRE(vAfterViewport.z < 1.f);
+  REQUIRE(wAfterViewport.z > 0.f);
+  REQUIRE(wAfterViewport.z < 1.f);
 }
 
 TEST_CASE("Test moving the camera (filled triangles)", "[camera]") {

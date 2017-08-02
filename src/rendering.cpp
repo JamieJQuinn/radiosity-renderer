@@ -239,7 +239,7 @@ void transformFace(Vec3f* outScreenCoords, const Face& face, const Model& model,
 }
 
 void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP) {
-  Buffer<float> zBuffer(buffer.width, buffer.height, 0);
+  Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
   for (int i=0; i<model.nfaces(); ++i) {
     Face face = model.face(i);
     TGAColor colour = getFaceColour(face, model);
@@ -248,18 +248,19 @@ void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, c
     transformFace(screen_coords, face, model, MVP);
 
     Vec3f n = calcNormal(screen_coords[0], screen_coords[1], screen_coords[2]);
-    if(n.z>0.f) {
-      //// ======= SIMPLE APPROACH
-      bool isInFront = true;
-      for(int j=0; j<3; ++j) {
-        isInFront = isInFront and screen_coords[j].z < 1.f;
-      }
-      isInFront = true;
-      if(isInFront) {
-        renderTriangle(screen_coords, zBuffer, buffer, colour);
-      }
+    renderTriangle(screen_coords, zBuffer, buffer, colour);
+    //if(n.z>0.f) {
+      ////// ======= SIMPLE APPROACH
+      //bool isInFront = true;
+      //for(int j=0; j<3; ++j) {
+        //isInFront = isInFront and screen_coords[j].z < 1.f;
+      //}
+      ////isInFront = true;
+      //if(isInFront) {
+        //renderTriangle(screen_coords, zBuffer, buffer, colour);
+      //}
 
       ////clipAndRenderTriangle(screen_coords, zBuffer, buffer, colour);
-    }
+    //}
   }
 }
