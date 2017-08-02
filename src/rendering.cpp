@@ -248,18 +248,19 @@ void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, c
     transformFace(screen_coords, face, model, MVP);
 
     Vec3f n = calcNormal(screen_coords[0], screen_coords[1], screen_coords[2]);
-    if(n.z>0.f) {
-      // ======= SIMPLE APPROACH
-      bool isInFront = true;
-      for(int j=0; j<3; ++j) {
-        isInFront = isInFront and screen_coords[j].z < 1.f;
-      }
-      //isInFront = true;
-      if(isInFront) {
-        renderTriangle(screen_coords, zBuffer, buffer, colour);
-      }
+    renderTriangle(screen_coords, zBuffer, buffer, colour);
+    //if(n.z>0.f) {
+      //// ======= SIMPLE APPROACH
+      //bool isInFront = true;
+      //for(int j=0; j<3; ++j) {
+        //isInFront = isInFront and screen_coords[j].z < 1.f;
+      //}
+      ////isInFront = true;
+      //if(isInFront) {
+        //renderTriangle(screen_coords, zBuffer, buffer, colour);
+      //}
 
-      //clipAndRenderTriangle(screen_coords, zBuffer, buffer, colour);
-    }
+      ////clipAndRenderTriangle(screen_coords, zBuffer, buffer, colour);
+    //}
   }
 }
