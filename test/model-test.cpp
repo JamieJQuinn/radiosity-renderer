@@ -49,6 +49,28 @@ TEST_CASE("Test loading of materials", "[model]") {
 
   renderTestModelReflectivity(buffer, model, MVP);
 
+  renderColourBuffer(buffer, "test/scene_subdivided_inside.tga");
+}
+
+TEST_CASE("Test looking at scene from inside", "[model]") {
+  Model model("test/scene.obj", "test/scene.mtl");
+
+  int gridSize = 500;
+
+  // Choose random face
+  int faceIdx = 0;
+
+  Face f = model.face(faceIdx);
+  Vec3f up = model.vert(f[1].ivert) - model.vert(f[0].ivert);
+  Vec3f dir = model.norm(faceIdx, 0)*up.norm();
+  Vec3f eye = model.centreOf(faceIdx) + dir*0.01f;
+
+  Matrix MVP = formHemicubeMVP(eye, dir, up, gridSize);
+
+  Buffer<TGAColor> buffer(gridSize, gridSize, black);
+
+  renderTestModelReflectivity(buffer, model, MVP);
+
   renderColourBuffer(buffer, "test/scene_inside.tga");
 }
 
