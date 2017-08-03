@@ -41,7 +41,7 @@ TEST_CASE("Test loading of materials", "[model]") {
   Face f = model.face(faceIdx);
   Vec3f up = model.vert(f[1].ivert) - model.vert(f[0].ivert);
   Vec3f dir = model.norm(faceIdx, 0)*up.norm();
-  Vec3f eye = model.centreOf(faceIdx) + dir*0.01f;
+  Vec3f eye = model.centreOf(faceIdx) - dir*0.01f;
 
   Matrix MVP = formHemicubeMVP(eye, dir, up, gridSize);
 
@@ -63,7 +63,7 @@ TEST_CASE("Test looking at scene from inside", "[model]") {
   Face f = model.face(faceIdx);
   Vec3f up = model.vert(f[1].ivert) - model.vert(f[0].ivert);
   Vec3f dir = model.norm(faceIdx, 0)*up.norm();
-  Vec3f eye = model.centreOf(faceIdx) + dir*0.01f;
+  Vec3f eye = model.centreOf(faceIdx) - dir*0.01f;
 
   Matrix MVP = formHemicubeMVP(eye, dir, up, gridSize);
 

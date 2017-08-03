@@ -157,6 +157,7 @@ void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, c
 
     Vec3f n = calcNormal(screen_coords[0], screen_coords[1], screen_coords[2]);
     if(n.z>0.f) {
+      //renderTriangle(screen_coords, zBuffer, buffer, colour);
       clipAndRenderTriangle(screen_coords, zBuffer, buffer, colour);
     }
   }

@@ -21,6 +21,8 @@ void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, c
 Vec3f interpolate(const Vec3f& v0, const Vec3f& v1, float t);
 float clipLineZ(const Vec3f& v0, const Vec3f& v1);
 bool isVertexInFront(const Vec3f& v);
+void transformFace(Vec3f* outScreenCoords, const Face& face, const Model& model, const Matrix& MVP);
+TGAColor getFaceColour(const Face& face, const Model& model);
 
 template <class T>
 void renderLine(int x0, int y0, int x1, int y1, Buffer<T> &buffer, const T& fillValue) {
@@ -196,4 +198,3 @@ void clipAndRenderTriangle(Vec3f *screen_coords, Buffer<zBufferType>& zBuffer, B
     }
   }
 }
-
