@@ -205,7 +205,7 @@ TEST_CASE("Test calculation of form factors per cell", "[form_factors]") {
   REQUIRE(topFace.sum() + 4*sideFace.sum() == Approx(1.0f));
 }
 
-TEST_CASE("Test clipping against back wall case 1", "[clipping]") {
+TEST_CASE("Test clipping against back wall without splitting tri", "[clipping]") {
   Buffer<TGAColor> buffer(500, 500, black);
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
   TGAColor colour(255, 0, 0, 255);
@@ -217,10 +217,10 @@ TEST_CASE("Test clipping against back wall case 1", "[clipping]") {
 
   clipAndRenderTriangle(screen_coords, zBuffer, buffer, colour);
 
-  renderColourBuffer(buffer, "test/clipping_test1.tga");
+  renderColourBuffer(buffer, "test/clipping_test_nosplit.tga");
 }
 
-TEST_CASE("Test clipping against back wall case 2", "[clipping]") {
+TEST_CASE("Test clipping against back wall with splitting tri", "[clipping]") {
   Buffer<TGAColor> buffer(500, 500, black);
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
   TGAColor colour(255, 0, 0, 255);
@@ -232,5 +232,20 @@ TEST_CASE("Test clipping against back wall case 2", "[clipping]") {
 
   clipAndRenderTriangle(screen_coords, zBuffer, buffer, colour);
 
-  renderColourBuffer(buffer, "test/clipping_test2.tga");
+  renderColourBuffer(buffer, "test/clipping_test_split.tga");
+}
+
+TEST_CASE("Test clipping in extreme situation", "[clipping]") {
+  Buffer<TGAColor> buffer(500, 500, black);
+  Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
+  TGAColor colour(255, 0, 0, 255);
+
+  Vec3f screen_coords[3];
+  screen_coords[0] = Vec3f(25250, -49750.1, 5.01003);
+  screen_coords[1] = Vec3f(25250, 50250.1, 5.01003);
+  screen_coords[2] = Vec3f(312.344, 374.688, 0.00999382);
+
+  clipAndRenderTriangle(screen_coords, zBuffer, buffer, colour);
+
+  renderColourBuffer(buffer, "test/clipping_test_extreme.tga");
 }

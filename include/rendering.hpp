@@ -182,15 +182,16 @@ void clipAndRenderTriangle(Vec3f *screen_coords, Buffer<zBufferType>& zBuffer, B
         } else {
           // Render one tri with intersection points
           screen_coords[j] = interpolate(
-              screen_coords[(j-1)%3],
+              screen_coords[(3+((j-1)%3))%3],
               screen_coords[j],
-              intersectPts[(j-1)%3]);
+              intersectPts[(3+((j-1)%3))%3]);
           screen_coords[(j+1)%3] = interpolate(
               screen_coords[(j+1)%3],
               screen_coords[(j+2)%3],
               intersectPts[(j+1)%3]);
           renderTriangle(screen_coords, zBuffer, buffer, fillValue);
         }
+        break;
       }
     }
   }
