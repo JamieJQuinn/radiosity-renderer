@@ -204,3 +204,33 @@ TEST_CASE("Test calculation of form factors per cell", "[form_factors]") {
 
   REQUIRE(topFace.sum() + 4*sideFace.sum() == Approx(1.0f));
 }
+
+TEST_CASE("Test clipping against back wall case 1", "[clipping]") {
+  Buffer<TGAColor> buffer(500, 500, black);
+  Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
+  TGAColor colour(255, 0, 0, 255);
+
+  Vec3f screen_coords[3];
+  screen_coords[0] = Vec3f(100, 100, 0.5f);
+  screen_coords[1] = Vec3f(300, 400, 0.6f);
+  screen_coords[2] = Vec3f(400, 200, 1.4f);
+
+  clipAndRenderTriangle(screen_coords, zBuffer, buffer, colour);
+
+  renderColourBuffer(buffer, "test/clipping_test1.tga");
+}
+
+TEST_CASE("Test clipping against back wall case 2", "[clipping]") {
+  Buffer<TGAColor> buffer(500, 500, black);
+  Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
+  TGAColor colour(255, 0, 0, 255);
+
+  Vec3f screen_coords[3];
+  screen_coords[0] = Vec3f(100, 100, 0.5f);
+  screen_coords[1] = Vec3f(300, 400, 1.5f);
+  screen_coords[2] = Vec3f(400, 200, 1.4f);
+
+  clipAndRenderTriangle(screen_coords, zBuffer, buffer, colour);
+
+  renderColourBuffer(buffer, "test/clipping_test2.tga");
+}

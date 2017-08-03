@@ -90,3 +90,9 @@ Matrix formTranslation(const Vec3f& translationVector);
 Vec3f applyTransform(const Matrix& matrix, const Vec3f& v);
 Matrix formRightAngledProjection(float n, float f);
 Matrix formProjection(float l, float r, float b, float t, float n, float f);
+
+Vec3f calcNormal(const Vec3f& v1, const Vec3f& v2, const Vec3f& v3);
+Matrix viewportRelative(int x, int y, int w, int h, int depth=1.0f);
+Matrix viewportAbsolute(int x0, int y0, int x1, int y1, int depth=1.0f);
+Matrix lookAt(Vec3f eye, Vec3f centre, Vec3f up);
+Vec3f getBarycentricCoords(const Vec3f& A, const Vec3f& B, const Vec3f& C, const Vec3f& P);

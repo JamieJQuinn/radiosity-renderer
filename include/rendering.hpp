@@ -14,16 +14,13 @@ void renderZBuffer(const Buffer<float>& zBuffer, std::string filename);
 void renderWireFrame(const Model& model, Buffer<TGAColor>& buffer, const Matrix& MVP);
 void calcFormFactorPerCell(const int sideLengthInPixels, Buffer<float>& topFace, Buffer<float>& sideFace);
 void calcFormFactorsFromBuffer(const Buffer<int>& itemBuffer, const Buffer<float>& factorsPerCell, std::vector<float>& formFactors);
-Vec3f getBarycentricCoords(const Vec3f& A, const Vec3f& B, const Vec3f& C, const Vec3f& P);
 void renderModel(Buffer<int>& buffer, const Model& model, const Matrix& MVP);
 void renderModel(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP);
 void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP);
 
-Vec3f calcNormal(const Vec3f& v1, const Vec3f& v2, const Vec3f& v3);
-
-Matrix viewportRelative(int x, int y, int w, int h, int depth=1.0f);
-Matrix viewportAbsolute(int x0, int y0, int x1, int y1, int depth=1.0f);
-Matrix lookAt(Vec3f eye, Vec3f centre, Vec3f up);
+Vec3f interpolate(const Vec3f& v0, const Vec3f& v1, float t);
+float clipLineZ(const Vec3f& v0, const Vec3f& v1);
+bool isVertexInFront(const Vec3f& v);
 
 template <class T>
 void renderLine(int x0, int y0, int x1, int y1, Buffer<T> &buffer, const T& fillValue) {
@@ -142,3 +139,60 @@ void renderTriangle(const Vec3f *pts, const float *intensities, Buffer<zBufferTy
     }
   }
 }
+
+template <class fillType, class zBufferType>
+void clipAndRenderTriangle(Vec3f *screen_coords, Buffer<zBufferType>& zBuffer, Buffer<fillType> &buffer, const fillType& fillValue) {
+  // Figure out intersection points
+  float intersectPts[3];
+  bool isIntersecting[3];
+  bool intersectsAnywhere = false;
+  for(int j=0; j<3; ++j) {
+    intersectPts[j] = clipLineZ(screen_coords[j], screen_coords[(j+1)%3]);
+    isIntersecting[j] = intersectPts[j] >= 0.f and intersectPts[j] <= 1.f;
+    intersectsAnywhere = intersectsAnywhere or isIntersecting[j];
+  }
+
+  // Use intersections to deduce clipping strategy
+  if( not intersectsAnywhere ) {
+    // Full triangle is in front or behind
+    if(isVertexInFront(screen_coords[0])) {
+      // In front; render full triangle
+      renderTriangle(screen_coords, zBuffer, buffer, fillValue);
+    }
+  } else {
+    // figure out how clipping should be done
+    for(int j=0; j<3; ++j) {
+      if( not isIntersecting[j] ) {
+        // Find non-intersecting edge pts
+        Vec3f &edge1 = screen_coords[j];
+        if(isVertexInFront(edge1)) {
+          // Gotta split triangle into two
+          Vec3f temp = screen_coords[(j+2)%3];
+          screen_coords[(j+2)%3] = interpolate(
+              screen_coords[(j+1)%3],
+              screen_coords[(j+2)%3],
+              intersectPts[(j+1)%3]);
+          renderTriangle(screen_coords, zBuffer, buffer, fillValue);
+          screen_coords[(j+1)%3] = screen_coords[(j+2)%3];
+          screen_coords[(j+2)%3] = interpolate(
+              temp,
+              screen_coords[j],
+              intersectPts[(j+2)%3]);
+          renderTriangle(screen_coords, zBuffer, buffer, fillValue);
+        } else {
+          // Render one tri with intersection points
+          screen_coords[j] = interpolate(
+              screen_coords[(j-1)%3],
+              screen_coords[j],
+              intersectPts[(j-1)%3]);
+          screen_coords[(j+1)%3] = interpolate(
+              screen_coords[(j+1)%3],
+              screen_coords[(j+2)%3],
+              intersectPts[(j+1)%3]);
+          renderTriangle(screen_coords, zBuffer, buffer, fillValue);
+        }
+      }
+    }
+  }
+}
+
