@@ -169,33 +169,6 @@ TEST_CASE("fillTriangle works on two intersecting triangles", "[renderer]") {
   renderColourBuffer(buffer, "test/two_tri_intersect_colour.tga");
 }
 
-TEST_CASE("Test calculation of form factors", "[form_factors]") {
-  int size = 50;
-
-  Model model("test/simple_box.obj", "test/simple_box.mtl");
-
-  Vec3f eye(-2, -2.5, 3);
-  Vec3f centre(0,0,0);
-  Vec3f up(0, 1, 0);
-  Matrix modelView = lookAt(eye, centre, up);
-
-  Matrix P = Matrix::identity(4);
-  P.set(3, 2, -1.f/(eye-centre).norm());
-  Matrix V = viewportRelative(size/4, size/4, size/2, size/2, 255);
-  Matrix MVP = V*P*modelView;
-
-  Buffer<int> itemBuffer(size, size, 0);
-  std::vector<float> formFactors(model.nfaces()+1, 0.f);
-
-  renderModel(itemBuffer, model, MVP);
-
-  Buffer<float> topFace(size, size);
-  Buffer<float> sideFace(size, size/2);
-  calcFormFactorPerCell(size, topFace, sideFace);
-
-  calcFormFactorsFromBuffer(itemBuffer, topFace, formFactors);
-}
-
 TEST_CASE("Test calculation of form factors per cell", "[form_factors]") {
   int size = 200;
   Buffer<float> topFace(size, size);
