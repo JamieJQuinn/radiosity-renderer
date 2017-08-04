@@ -93,35 +93,6 @@ void calcFormFactorsFromBuffer(const Buffer<int>& itemBuffer, const Buffer<float
   }
 }
 
-void renderModel(Buffer<int>& buffer, const Model& model, const Matrix& MVP) {
-  Buffer<float> zBuffer(buffer.width, buffer.height, -1);
-  for (int i=0; i<model.nfaces(); ++i) {
-    Face face = model.face(i);
-    Vec3f screen_coords[3];
-    for (int j=0; j<3; j++) {
-      Vec3f v = model.vert(face[j].ivert);
-      screen_coords[j] = m2v(MVP*v2m(v));
-    }
-    Vec3f n = calcNormal(screen_coords[0], screen_coords[1], screen_coords[2]);
-    bool isInFront = true;
-    for(int j=0; j<3; ++j) {
-      isInFront = isInFront and screen_coords[j].z > 0.f;
-    }
-    if (n.z<0 and isInFront) {
-      // Render to ID itembuffer
-      renderTriangle(screen_coords, zBuffer, buffer, i+1);
-    }
-  }
-}
-
-Vec3f clipAgainstZPlane(const Vec3f* screen_coords)  {
-  Vec3f t;
-  for(int i=0; i<3; ++i) {
-    t[i] = screen_coords[i].z - 1.f/(screen_coords[i].z - screen_coords[(i+1)%3].z);
-  }
-  return t;
-}
-
 float clipLineZ(const Vec3f& v0, const Vec3f& v1) {
   return (v0.z - 1.0f)/(v0.z - v1.z);
 }
