@@ -43,11 +43,11 @@ TEST_CASE("Test loading of materials", "[model]") {
   Vec3f dir = model.norm(faceIdx, 0)*up.norm();
   Vec3f eye = model.centreOf(faceIdx) - dir*0.01f;
 
-  Matrix MVP = formHemicubeMVP(eye, dir, up, gridSize);
+  Matrix MVP = formHemicubeMVP(eye, dir, up);
 
   Buffer<TGAColor> buffer(gridSize, gridSize, black);
 
-  renderTestModelReflectivity(buffer, model, MVP);
+  renderTestModelReflectivity(buffer, model, MVP, 0.05f);
 
   renderColourBuffer(buffer, "test/scene_subdivided_inside.tga");
 }
@@ -65,11 +65,11 @@ TEST_CASE("Test looking at scene from inside", "[model]") {
   Vec3f dir = model.norm(faceIdx, 0)*up.norm();
   Vec3f eye = model.centreOf(faceIdx) + dir*0.01f;
 
-  Matrix MVP = formHemicubeMVP(eye, dir, up, gridSize);
+  Matrix MVP = formHemicubeMVP(eye, dir, up);
 
   Buffer<TGAColor> buffer(gridSize, gridSize, black);
 
-  renderTestModelReflectivity(buffer, model, MVP);
+  renderTestModelReflectivity(buffer, model, MVP, 0.05f);
 
   renderColourBuffer(buffer, "test/scene_inside.tga");
 }
@@ -81,10 +81,10 @@ TEST_CASE("Test viewing subdivided model", "[model]") {
   Vec3f dir = eye*-1;
   Vec3f up(0, 0, 1);
   int size = 800;
-  Matrix MVP = formHemicubeMVP(eye, dir, up, size);
+  Matrix MVP = formHemicubeMVP(eye, dir, up);
 
   Buffer<TGAColor> buffer(size, size, black);
-  renderTestModelReflectivity(buffer, model, MVP);
+  renderTestModelReflectivity(buffer, model, MVP, 0.05f);
 
   renderColourBuffer(buffer, "test/simple_box_subdivided_inside_normals.tga");
 }
@@ -96,10 +96,10 @@ TEST_CASE("Test viewing subdivided scene", "[model]") {
   Vec3f dir = eye*-1;
   Vec3f up(0, 0, 1);
   int size = 800;
-  Matrix MVP = formHemicubeMVP(eye, dir, up, size);
+  Matrix MVP = formHemicubeMVP(eye, dir, up);
 
   Buffer<TGAColor> buffer(size, size, black);
-  renderTestModelReflectivity(buffer, model, MVP);
+  renderTestModelReflectivity(buffer, model, MVP, 0.05f);
 
   renderColourBuffer(buffer, "test/scene_subdivided_outside.tga");
 }
@@ -111,10 +111,10 @@ TEST_CASE("Test viewing simple scene", "[model]") {
   Vec3f dir = eye*-1;
   Vec3f up(0, 0, 1);
   int size = 800;
-  Matrix MVP = formHemicubeMVP(eye, dir, up, size);
+  Matrix MVP = formHemicubeMVP(eye, dir, up);
 
   Buffer<TGAColor> buffer(size, size, black);
-  renderTestModelReflectivity(buffer, model, MVP);
+  renderTestModelReflectivity(buffer, model, MVP, 0.05f);
 
   renderColourBuffer(buffer, "test/scene_outside.tga");
 }
@@ -126,10 +126,10 @@ TEST_CASE("Test viewing two boxes with different normals", "[model]") {
   Vec3f dir = eye*-1;
   Vec3f up(0, 0, 1);
   int size = 800;
-  Matrix MVP = formHemicubeMVP(eye, dir, up, size);
+  Matrix MVP = formHemicubeMVP(eye, dir, up);
 
   Buffer<TGAColor> buffer(size, size, black);
-  renderTestModelReflectivity(buffer, model, MVP);
+  renderTestModelReflectivity(buffer, model, MVP, 0.05f);
 
   renderColourBuffer(buffer, "test/dual_cube_different_normals.tga");
 }

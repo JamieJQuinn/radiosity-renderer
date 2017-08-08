@@ -183,12 +183,12 @@ TEST_CASE("Test clipping against back wall (no need to clip)", "[clipping]") {
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
   TGAColor colour(255, 0, 0, 255);
 
-  std::vector<Vec3f> pts(3);
-  pts[0] = Vec3f(-0.5, -0.5, 0.5f);
-  pts[1] = Vec3f(0, 0.8, 0.6f);
-  pts[2] = Vec3f(0.7, -0.4, 0.4f);
+  std::vector<Vec4f> pts(3);
+  pts[0] = Vec3f(-0.5, -0.5, -0.5f);
+  pts[1] = Vec3f(0, 0.8, -0.6f);
+  pts[2] = Vec3f(0.7, -0.4, -0.4f);
 
-  clipAndRenderTriangle(pts, zBuffer, buffer, colour);
+  clipAndRenderTriangle(pts, zBuffer, buffer, colour, 0.05f);
 
   renderColourBuffer(buffer, "test/clipping_test_no_need.tga");
 }
@@ -198,12 +198,12 @@ TEST_CASE("Test clipping against back wall splitting tri", "[clipping]") {
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
   TGAColor colour(255, 0, 0, 255);
 
-  std::vector<Vec3f> pts(3);
-  pts[0] = Vec3f(0, 0.8, 0.6f);
-  pts[1] = Vec3f(-0.5, -0.5, 0.5f);
+  std::vector<Vec4f> pts(3);
+  pts[0] = Vec3f(0, 0.8, -0.6f);
+  pts[1] = Vec3f(-0.5, -0.5, -0.5f);
   pts[2] = Vec3f(0.7, -0.4, 1.4f);
 
-  clipAndRenderTriangle(pts, zBuffer, buffer, colour);
+  clipAndRenderTriangle(pts, zBuffer, buffer, colour, 0.05f);
 
   renderColourBuffer(buffer, "test/clipping_test_split.tga");
 }
@@ -213,12 +213,12 @@ TEST_CASE("Test clipping against back wall without splitting tri", "[clipping]")
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
   TGAColor colour(255, 0, 0, 255);
 
-  std::vector<Vec3f> pts(3);
-  pts[0] = Vec3f(-0.5, -0.5, 0.5f);
+  std::vector<Vec4f> pts(3);
+  pts[0] = Vec3f(-0.5, -0.5, -0.5f);
   pts[1] = Vec3f(0, 0.8, 1.6f);
   pts[2] = Vec3f(0.7, -0.4, 1.4f);
 
-  clipAndRenderTriangle(pts, zBuffer, buffer, colour);
+  clipAndRenderTriangle(pts, zBuffer, buffer, colour, 0.05f);
 
   renderColourBuffer(buffer, "test/clipping_test_nosplit.tga");
 }
@@ -228,12 +228,12 @@ TEST_CASE("Test clipping in extreme situation", "[clipping]") {
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
   TGAColor colour(255, 0, 0, 255);
 
-  std::vector<Vec3f> pts(3);
+  std::vector<Vec4f> pts(3);
   pts[0] = Vec3f(25250, -49750.1, 5.01003);
   pts[1] = Vec3f(25250, 50250.1, 5.01003);
-  pts[2] = Vec3f(-0.5, -0.5, 0.00999382);
+  pts[2] = Vec3f(-0.5, -0.5, -0.1);
 
-  clipAndRenderTriangle(pts, zBuffer, buffer, colour);
+  clipAndRenderTriangle(pts, zBuffer, buffer, colour, 0.05f);
 
   renderColourBuffer(buffer, "test/clipping_test_extreme.tga");
 }

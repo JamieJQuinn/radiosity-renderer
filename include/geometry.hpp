@@ -88,6 +88,7 @@ template <class t> struct Vec3 {
   Vec3() : x(0), y(0), z(0) {}
   Vec3(t _x, t _y, t _z) : x(_x),y(_y),z(_z) {}
   Vec3(const Vec3<t> &v) : x(v.x),y(v.y),z(v.z) {}
+  Vec3(const Vec4<t> &v) : x(v.x),y(v.y),z(v.z) {}
   Vec3(const Matrix& m) {
     assert((m.nrows() == 3) && (m.ncols()==1));
     x = m.get(0,0);
@@ -119,7 +120,7 @@ template <class t> struct Vec4 {
   Vec4() : x(0), y(0), z(0), w(0) {}
   Vec4(t _x, t _y, t _z, t _w) : x(_x),y(_y),z(_z),w(_w) {}
   Vec4(const Vec4<t> &v) : x(v.x),y(v.y),z(v.z),w(v.w) {}
-  Vec4(const Vec3<t> &v) : x(v.x),y(v.y),z(v.z),w(1) {}
+  Vec4(const Vec3<t> &v, int _w=1) : x(v.x),y(v.y),z(v.z),w(_w) {}
   Vec4(const Matrix& m) {
     assert((m.nrows() == 4) && (m.ncols()==1));
     x = m.get(0,0);
@@ -129,7 +130,7 @@ template <class t> struct Vec4 {
   }
   inline Vec4<t> operator +(const Vec4<t> &v) const { return Vec4<t>(x+v.x, y+v.y, z+v.z); }
   inline Vec4<t> operator -(const Vec4<t> &v) const { return Vec4<t>(x-v.x, y-v.y, z-v.z); }
-  inline Vec4<t> operator *(float f)          const { return Vec4<t>(x*f, y*f, z*f); }
+  inline Vec4<t> operator *(float f)          const { return Vec4<t>(x*f, y*f, z*f, 1); }
   inline bool operator==(const Vec4<t> &v) const { return x==v.x and y==v.y and z==v.z and w==v.w; }
   inline bool operator!=(const Vec4<t> &v) const { return not (*this==v); }
   inline t& operator[](const int i) {return raw[i];}
@@ -139,6 +140,7 @@ template <class t> struct Vec4 {
   t norm2 () const { return x*x+y*y+z*z; }
   t norm () const { return std::sqrt(norm2()); }
   Vec4<t> & normalise(t l=1) { *this = (*this)*(l/norm()); return *this; }
+  Vec4<t> & homogenise() { assert(w!=0.f); *this = (*this)*(1/w); return *this; }
   template <class > friend std::ostream& operator<<(std::ostream& s, const Vec4<t>& v);
 };
 

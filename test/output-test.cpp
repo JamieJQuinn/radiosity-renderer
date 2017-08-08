@@ -42,7 +42,7 @@ TEST_CASE("Output texture based on input uv coords", "[output]") {
 
   for (int i=0; i<model.nfaces(); ++i) {
     Face face = model.face(i);
-    Vec3f screen_coords[3];
+    std::vector<Vec3f> screen_coords(3);
     // Get uv coords of face in buffer space
     for (int j=0; j<3; j++) {
       screen_coords[j] = model.uv(i, j)*size;
