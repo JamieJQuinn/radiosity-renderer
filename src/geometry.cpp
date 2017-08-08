@@ -99,6 +99,10 @@ Vec3f applyTransform(const Matrix& matrix, const Vec3f& v) {
   return m2v(matrix*v2m(v));
 }
 
+Vec4f applyProjection(const Matrix& matrix, const Vec3f& v) {
+  return matrix*v2m(v);
+}
+
 Matrix formTranslation(const Vec3f& translationVector) {
   Matrix translation = Matrix::identity(4);
   for(int i=0; i<3; ++i) {
@@ -141,4 +145,37 @@ Vec3f getBarycentricCoords(const Vec3f& A, const Vec3f& B, const Vec3f& C, const
 Vec3f calcNormal(const Vec3f& v1, const Vec3f& v2, const Vec3f& v3) {
   // right handed normal
   return (v2-v1).cross(v3-v1).normalise();
+}
+
+Matrix::Matrix(const Vec2f& v):
+  rows(2),
+  cols(1)
+{
+  m = new float[2];
+}
+
+Matrix::Matrix(const Vec3f& v):
+  rows(3),
+  cols(1)
+{
+  m = new float[3];
+}
+
+Matrix::Matrix(const Vec4f& v):
+  rows(4),
+  cols(1)
+{
+  m = new float[4];
+}
+
+Vec2f Matrix::operator*(const Vec2f& v) const {
+  return Vec2f(*this*Matrix(v));
+}
+
+Vec3f Matrix::operator*(const Vec3f& v) const {
+  return Vec3f(*this*Matrix(v));
+}
+
+Vec4f Matrix::operator*(const Vec4f& v) const {
+  return Vec4f(*this*Matrix(v));
 }

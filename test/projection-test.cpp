@@ -40,9 +40,9 @@ TEST_CASE("Test moving the camera (perspective)", "[camera]") {
 }
 
 TEST_CASE("Ensure MVP retains z order", "[projection]") {
-  Vec3f eye(2, 2.5, 3);
+  Vec3f eye(0, 0, 3);
   Vec3f dir = (eye*-1).normalise();
-  Vec3f up(0, 0, 1);
+  Vec3f up(0, 1, 0);
   int size = 800;
 
   Vec3f v(1,1,1);
