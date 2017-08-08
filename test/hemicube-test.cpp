@@ -28,7 +28,7 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
 
   Matrix MVP = formHemicubeMVP(eye, dir, up);
   Buffer<TGAColor> buffer(gridSize, gridSize, black);
-  renderTestModelReflectivity(buffer, model, MVP, 0.05f);
+  renderTestModelReflectivity(buffer, model, MVP);
 
   for(int j=0; j<gridSize; ++j) {
     for(int i=0; i<gridSize; ++i) {
@@ -40,7 +40,7 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
   std::swap(up, dir);
   MVP = formHemicubeMVP(eye, dir, up);
   buffer.fillAll(black);
-  renderTestModelReflectivity(buffer, model, MVP, 0.05f);
+  renderTestModelReflectivity(buffer, model, MVP);
 
   renderColourBuffer(buffer, "test/hemicubeMVP_up.tga");
 
@@ -54,7 +54,7 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
   dir = dir*-1.f;
   MVP = formHemicubeMVP(eye, dir, up);
   buffer.fillAll(black);
-  renderTestModelReflectivity(buffer, model, MVP, 0.05f);
+  renderTestModelReflectivity(buffer, model, MVP);
 
   renderColourBuffer(buffer, "test/hemicubeMVP_down.tga");
 
@@ -68,7 +68,7 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
   dir = dir.cross(up);
   MVP = formHemicubeMVP(eye, dir, up);
   buffer.fillAll(black);
-  renderTestModelReflectivity(buffer, model, MVP, 0.05f);
+  renderTestModelReflectivity(buffer, model, MVP);
 
   renderColourBuffer(buffer, "test/hemicubeMVP_right.tga");
 
@@ -82,7 +82,7 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
   dir = dir*-1.f;
   MVP = formHemicubeMVP(eye, dir, up);
   buffer.fillAll(black);
-  renderTestModelReflectivity(buffer, model, MVP, 0.05f);
+  renderTestModelReflectivity(buffer, model, MVP);
 
   renderColourBuffer(buffer, "test/hemicubeMVP_left.tga");
 

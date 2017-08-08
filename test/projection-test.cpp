@@ -86,7 +86,7 @@ TEST_CASE("Test moving the camera (filled triangles)", "[camera]") {
 
   Buffer<TGAColor> buffer(size, size, black);
 
-  renderTestModelReflectivity(buffer, model, MVP, 0.05f);
+  renderTestModelReflectivity(buffer, model, MVP);
 
   renderColourBuffer(buffer, "test/simple_box_filled.tga");
 }
@@ -102,7 +102,7 @@ TEST_CASE("Test viewing subdivided model from inside (filled triangles)", "[came
 
   Buffer<TGAColor> buffer(size, size, black);
 
-  renderTestModelReflectivity(buffer, model, MVP, 0.05f);
+  renderTestModelReflectivity(buffer, model, MVP);
 
   renderColourBuffer(buffer, "test/simple_box_subdivided_inside.tga");
 }
@@ -142,7 +142,7 @@ TEST_CASE("Test that corners go to correct place", "[projection]") {
   Vec3f v2(2, 20, 2);
   //v2 = printMVPStages(eye, dir, up, v2);
 
-  float t = clipLineZ(v1, v2, 0.05f);
+  float t = clipLineZ(v1, v2);
   //std::cout << t << std::endl;
 
   //std::cout << interpolate(v1, v2, t);
