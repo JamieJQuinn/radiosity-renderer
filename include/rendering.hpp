@@ -16,13 +16,13 @@ void calcFormFactorPerCell(const int sideLengthInPixels, Buffer<float>& topFace,
 void calcFormFactorsFromBuffer(const Buffer<int>& itemBuffer, const Buffer<float>& factorsPerCell, std::vector<float>& formFactors);
 void renderModel(Buffer<int>& buffer, const Model& model, const Matrix& MVP);
 void renderModel(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP);
-void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP);
+void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP, float nearPlane);
 
 Vec3f interpolate(const Vec3f& v0, const Vec3f& v1, float t);
-float clipLineZ(const Vec3f& v0, const Vec3f& v1);
+float clipLineZ(const Vec3f& v0, const Vec3f& v1, float nearPlane);
 std::vector<Vec4f> transformFace(const Face& face, const Model& model, const Matrix& MVP);
 TGAColor getFaceColour(const Face& face, const Model& model);
-int clipTriangle(std::vector<Vec4f>& pts);
+int clipTriangle(std::vector<Vec4f>& pts, float nearPlane);
 
 template <class T>
 void renderLine(int x0, int y0, int x1, int y1, Buffer<T> &buffer, const T& fillValue) {
@@ -148,8 +148,8 @@ void renderTriangle(const std::vector<Vec3f>& pts, const float *intensities, Buf
 }
 
 template <class fillType, class zBufferType>
-void clipAndRenderTriangle(std::vector<Vec4f>& pts, Buffer<zBufferType>& zBuffer, Buffer<fillType> &buffer, const fillType& fillValue) {
-  int numTriangles = clipTriangle(pts);
+void clipAndRenderTriangle(std::vector<Vec4f>& pts, Buffer<zBufferType>& zBuffer, Buffer<fillType> &buffer, const fillType& fillValue, float nearPlane) {
+  int numTriangles = clipTriangle(pts, nearPlane);
   for(int i=0; i<numTriangles*3; ++i) {
     pts[i].homogenise();
   }

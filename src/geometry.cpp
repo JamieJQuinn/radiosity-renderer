@@ -152,6 +152,9 @@ Matrix::Matrix(const Vec2f& v):
   cols(1)
 {
   m = new float[2];
+  for(int i=0; i<rows; ++i) {
+    set(i, 0, v[i]);
+  }
 }
 
 Matrix::Matrix(const Vec3f& v):
@@ -159,6 +162,9 @@ Matrix::Matrix(const Vec3f& v):
   cols(1)
 {
   m = new float[3];
+  for(int i=0; i<rows; ++i) {
+    set(i, 0, v[i]);
+  }
 }
 
 Matrix::Matrix(const Vec4f& v):
@@ -166,6 +172,9 @@ Matrix::Matrix(const Vec4f& v):
   cols(1)
 {
   m = new float[4];
+  for(int i=0; i<rows; ++i) {
+    set(i, 0, v[i]);
+  }
 }
 
 Vec2f Matrix::operator*(const Vec2f& v) const {

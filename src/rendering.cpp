@@ -93,8 +93,8 @@ void calcFormFactorsFromBuffer(const Buffer<int>& itemBuffer, const Buffer<float
   }
 }
 
-float clipLineZ(const Vec3f& v0, const Vec3f& v1) {
-  return (v0.z - 1.0f)/(v0.z - v1.z);
+float clipLineZ(const Vec3f& v0, const Vec3f& v1, float nearPlane) {
+  return (v0.z - nearPlane)/(v0.z - v1.z);
 }
 
 Vec3f interpolate(const Vec3f& v0, const Vec3f& v1, float t) {
@@ -115,7 +115,7 @@ std::vector<Vec4f> transformFace(const Face& face, const Model& model, const Mat
   return outScreenCoords;
 }
 
-void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP) {
+void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP, float nearPlane) {
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
   for (int i=0; i<model.nfaces(); ++i) {
     Face face = model.face(i);
@@ -125,12 +125,12 @@ void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, c
 
     Vec3f n = calcNormal(pts[0], pts[1], pts[2]);
     if(n.z>0.f) {
-      clipAndRenderTriangle(pts, zBuffer, buffer, colour);
+      clipAndRenderTriangle(pts, zBuffer, buffer, colour, nearPlane);
     }
   }
 }
 
-int clipTriangle(std::vector<Vec4f>& pts) {
+int clipTriangle(std::vector<Vec4f>& pts, float nearPlane) {
   // Default no triangles to be rendered
   int nTrianglesReturned = 0;
   // Figure out intersection points
@@ -138,7 +138,7 @@ int clipTriangle(std::vector<Vec4f>& pts) {
   bool isIntersecting[3];
   bool intersectsAnywhere = false;
   for(int j=0; j<3; ++j) {
-    intersectPts[j] = clipLineZ(pts[j], pts[(j+1)%3]);
+    intersectPts[j] = clipLineZ(pts[j], pts[(j+1)%3], nearPlane);
     isIntersecting[j] = intersectPts[j] > 0.f and intersectPts[j] < 1.f;
     intersectsAnywhere = intersectsAnywhere or isIntersecting[j];
   }
@@ -146,7 +146,7 @@ int clipTriangle(std::vector<Vec4f>& pts) {
   // Use intersections to deduce clipping strategy
   if( not intersectsAnywhere ) {
     // Full triangle is in front or behind
-    if(pts[0].z < 1.f) {
+    if(pts[0].z < nearPlane) {
       // In front; render full triangle
       nTrianglesReturned = 1;
     }
@@ -161,7 +161,7 @@ int clipTriangle(std::vector<Vec4f>& pts) {
         Vec4f v1 = pts[i1];
         Vec4f v2 = pts[i2];
         Vec4f v3 = pts[i3];
-        if(v1.z < 1.f) {
+        if(v1.z < nearPlane) {
           // Gotta split triangle into two
           // Create new triangle
           pts.push_back(interpolate(

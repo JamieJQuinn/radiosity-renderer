@@ -45,28 +45,41 @@ TEST_CASE("Ensure MVP retains z order", "[projection]") {
   Vec3f up(0, 1, 0);
   int size = 800;
 
-  Vec3f v(1,1,1);
-  Vec3f w(-1,-1,-1);
+  float nearPlane = .05f;
+  float farPlane = 100.f;
+
+  Vec4f v(1,1,1,1);
+  Vec4f w(-1,-1,-1,1);
 
   Matrix translation = formTranslation(eye*-1);
   Matrix view = lookAt(Vec3f(0, 0, 0), dir, up)*translation;
-  Vec3f vAfterView = applyTransform(view, v);
-  Vec3f wAfterView = applyTransform(view, w);
+  Vec4f vAfterView = view*v;
+  Vec4f wAfterView = view*w;
   REQUIRE(vAfterView.z > wAfterView.z);
 
-  Matrix projection = formRightAngledProjection(0.5f, 100.0f);
-  Vec3f vAfterProjection = applyTransform(projection, vAfterView);
-  Vec3f wAfterProjection = applyTransform(projection, wAfterView);
+  Matrix projection = formRightAngledProjection(nearPlane, farPlane);
+  Vec4f vAfterProjection = projection*vAfterView;
+  Vec4f wAfterProjection = projection*wAfterView;
   REQUIRE(vAfterProjection.z > wAfterProjection.z);
 
-  REQUIRE(vAfterProjection.z > -1.f);
-  REQUIRE(vAfterProjection.z < 1.f);
-  REQUIRE(wAfterProjection.z > -1.f);
-  REQUIRE(wAfterProjection.z < 1.f);
+  std::cout << projection << vAfterView << vAfterProjection;
+
+  REQUIRE(vAfterProjection.z > -farPlane);
+  REQUIRE(vAfterProjection.z < nearPlane);
+  REQUIRE(wAfterProjection.z > -farPlane);
+  REQUIRE(wAfterProjection.z < nearPlane);
+
+  vAfterProjection.homogenise();
+  wAfterProjection.homogenise();
+
+  REQUIRE(vAfterProjection.z > -1.0f);
+  REQUIRE(vAfterProjection.z < 1.0f);
+  REQUIRE(wAfterProjection.z > -1.0f);
+  REQUIRE(wAfterProjection.z < 1.0f);
 
   Matrix viewport = viewportRelative(0, 0, size, size);
-  Vec3f vAfterViewport = applyTransform(viewport, vAfterProjection);
-  Vec3f wAfterViewport = applyTransform(viewport, wAfterProjection);
+  Vec4f vAfterViewport = viewport*vAfterProjection;
+  Vec4f wAfterViewport = viewport*wAfterProjection;
   REQUIRE(vAfterViewport.z > wAfterViewport.z);
 
   REQUIRE(vAfterViewport.z > 0.f);
@@ -86,7 +99,7 @@ TEST_CASE("Test moving the camera (filled triangles)", "[camera]") {
 
   Buffer<TGAColor> buffer(size, size, black);
 
-  renderTestModelReflectivity(buffer, model, MVP);
+  renderTestModelReflectivity(buffer, model, MVP, 0.05f);
 
   renderColourBuffer(buffer, "test/simple_box_filled.tga");
 }
@@ -102,7 +115,7 @@ TEST_CASE("Test viewing subdivided model from inside (filled triangles)", "[came
 
   Buffer<TGAColor> buffer(size, size, black);
 
-  renderTestModelReflectivity(buffer, model, MVP);
+  renderTestModelReflectivity(buffer, model, MVP, 0.05f);
 
   renderColourBuffer(buffer, "test/simple_box_subdivided_inside.tga");
 }
@@ -142,7 +155,7 @@ TEST_CASE("Test that corners go to correct place", "[projection]") {
   Vec3f v2(2, 20, 2);
   //v2 = printMVPStages(eye, dir, up, v2);
 
-  float t = clipLineZ(v1, v2);
+  float t = clipLineZ(v1, v2, 0.05f);
   //std::cout << t << std::endl;
 
   //std::cout << interpolate(v1, v2, t);
