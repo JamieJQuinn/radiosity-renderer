@@ -196,7 +196,3 @@ int clipTriangle(std::vector<Vec3f>& pts) {
   }
   return nTrianglesReturned;
 }
-
-void calcBoundingBox(Vec2f& bboxmin, Vec2f& bboxmax, const Vec2f& clamp, const std::vector<Vec3f>& pts) {
-
-}

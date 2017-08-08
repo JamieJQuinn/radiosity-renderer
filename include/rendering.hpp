@@ -24,7 +24,6 @@ bool isVertexInFront(const Vec3f& v);
 void transformFace(std::vector<Vec3f>& outScreenCoords, const Face& face, const Model& model, const Matrix& MVP);
 TGAColor getFaceColour(const Face& face, const Model& model);
 int clipTriangle(std::vector<Vec3f>& pts);
-void calcBoundingBox(Vec2f& bboxmin, Vec2f& bboxmax, const Vec2f& clamp, const std::vector<Vec3f>& pts);
 
 template <class T>
 void renderLine(int x0, int y0, int x1, int y1, Buffer<T> &buffer, const T& fillValue) {
