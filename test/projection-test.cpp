@@ -181,15 +181,15 @@ TEST_CASE("Test projection of vertices close to near plane", "[projection]") {
   std::vector<Vec3f> screen_coords(3);
   for (int j=0; j<3; j++) {
     Vec3f v = tri1[j];
-    screen_coords[j] = printMVPStages(eye, dir, up, v);
-    std::cout << screen_coords[j];
+    //screen_coords[j] = printMVPStages(eye, dir, up, v);
+    //std::cout << screen_coords[j];
   }
   clipAndRenderTriangle(screen_coords, zBuffer, buffer, colour);
 
   for (int j=0; j<3; j++) {
     Vec3f v = tri2[j];
     screen_coords[j] = m2v(MVP*v2m(v));
-    std::cout << screen_coords[j];
+    //std::cout << screen_coords[j];
   }
   //clipAndRenderTriangle(screen_coords, zBuffer, buffer, colour);
 

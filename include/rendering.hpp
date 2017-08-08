@@ -49,6 +49,12 @@ void renderLine(int x0, int y0, int x1, int y1, Buffer<T> &buffer, const T& fill
   }
 }
 
+template <class fillType, class zBufferType>
+void renderTriangle(const Vec3f& v1, const Vec3f& v2, const Vec3f& v3, Buffer<zBufferType>& zBuffer, Buffer<fillType> &buffer, const fillType& fillValue) {
+  std::vector<Vec3f> pts({v1, v2, v3});
+  renderTriangle(pts, zBuffer, buffer, fillValue);
+}
+
 // No interpolation of fillValue
 template <class fillType, class zBufferType>
 void renderTriangle(const std::vector<Vec3f>& pts, Buffer<zBufferType>& zBuffer, Buffer<fillType> &buffer, const fillType& fillValue) {
@@ -145,12 +151,12 @@ void renderTriangle(const std::vector<Vec3f>& pts, const float *intensities, Buf
 template <class fillType, class zBufferType>
 void clipAndRenderTriangle(std::vector<Vec3f>& pts, Buffer<zBufferType>& zBuffer, Buffer<fillType> &buffer, const fillType& fillValue) {
   int numTriangles = clipTriangle(pts);
-  for(int i=0; i<numTriangles; ++i) {
+  Matrix viewport = viewportRelative(0, 0, buffer.width, buffer.height);
+  for(int i=0; i<numTriangles*3; i+=3) {
     // Transform into viewport
-    Matrix viewport = viewportRelative(0, 0, buffer.width, buffer.height);
     for(int j=0; j<3; ++j) {
-      pts[j] = applyTransform(viewport, pts[j]);
+      pts[j+i] = applyTransform(viewport, pts[j+i]);
     }
-    renderTriangle(pts, zBuffer, buffer, fillValue);
+    renderTriangle(pts[i+0], pts[i+1], pts[i+2], zBuffer, buffer, fillValue);
   }
 }

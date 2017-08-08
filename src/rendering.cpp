@@ -143,7 +143,7 @@ int clipTriangle(std::vector<Vec3f>& pts) {
   bool intersectsAnywhere = false;
   for(int j=0; j<3; ++j) {
     intersectPts[j] = clipLineZ(pts[j], pts[(j+1)%3]);
-    isIntersecting[j] = intersectPts[j] >= 0.f and intersectPts[j] <= 1.f;
+    isIntersecting[j] = intersectPts[j] > 0.f and intersectPts[j] < 1.f;
     intersectsAnywhere = intersectsAnywhere or isIntersecting[j];
   }
 
@@ -162,8 +162,8 @@ int clipTriangle(std::vector<Vec3f>& pts) {
         int i1 = j;
         int i2 = (j+1)%3;
         int i3 = (j+2)%3;
-        Vec3f &v1 = pts[i1];
-        Vec3f &v2 = pts[i2];
+        Vec3f v1 = pts[i1];
+        Vec3f v2 = pts[i2];
         Vec3f v3 = pts[i3];
         if(isVertexInFront(v1)) {
           // Gotta split triangle into two
@@ -176,18 +176,18 @@ int clipTriangle(std::vector<Vec3f>& pts) {
                 ));
           pts.push_back(v1);
           // Fix triangle passed in
-          v3 = interpolate(v2, v3, intersectPts[i2]);
+          pts[i3] = interpolate(v2, v3, intersectPts[i2]);
           nTrianglesReturned = 2;
         } else {
           // Render one tri with intersection points
-          pts[j] = interpolate(
-              pts[(3+((j-1)%3))%3],
-              pts[j],
-              intersectPts[(3+((j-1)%3))%3]);
-          pts[(j+1)%3] = interpolate(
-              pts[(j+1)%3],
-              pts[(j+2)%3],
-              intersectPts[(j+1)%3]);
+          pts[i1] = interpolate(
+              pts[i3],
+              pts[i1],
+              intersectPts[i3]);
+          pts[i2] = interpolate(
+              pts[i2],
+              pts[i3],
+              intersectPts[i2]);
           nTrianglesReturned = 1;
         }
         break;

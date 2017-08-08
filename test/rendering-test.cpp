@@ -188,8 +188,6 @@ TEST_CASE("Test clipping against back wall (no need to clip)", "[clipping]") {
   pts[1] = Vec3f(0, 0.8, 0.6f);
   pts[2] = Vec3f(0.7, -0.4, 0.4f);
 
-  REQUIRE(clipTriangle(pts) == 1);
-
   clipAndRenderTriangle(pts, zBuffer, buffer, colour);
 
   renderColourBuffer(buffer, "test/clipping_test_no_need.tga");
@@ -201,11 +199,9 @@ TEST_CASE("Test clipping against back wall splitting tri", "[clipping]") {
   TGAColor colour(255, 0, 0, 255);
 
   std::vector<Vec3f> pts(3);
-  pts[0] = Vec3f(-0.5, -0.5, 0.5f);
-  pts[1] = Vec3f(0, 0.8, 0.6f);
+  pts[0] = Vec3f(0, 0.8, 0.6f);
+  pts[1] = Vec3f(-0.5, -0.5, 0.5f);
   pts[2] = Vec3f(0.7, -0.4, 1.4f);
-
-  REQUIRE(clipTriangle(pts) == 2);
 
   clipAndRenderTriangle(pts, zBuffer, buffer, colour);
 
@@ -221,8 +217,6 @@ TEST_CASE("Test clipping against back wall without splitting tri", "[clipping]")
   pts[0] = Vec3f(-0.5, -0.5, 0.5f);
   pts[1] = Vec3f(0, 0.8, 1.6f);
   pts[2] = Vec3f(0.7, -0.4, 1.4f);
-
-  REQUIRE(clipTriangle(pts) == 1);
 
   clipAndRenderTriangle(pts, zBuffer, buffer, colour);
 
