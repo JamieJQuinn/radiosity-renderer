@@ -21,8 +21,10 @@ void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, c
 Vec3f interpolate(const Vec3f& v0, const Vec3f& v1, float t);
 float clipLineZ(const Vec3f& v0, const Vec3f& v1);
 bool isVertexInFront(const Vec3f& v);
-void transformFace(Vec3f* outScreenCoords, const Face& face, const Model& model, const Matrix& MVP);
+void transformFace(std::vector<Vec3f>& outScreenCoords, const Face& face, const Model& model, const Matrix& MVP);
 TGAColor getFaceColour(const Face& face, const Model& model);
+int clipTriangle(std::vector<Vec3f>& pts);
+void calcBoundingBox(Vec2f& bboxmin, Vec2f& bboxmax, const Vec2f& clamp, const std::vector<Vec3f>& pts);
 
 template <class T>
 void renderLine(int x0, int y0, int x1, int y1, Buffer<T> &buffer, const T& fillValue) {
@@ -50,7 +52,7 @@ void renderLine(int x0, int y0, int x1, int y1, Buffer<T> &buffer, const T& fill
 
 // No interpolation of fillValue
 template <class fillType, class zBufferType>
-void renderTriangle(Vec3f *pts, Buffer<zBufferType>& zBuffer, Buffer<fillType> &buffer, const fillType& fillValue) {
+void renderTriangle(const std::vector<Vec3f>& pts, Buffer<zBufferType>& zBuffer, Buffer<fillType> &buffer, const fillType& fillValue) {
   // Create bounding box
   Vec2f bboxmin(buffer.width-1, buffer.height-1);
   Vec2f bboxmax(0, 0);
@@ -83,8 +85,7 @@ void renderTriangle(Vec3f *pts, Buffer<zBufferType>& zBuffer, Buffer<fillType> &
 
 // No ZBuffer
 template <class fillType>
-void renderTriangle(Vec3f *pts, Buffer<fillType> &buffer, const fillType& fillValue) {
-  // Create bounding box
+void renderTriangle(const std::vector<Vec3f>& pts, Buffer<fillType> &buffer, const fillType& fillValue) {
   Vec2f bboxmin(buffer.width-1, buffer.height-1);
   Vec2f bboxmax(0, 0);
   Vec2f clamp(buffer.width-1, buffer.height-1);
@@ -109,7 +110,7 @@ void renderTriangle(Vec3f *pts, Buffer<fillType> &buffer, const fillType& fillVa
 
 // ZBuffer & Interpolation
 template <class fillType, class zBufferType>
-void renderTriangle(const Vec3f *pts, const float *intensities, Buffer<zBufferType>& zBuffer, Buffer<fillType> &buffer, const fillType& fillValue) {
+void renderTriangle(const std::vector<Vec3f>& pts, const float *intensities, Buffer<zBufferType>& zBuffer, Buffer<fillType> &buffer, const fillType& fillValue) {
   // Create bounding box
   Vec2f bboxmin(buffer.width-1, buffer.height-1);
   Vec2f bboxmax(0, 0);
@@ -143,58 +144,14 @@ void renderTriangle(const Vec3f *pts, const float *intensities, Buffer<zBufferTy
 }
 
 template <class fillType, class zBufferType>
-void clipAndRenderTriangle(Vec3f *screen_coords, Buffer<zBufferType>& zBuffer, Buffer<fillType> &buffer, const fillType& fillValue) {
-  // Figure out intersection points
-  float intersectPts[3];
-  bool isIntersecting[3];
-  bool intersectsAnywhere = false;
-  for(int j=0; j<3; ++j) {
-    intersectPts[j] = clipLineZ(screen_coords[j], screen_coords[(j+1)%3]);
-    isIntersecting[j] = intersectPts[j] >= 0.f and intersectPts[j] <= 1.f;
-    intersectsAnywhere = intersectsAnywhere or isIntersecting[j];
-  }
-
-  // Use intersections to deduce clipping strategy
-  if( not intersectsAnywhere ) {
-    // Full triangle is in front or behind
-    if(isVertexInFront(screen_coords[0])) {
-      // In front; render full triangle
-      renderTriangle(screen_coords, zBuffer, buffer, fillValue);
-    }
-  } else {
-    // figure out how clipping should be done
+void clipAndRenderTriangle(std::vector<Vec3f>& pts, Buffer<zBufferType>& zBuffer, Buffer<fillType> &buffer, const fillType& fillValue) {
+  int numTriangles = clipTriangle(pts);
+  for(int i=0; i<numTriangles; ++i) {
+    // Transform into viewport
+    Matrix viewport = viewportRelative(0, 0, buffer.width, buffer.height);
     for(int j=0; j<3; ++j) {
-      if( not isIntersecting[j] ) {
-        // Find non-intersecting edge pts
-        Vec3f &edge1 = screen_coords[j];
-        if(isVertexInFront(edge1)) {
-          // Gotta split triangle into two
-          Vec3f temp = screen_coords[(j+2)%3];
-          screen_coords[(j+2)%3] = interpolate(
-              screen_coords[(j+1)%3],
-              screen_coords[(j+2)%3],
-              intersectPts[(j+1)%3]);
-          renderTriangle(screen_coords, zBuffer, buffer, fillValue);
-          screen_coords[(j+1)%3] = screen_coords[(j+2)%3];
-          screen_coords[(j+2)%3] = interpolate(
-              temp,
-              screen_coords[j],
-              intersectPts[(j+2)%3]);
-          renderTriangle(screen_coords, zBuffer, buffer, fillValue);
-        } else {
-          // Render one tri with intersection points
-          screen_coords[j] = interpolate(
-              screen_coords[(3+((j-1)%3))%3],
-              screen_coords[j],
-              intersectPts[(3+((j-1)%3))%3]);
-          screen_coords[(j+1)%3] = interpolate(
-              screen_coords[(j+1)%3],
-              screen_coords[(j+2)%3],
-              intersectPts[(j+1)%3]);
-          renderTriangle(screen_coords, zBuffer, buffer, fillValue);
-        }
-        break;
-      }
+      pts[j] = applyTransform(viewport, pts[j]);
     }
+    renderTriangle(pts, zBuffer, buffer, fillValue);
   }
 }

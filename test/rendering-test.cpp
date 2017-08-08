@@ -32,7 +32,7 @@ TEST_CASE("fillTriangle works on single triangle (const z)", "[renderer]") {
   int size = 20;
   Buffer<TGAColor> buffer(size, size, white);
   Buffer<float> zBuffer(size, size, 0);
-  Vec3f pts[3] = {Vec3f(12, 2, 1), Vec3f(5, 16, 1), Vec3f(16, 10, 1)};
+  std::vector<Vec3f> pts({Vec3f(12, 2, 1), Vec3f(5, 16, 1), Vec3f(16, 10, 1)});
   renderTriangle(pts, zBuffer, buffer, red);
 
   for(int j=0; j<size; ++j) {
@@ -72,7 +72,7 @@ TEST_CASE("fillTriangle works on single triangle (varying z)", "[renderer]") {
   int size = 20;
   Buffer<TGAColor> buffer(size, size, white);
   Buffer<float> zBuffer(size, size, 0);
-  Vec3f pts[3] = {Vec3f(12, 2, 1), Vec3f(5, 16, 5), Vec3f(16, 10, 9)};
+  std::vector<Vec3f> pts({Vec3f(12, 2, 1), Vec3f(5, 16, 5), Vec3f(16, 10, 9)});
   renderTriangle(pts, zBuffer, buffer, red);
 
   for(int j=0; j<size; ++j) {
@@ -112,8 +112,8 @@ TEST_CASE("fillTriangle works on two triangles", "[renderer]") {
   int size = 20;
   Buffer<TGAColor> buffer(size, size, white);
   Buffer<float> zBuffer(size, size, 0);
-  Vec3f pts1[3] = {Vec3f(12, 2, 1), Vec3f(5, 16, 1), Vec3f(16, 10, 1)};
-  Vec3f pts2[3] = {Vec3f(7, 4, 7.1), Vec3f(4, 10, 7.1), Vec3f(16, 18, 7.1)};
+  std::vector<Vec3f> pts1({Vec3f(12, 2, 1), Vec3f(5, 16, 1), Vec3f(16, 10, 1)});
+  std::vector<Vec3f> pts2({Vec3f(7, 4, 7.1), Vec3f(4, 10, 7.1), Vec3f(16, 18, 7.1)});
   renderTriangle(pts1, zBuffer, buffer, red);
   renderTriangle(pts2, zBuffer, buffer, blue);
 
@@ -154,8 +154,8 @@ TEST_CASE("fillTriangle works on two intersecting triangles", "[renderer]") {
   int size = 20;
   Buffer<TGAColor> buffer(size, size, white);
   Buffer<float> zBuffer(size, size, 0);
-  Vec3f pts1[3] = {Vec3f(4, 2, 9), Vec3f(4, 18, 9), Vec3f(18, 10, 1)};
-  Vec3f pts2[3] = {Vec3f(16, 2, 9), Vec3f(2, 10, 1), Vec3f(16, 18, 9)};
+  std::vector<Vec3f> pts1({Vec3f(4, 2, 9), Vec3f(4, 18, 9), Vec3f(18, 10, 1)});
+  std::vector<Vec3f> pts2({Vec3f(16, 2, 9), Vec3f(2, 10, 1), Vec3f(16, 18, 9)});
   renderTriangle(pts1, zBuffer, buffer, red);
   renderTriangle(pts2, zBuffer, buffer, blue);
 
@@ -178,34 +178,55 @@ TEST_CASE("Test calculation of form factors per cell", "[form_factors]") {
   REQUIRE(topFace.sum() + 4*sideFace.sum() == Approx(1.0f));
 }
 
+TEST_CASE("Test clipping against back wall (no need to clip)", "[clipping]") {
+  Buffer<TGAColor> buffer(500, 500, black);
+  Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
+  TGAColor colour(255, 0, 0, 255);
+
+  std::vector<Vec3f> pts(3);
+  pts[0] = Vec3f(-0.5, -0.5, 0.5f);
+  pts[1] = Vec3f(0, 0.8, 0.6f);
+  pts[2] = Vec3f(0.7, -0.4, 0.4f);
+
+  REQUIRE(clipTriangle(pts) == 1);
+
+  clipAndRenderTriangle(pts, zBuffer, buffer, colour);
+
+  renderColourBuffer(buffer, "test/clipping_test_no_need.tga");
+}
+
+TEST_CASE("Test clipping against back wall splitting tri", "[clipping]") {
+  Buffer<TGAColor> buffer(500, 500, black);
+  Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
+  TGAColor colour(255, 0, 0, 255);
+
+  std::vector<Vec3f> pts(3);
+  pts[0] = Vec3f(-0.5, -0.5, 0.5f);
+  pts[1] = Vec3f(0, 0.8, 0.6f);
+  pts[2] = Vec3f(0.7, -0.4, 1.4f);
+
+  REQUIRE(clipTriangle(pts) == 2);
+
+  clipAndRenderTriangle(pts, zBuffer, buffer, colour);
+
+  renderColourBuffer(buffer, "test/clipping_test_split.tga");
+}
+
 TEST_CASE("Test clipping against back wall without splitting tri", "[clipping]") {
   Buffer<TGAColor> buffer(500, 500, black);
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
   TGAColor colour(255, 0, 0, 255);
 
-  Vec3f screen_coords[3];
-  screen_coords[0] = Vec3f(100, 100, 0.5f);
-  screen_coords[1] = Vec3f(300, 400, 0.6f);
-  screen_coords[2] = Vec3f(400, 200, 1.4f);
+  std::vector<Vec3f> pts(3);
+  pts[0] = Vec3f(-0.5, -0.5, 0.5f);
+  pts[1] = Vec3f(0, 0.8, 1.6f);
+  pts[2] = Vec3f(0.7, -0.4, 1.4f);
 
-  clipAndRenderTriangle(screen_coords, zBuffer, buffer, colour);
+  REQUIRE(clipTriangle(pts) == 1);
+
+  clipAndRenderTriangle(pts, zBuffer, buffer, colour);
 
   renderColourBuffer(buffer, "test/clipping_test_nosplit.tga");
-}
-
-TEST_CASE("Test clipping against back wall with splitting tri", "[clipping]") {
-  Buffer<TGAColor> buffer(500, 500, black);
-  Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
-  TGAColor colour(255, 0, 0, 255);
-
-  Vec3f screen_coords[3];
-  screen_coords[0] = Vec3f(100, 100, 0.5f);
-  screen_coords[1] = Vec3f(300, 400, 1.5f);
-  screen_coords[2] = Vec3f(400, 200, 1.4f);
-
-  clipAndRenderTriangle(screen_coords, zBuffer, buffer, colour);
-
-  renderColourBuffer(buffer, "test/clipping_test_split.tga");
 }
 
 TEST_CASE("Test clipping in extreme situation", "[clipping]") {
@@ -213,12 +234,12 @@ TEST_CASE("Test clipping in extreme situation", "[clipping]") {
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
   TGAColor colour(255, 0, 0, 255);
 
-  Vec3f screen_coords[3];
-  screen_coords[0] = Vec3f(25250, -49750.1, 5.01003);
-  screen_coords[1] = Vec3f(25250, 50250.1, 5.01003);
-  screen_coords[2] = Vec3f(312.344, 374.688, 0.00999382);
+  std::vector<Vec3f> pts(3);
+  pts[0] = Vec3f(25250, -49750.1, 5.01003);
+  pts[1] = Vec3f(25250, 50250.1, 5.01003);
+  pts[2] = Vec3f(312.344, 374.688, 0.00999382);
 
-  clipAndRenderTriangle(screen_coords, zBuffer, buffer, colour);
+  clipAndRenderTriangle(pts, zBuffer, buffer, colour);
 
   renderColourBuffer(buffer, "test/clipping_test_extreme.tga");
 }

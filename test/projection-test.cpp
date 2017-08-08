@@ -155,7 +155,7 @@ TEST_CASE("Test projection of vertices close to near plane", "[projection]") {
 
   Vec3f up(0,0,1);
   Vec3f dir(0,1,0);
-  Vec3f eye = Vec3f(1,-2,2) - dir*0.01f;
+  Vec3f eye = Vec3f(1,-2,2);
   Matrix MVP = formHemicubeMVP(eye, dir, up, gridSize);
   //Matrix translation = formTranslation(eye*-1);
   //Matrix view = lookAt(Vec3f(0, 0, 0), dir, up)*translation;
@@ -163,7 +163,7 @@ TEST_CASE("Test projection of vertices close to near plane", "[projection]") {
   //Matrix MVP = projection*view*translation;
 
   Buffer<TGAColor> buffer(gridSize, gridSize, black);
-  Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
+  Buffer<float> zBuffer(buffer.width, buffer.height, -1.f);
   TGAColor colour(255, 0, 0, 255);
 
   // Render red wall
@@ -178,18 +178,20 @@ TEST_CASE("Test projection of vertices close to near plane", "[projection]") {
   tri2[1] = Vec3f(2,-2,4);
   tri2[2] = Vec3f(2,2,4);
 
-  Vec3f screen_coords[3];
+  std::vector<Vec3f> screen_coords(3);
   for (int j=0; j<3; j++) {
     Vec3f v = tri1[j];
-    screen_coords[j] = m2v(MVP*v2m(v));
+    screen_coords[j] = printMVPStages(eye, dir, up, v);
+    std::cout << screen_coords[j];
   }
   clipAndRenderTriangle(screen_coords, zBuffer, buffer, colour);
 
   for (int j=0; j<3; j++) {
     Vec3f v = tri2[j];
     screen_coords[j] = m2v(MVP*v2m(v));
+    std::cout << screen_coords[j];
   }
-  clipAndRenderTriangle(screen_coords, zBuffer, buffer, colour);
+  //clipAndRenderTriangle(screen_coords, zBuffer, buffer, colour);
 
   // Render blue wall
 

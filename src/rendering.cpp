@@ -110,7 +110,7 @@ TGAColor getFaceColour(const Face& face, const Model& model) {
   return TGAColor(matColour.r, matColour.g, matColour.b, 255);
 }
 
-void transformFace(Vec3f* outScreenCoords, const Face& face, const Model& model, const Matrix& MVP) {
+void transformFace(std::vector<Vec3f>& outScreenCoords, const Face& face, const Model& model, const Matrix& MVP) {
   for (int j=0; j<3; j++) {
     Vec3f v = model.vert(face[j].ivert);
     outScreenCoords[j] = m2v(MVP*v2m(v));
@@ -123,13 +123,80 @@ void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, c
     Face face = model.face(i);
     TGAColor colour = getFaceColour(face, model);
 
-    Vec3f screen_coords[3];
-    transformFace(screen_coords, face, model, MVP);
+    std::vector<Vec3f> pts(3);
+    transformFace(pts, face, model, MVP);
 
-    Vec3f n = calcNormal(screen_coords[0], screen_coords[1], screen_coords[2]);
+    Vec3f n = calcNormal(pts[0], pts[1], pts[2]);
     if(n.z>0.f) {
-      //renderTriangle(screen_coords, zBuffer, buffer, colour);
-      clipAndRenderTriangle(screen_coords, zBuffer, buffer, colour);
+      //renderTriangle(pts, zBuffer, buffer, colour);
+      clipAndRenderTriangle(pts, zBuffer, buffer, colour);
     }
   }
+}
+
+int clipTriangle(std::vector<Vec3f>& pts) {
+  // Default no triangles to be rendered
+  int nTrianglesReturned = 0;
+  // Figure out intersection points
+  float intersectPts[3];
+  bool isIntersecting[3];
+  bool intersectsAnywhere = false;
+  for(int j=0; j<3; ++j) {
+    intersectPts[j] = clipLineZ(pts[j], pts[(j+1)%3]);
+    isIntersecting[j] = intersectPts[j] >= 0.f and intersectPts[j] <= 1.f;
+    intersectsAnywhere = intersectsAnywhere or isIntersecting[j];
+  }
+
+  // Use intersections to deduce clipping strategy
+  if( not intersectsAnywhere ) {
+    // Full triangle is in front or behind
+    if(isVertexInFront(pts[0])) {
+      // In front; render full triangle
+      nTrianglesReturned = 1;
+    }
+  } else {
+    // figure out how clipping should be done
+    for(int j=0; j<3; ++j) {
+      if( not isIntersecting[j] ) {
+        // Find non-intersecting edge pts
+        int i1 = j;
+        int i2 = (j+1)%3;
+        int i3 = (j+2)%3;
+        Vec3f &v1 = pts[i1];
+        Vec3f &v2 = pts[i2];
+        Vec3f v3 = pts[i3];
+        if(isVertexInFront(v1)) {
+          // Gotta split triangle into two
+          // Create new triangle
+          pts.push_back(interpolate(
+                v2, v3, intersectPts[i2]
+                ));
+          pts.push_back(interpolate(
+                v3, v1, intersectPts[i3]
+                ));
+          pts.push_back(v1);
+          // Fix triangle passed in
+          v3 = interpolate(v2, v3, intersectPts[i2]);
+          nTrianglesReturned = 2;
+        } else {
+          // Render one tri with intersection points
+          pts[j] = interpolate(
+              pts[(3+((j-1)%3))%3],
+              pts[j],
+              intersectPts[(3+((j-1)%3))%3]);
+          pts[(j+1)%3] = interpolate(
+              pts[(j+1)%3],
+              pts[(j+2)%3],
+              intersectPts[(j+1)%3]);
+          nTrianglesReturned = 1;
+        }
+        break;
+      }
+    }
+  }
+  return nTrianglesReturned;
+}
+
+void calcBoundingBox(Vec2f& bboxmin, Vec2f& bboxmax, const Vec2f& clamp, const std::vector<Vec3f>& pts) {
+
 }
