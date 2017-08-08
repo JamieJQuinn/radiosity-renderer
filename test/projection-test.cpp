@@ -62,8 +62,6 @@ TEST_CASE("Ensure MVP retains z order", "[projection]") {
   Vec4f wAfterProjection = projection*wAfterView;
   REQUIRE(vAfterProjection.z > wAfterProjection.z);
 
-  std::cout << projection << vAfterView << vAfterProjection;
-
   REQUIRE(vAfterProjection.z > -farPlane);
   REQUIRE(vAfterProjection.z < nearPlane);
   REQUIRE(wAfterProjection.z > -farPlane);
@@ -142,24 +140,24 @@ Vec3f printMVPStages(const Vec3f& eye, const Vec3f& dir, const Vec3f& up, const 
   return vAfterViewport;
 }
 
-TEST_CASE("Test that corners go to correct place", "[projection]") {
-  Vec3f up(0,0,1);
-  Vec3f dir(0,1,0);
-  Vec3f eye = Vec3f(1,-2,3)-dir*0.01f;
+//TEST_CASE("Test that corners go to correct place", "[projection]") {
+  //Vec3f up(0,0,1);
+  //Vec3f dir(0,1,0);
+  //Vec3f eye = Vec3f(1,-2,3)-dir*0.01f;
 
-  // Red corner
-  Vec3f v1(2, -2+0.04, 2);
-  //v1 = printMVPStages(eye, dir, up, v1);
+  //// Red corner
+  //Vec3f v1(2, -2+0.04, 2);
+  ////v1 = printMVPStages(eye, dir, up, v1);
 
-  // point connected to red corner
-  Vec3f v2(2, 20, 2);
-  //v2 = printMVPStages(eye, dir, up, v2);
+  //// point connected to red corner
+  //Vec3f v2(2, 20, 2);
+  ////v2 = printMVPStages(eye, dir, up, v2);
 
-  float t = clipLineZ(v1, v2, 0.05f);
-  //std::cout << t << std::endl;
+  //float t = clipLineZ(v1, v2, 0.05f);
+  ////std::cout << t << std::endl;
 
-  //std::cout << interpolate(v1, v2, t);
-}
+  ////std::cout << interpolate(v1, v2, t);
+//}
 
 //TEST_CASE("Test projection of vertices close to near plane", "[projection]") {
   //Model model("test/scene.obj", "test/scene.mtl");
