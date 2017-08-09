@@ -16,7 +16,7 @@ void calcFormFactorPerCell(const int sideLengthInPixels, Buffer<float>& topFace,
 void calcFormFactorsFromBuffer(const Buffer<int>& itemBuffer, const Buffer<float>& factorsPerCell, std::vector<float>& formFactors);
 void renderModel(Buffer<int>& buffer, const Model& model, const Matrix& MVP);
 void renderModel(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP);
-void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP, float nearPlane);
+void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP, const Vec3f& dir, float nearPlane);
 
 Vec3f interpolate(const Vec3f& v0, const Vec3f& v1, float t);
 float clipLineZ(const Vec3f& v0, const Vec3f& v1, float nearPlane);

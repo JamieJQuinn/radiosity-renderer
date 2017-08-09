@@ -115,7 +115,7 @@ std::vector<Vec4f> transformFace(const Face& face, const Model& model, const Mat
   return outScreenCoords;
 }
 
-void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP, float nearPlane) {
+void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP, const Vec3f& dir, float nearPlane) {
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
   for (int i=0; i<model.nfaces(); ++i) {
     Face face = model.face(i);
@@ -123,8 +123,12 @@ void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, c
 
     std::vector<Vec4f> pts = transformFace(face, model, MVP);
 
-    Vec3f n = calcNormal(pts[0], pts[1], pts[2]);
-    if(n.z>0.f) {
+    std::vector<Vec3f> worldCoords(3);
+    for(int j=0; j<3; ++j) {
+      worldCoords[j] = model.vert(face[j].ivert);
+    }
+    Vec3f n = model.norm(i, 0);
+    if( n.dot(dir) <= 0.f ) {
       clipAndRenderTriangle(pts, zBuffer, buffer, colour, nearPlane);
     }
   }

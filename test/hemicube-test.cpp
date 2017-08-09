@@ -21,14 +21,14 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
   //Vec3f dir = (normal*up.norm()).normalise();
   Vec3f dir = model.norm(faceIdx, 0);
   //Vec3f dir = Vec3f(0,1,0);
-  Vec3f eye = model.centreOf(faceIdx) - dir*0.01f;
+  Vec3f eye = model.centreOf(faceIdx);
 
   //Vec3f up(0,0,1);
   //Vec3f eye(0.2f,-1.f,0.3f);
 
   Matrix MVP = formHemicubeMVP(eye, dir, up);
   Buffer<TGAColor> buffer(gridSize, gridSize, black);
-  renderTestModelReflectivity(buffer, model, MVP, 0.05f);
+  renderTestModelReflectivity(buffer, model, MVP, dir, 0.05f);
 
   for(int j=0; j<gridSize; ++j) {
     for(int i=0; i<gridSize; ++i) {
@@ -40,7 +40,7 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
   std::swap(up, dir);
   MVP = formHemicubeMVP(eye, dir, up);
   buffer.fillAll(black);
-  renderTestModelReflectivity(buffer, model, MVP, 0.05f);
+  renderTestModelReflectivity(buffer, model, MVP, dir, 0.05f);
 
   renderColourBuffer(buffer, "test/hemicubeMVP_up.tga");
 
@@ -54,7 +54,7 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
   dir = dir*-1.f;
   MVP = formHemicubeMVP(eye, dir, up);
   buffer.fillAll(black);
-  renderTestModelReflectivity(buffer, model, MVP, 0.05f);
+  renderTestModelReflectivity(buffer, model, MVP, dir, 0.05f);
 
   renderColourBuffer(buffer, "test/hemicubeMVP_down.tga");
 
@@ -68,7 +68,7 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
   dir = dir.cross(up);
   MVP = formHemicubeMVP(eye, dir, up);
   buffer.fillAll(black);
-  renderTestModelReflectivity(buffer, model, MVP, 0.05f);
+  renderTestModelReflectivity(buffer, model, MVP, dir, 0.05f);
 
   renderColourBuffer(buffer, "test/hemicubeMVP_right.tga");
 
@@ -82,7 +82,7 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
   dir = dir*-1.f;
   MVP = formHemicubeMVP(eye, dir, up);
   buffer.fillAll(black);
-  renderTestModelReflectivity(buffer, model, MVP, 0.05f);
+  renderTestModelReflectivity(buffer, model, MVP, dir, 0.05f);
 
   renderColourBuffer(buffer, "test/hemicubeMVP_left.tga");
 
