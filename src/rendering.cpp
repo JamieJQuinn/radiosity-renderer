@@ -110,7 +110,7 @@ std::vector<Vec4f> transformFace(const Face& face, const Model& model, const Mat
   return outScreenCoords;
 }
 
-void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP, const Vec3f& dir, float nearPlane) {
+void renderModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP, const Vec3f& dir, float nearPlane) {
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
   for (int i=0; i<model.nfaces(); ++i) {
     Face face = model.face(i);

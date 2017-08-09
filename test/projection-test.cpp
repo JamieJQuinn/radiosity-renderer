@@ -97,7 +97,7 @@ TEST_CASE("Test moving the camera (filled triangles)", "[camera]") {
 
   Buffer<TGAColor> buffer(size, size, black);
 
-  renderTestModelReflectivity(buffer, model, MVP, dir, 0.05f);
+  renderModelReflectivity(buffer, model, MVP, dir, 0.05f);
 
   renderColourBuffer(buffer, "test/simple_box_filled.tga");
 }
@@ -113,7 +113,7 @@ TEST_CASE("Test viewing subdivided model from inside (filled triangles)", "[came
 
   Buffer<TGAColor> buffer(size, size, black);
 
-  renderTestModelReflectivity(buffer, model, MVP, dir, 0.05f);
+  renderModelReflectivity(buffer, model, MVP, dir, 0.05f);
 
   renderColourBuffer(buffer, "test/simple_box_subdivided_inside.tga");
 }
@@ -189,7 +189,7 @@ TEST_CASE("Test projection of vertices close to near plane", "[projection]") {
   renderColourBuffer(buffer, "test/close_vertices_red_blue_walls.tga");
 
   buffer.fillAll(black);
-  renderTestModelReflectivity(buffer, model, MVP, dir, 0.05f);
+  renderModelReflectivity(buffer, model, MVP, dir, 0.05f);
 
   renderColourBuffer(buffer, "test/close_vertices.tga");
 }

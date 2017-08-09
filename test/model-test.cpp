@@ -47,7 +47,7 @@ TEST_CASE("Test loading of materials", "[model]") {
 
   Buffer<TGAColor> buffer(gridSize, gridSize, black);
 
-  renderTestModelReflectivity(buffer, model, MVP, dir, 0.05f);
+  renderModelReflectivity(buffer, model, MVP, dir, 0.05f);
 
   renderColourBuffer(buffer, "test/scene_subdivided_inside.tga");
 }
@@ -69,7 +69,7 @@ TEST_CASE("Test looking at scene from inside", "[model]") {
 
   Buffer<TGAColor> buffer(gridSize, gridSize, black);
 
-  renderTestModelReflectivity(buffer, model, MVP, dir, 0.05f);
+  renderModelReflectivity(buffer, model, MVP, dir, 0.05f);
 
   renderColourBuffer(buffer, "test/scene_inside.tga");
 }
@@ -84,7 +84,7 @@ TEST_CASE("Test viewing subdivided model", "[model]") {
   Matrix MVP = formHemicubeMVP(eye, dir, up);
 
   Buffer<TGAColor> buffer(size, size, black);
-  renderTestModelReflectivity(buffer, model, MVP, dir, 0.05f);
+  renderModelReflectivity(buffer, model, MVP, dir, 0.05f);
 
   renderColourBuffer(buffer, "test/simple_box_subdivided_inside_normals.tga");
 }
@@ -99,7 +99,7 @@ TEST_CASE("Test viewing subdivided scene", "[model]") {
   Matrix MVP = formHemicubeMVP(eye, dir, up);
 
   Buffer<TGAColor> buffer(size, size, black);
-  renderTestModelReflectivity(buffer, model, MVP, dir, 0.05f);
+  renderModelReflectivity(buffer, model, MVP, dir, 0.05f);
 
   renderColourBuffer(buffer, "test/scene_subdivided_outside.tga");
 }
@@ -114,7 +114,7 @@ TEST_CASE("Test viewing simple scene", "[model]") {
   Matrix MVP = formHemicubeMVP(eye, dir, up);
 
   Buffer<TGAColor> buffer(size, size, black);
-  renderTestModelReflectivity(buffer, model, MVP, dir, 0.05f);
+  renderModelReflectivity(buffer, model, MVP, dir, 0.05f);
 
   renderColourBuffer(buffer, "test/scene_outside.tga");
 }
@@ -129,7 +129,7 @@ TEST_CASE("Test viewing two boxes with different normals", "[model]") {
   Matrix MVP = formHemicubeMVP(eye, dir, up);
 
   Buffer<TGAColor> buffer(size, size, black);
-  renderTestModelReflectivity(buffer, model, MVP, dir, 0.05f);
+  renderModelReflectivity(buffer, model, MVP, dir, 0.05f);
 
   renderColourBuffer(buffer, "test/dual_cube_different_normals.tga");
 }
