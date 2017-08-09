@@ -118,10 +118,6 @@ void renderModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const
 
     std::vector<Vec4f> pts = transformFace(face, model, MVP);
 
-    std::vector<Vec3f> worldCoords(3);
-    for(int j=0; j<3; ++j) {
-      worldCoords[j] = model.vert(face[j].ivert);
-    }
     Vec3f n = model.norm(i, 0);
     if( n.dot(dir) <= 0.f ) {
       clipAndRenderTriangle(pts, zBuffer, buffer, colour, nearPlane);
