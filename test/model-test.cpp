@@ -40,8 +40,8 @@ TEST_CASE("Test loading of materials", "[model]") {
 
   Face f = model.face(faceIdx);
   Vec3f up = model.vert(f[1].ivert) - model.vert(f[0].ivert);
-  Vec3f dir = model.norm(faceIdx, 0)*up.norm();
-  Vec3f eye = model.centreOf(faceIdx) - dir*0.01f;
+  Vec3f dir = model.norm(faceIdx, 0);
+  Vec3f eye = model.centreOf(faceIdx);
 
   Matrix MVP = formHemicubeMVP(eye, dir, up);
 
@@ -144,32 +144,42 @@ TEST_CASE("Test looking at scene from inside DEBUG", "[model]") {
   int faceIdx = 0;
 
   Face f = model.face(faceIdx);
-  Vec3f up = model.vert(f[1].ivert) - model.vert(f[0].ivert);
-  Vec3f dir = model.norm(faceIdx, 0)*up.norm();
+  Vec3f up = (model.vert(f[1].ivert) - model.vert(f[0].ivert)).normalise();
+  Vec3f dir = model.norm(faceIdx, 0);
   Vec3f eye = model.centreOf(faceIdx);
 
   Matrix MVP = formHemicubeMVP(eye, dir, up);
 
   Buffer<TGAColor> buffer(gridSize, gridSize, black);
-  TGAColor colours[] = {red, green, blue, yellow, white, black};
+  TGAColor colours[] = {red, green, blue, yellow, white};
   int colourIdx = 0;
 
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
   for (int i=0; i<model.nfaces(); ++i) {
+    //std::cout << i << std::endl;
+
     Face face = model.face(i);
-    TGAColor colour = getFaceColour(face, model);
+    TGAColor colour = model.getFaceColour(face);
+
+    //std::cout << model.material(face.matIdx).reflectivity*255;
 
     std::vector<Vec4f> pts = transformFace(face, model, MVP);
 
     std::vector<Vec3f> worldCoords(3);
     for(int j=0; j<3; ++j) {
       worldCoords[j] = model.vert(face[j].ivert);
+      //std::cout << worldCoords[j];
+      //std::cout << pts[j];
     }
     Vec3f n = model.norm(i, 0);
     if( n.dot(dir) <= 0.f ) {
+      //clipAndRenderTriangle(pts, zBuffer, buffer, colours[colourIdx], nearPlane);
       clipAndRenderTriangle(pts, zBuffer, buffer, colour, nearPlane);
+      ++colourIdx;
+      colourIdx %= 5;
     }
   }
 
   renderColourBuffer(buffer, "test/scene_inside_debug.tga");
+  renderZBuffer(zBuffer, "test/scene_inside_debug_z.tga");
 }

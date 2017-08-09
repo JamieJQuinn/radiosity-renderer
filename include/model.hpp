@@ -4,6 +4,7 @@
 #include "geometry.hpp"
 #include "material.hpp"
 #include "face.hpp"
+#include "tgaimage.hpp"
 
 class Model {
 private:
@@ -25,4 +26,5 @@ public:
   const Material& material(int iface) const;
   const Face face(int idx) const;
   Vec3f centreOf(int faceIdx) const;
+  TGAColor getFaceColour(const Face& face) const;
 };

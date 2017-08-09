@@ -25,3 +25,11 @@ TEST_CASE("Ensure normalisation works", "[vec3]") {
   v.normalise();
   REQUIRE(v.norm() == Approx(1.0f));
 }
+
+TEST_CASE("Test that vec4f constructs with correct w value", "[vec]") {
+  Vec4f v(Vec3f(1, 2, 3), 4);
+  REQUIRE(v.x == 1);
+  REQUIRE(v.y == 2);
+  REQUIRE(v.z == 3);
+  REQUIRE(v.w == 4);
+}

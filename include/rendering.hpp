@@ -157,7 +157,7 @@ void clipAndRenderTriangle(std::vector<Vec4f>& pts, Buffer<zBufferType>& zBuffer
   for(int i=0; i<numTriangles*3; i+=3) {
     // Transform into viewport
     for(int j=0; j<3; ++j) {
-      pts[j+i] = applyTransform(viewport, pts[j+i]);
+      pts[j+i] = viewport*pts[j+i];
     }
     renderTriangle(pts[i+0], pts[i+1], pts[i+2], zBuffer, buffer, fillValue);
   }

@@ -118,9 +118,9 @@ template <class t> struct Vec4 {
     t raw[4];
   };
   Vec4() : x(0), y(0), z(0), w(0) {}
-  Vec4(t _x, t _y, t _z, t _w) : x(_x),y(_y),z(_z),w(_w) {}
+  Vec4(t _x, t _y, t _z, t _w=1) : x(_x),y(_y),z(_z),w(_w) {}
   Vec4(const Vec4<t> &v) : x(v.x),y(v.y),z(v.z),w(v.w) {}
-  Vec4(const Vec3<t> &v, int _w=1) : x(v.x),y(v.y),z(v.z),w(_w) {}
+  Vec4(const Vec3<t> &v, t _w=1) : x(v.x),y(v.y),z(v.z),w(_w) {}
   Vec4(const Matrix& m) {
     assert((m.nrows() == 4) && (m.ncols()==1));
     x = m.get(0,0);
@@ -140,7 +140,11 @@ template <class t> struct Vec4 {
   t norm2 () const { return x*x+y*y+z*z; }
   t norm () const { return std::sqrt(norm2()); }
   Vec4<t> & normalise(t l=1) { *this = (*this)*(l/norm()); return *this; }
-  Vec4<t> & homogenise() { assert(w!=0.f); *this = (*this)*(1/w); return *this; }
+  Vec4<t> & homogenise() {
+    //assert(w!=0.f);
+    *this = (*this)*(1/w);
+    return *this;
+  }
   template <class > friend std::ostream& operator<<(std::ostream& s, const Vec4<t>& v);
 };
 

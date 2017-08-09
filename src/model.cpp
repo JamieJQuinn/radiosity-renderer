@@ -96,6 +96,11 @@ Model::Model(const char *objFilename, const char *mtlFilename) : verts_(), faces
 Model::~Model() {
 }
 
+TGAColor Model::getFaceColour(const Face& face) const {
+  Vec3f matColour = material(face.matIdx).reflectivity*255;
+  return TGAColor(matColour.r, matColour.g, matColour.b, 255);
+}
+
 int Model::nverts() const {
   return (int)verts_.size();
 }

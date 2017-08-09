@@ -101,11 +101,6 @@ Vec3f interpolate(const Vec3f& v0, const Vec3f& v1, float t) {
   return v0 + (v1-v0)*t;
 }
 
-TGAColor getFaceColour(const Face& face, const Model& model) {
-  Vec3f matColour = model.material(face.matIdx).reflectivity*255;
-  return TGAColor(matColour.r, matColour.g, matColour.b, 255);
-}
-
 std::vector<Vec4f> transformFace(const Face& face, const Model& model, const Matrix& MVP) {
   std::vector<Vec4f> outScreenCoords(3);
   for (int j=0; j<3; j++) {
@@ -119,7 +114,7 @@ void renderTestModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, c
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
   for (int i=0; i<model.nfaces(); ++i) {
     Face face = model.face(i);
-    TGAColor colour = getFaceColour(face, model);
+    TGAColor colour = model.getFaceColour(face);
 
     std::vector<Vec4f> pts = transformFace(face, model, MVP);
 
@@ -168,26 +163,26 @@ int clipTriangle(std::vector<Vec4f>& pts, float nearPlane) {
         if(v1.z < nearPlane) {
           // Gotta split triangle into two
           // Create new triangle
-          pts.push_back(interpolate(
+          pts.push_back(Vec4f(interpolate(
                 v2, v3, intersectPts[i2]
-                ));
-          pts.push_back(interpolate(
+                ), nearPlane));
+          pts.push_back(Vec4f(interpolate(
                 v3, v1, intersectPts[i3]
-                ));
+                ), nearPlane));
           pts.push_back(v1);
           // Fix triangle passed in
-          pts[i3] = interpolate(v2, v3, intersectPts[i2]);
+          pts[i3] = Vec4f(interpolate(v2, v3, intersectPts[i2]), nearPlane);
           nTrianglesReturned = 2;
         } else {
           // Render one tri with intersection points
-          pts[i1] = interpolate(
+          pts[i1] = Vec4f(interpolate(
               pts[i3],
               pts[i1],
-              intersectPts[i3]);
-          pts[i2] = interpolate(
+              intersectPts[i3]), nearPlane);
+          pts[i2] = Vec4f(interpolate(
               pts[i2],
               pts[i3],
-              intersectPts[i2]);
+              intersectPts[i2]), nearPlane);
           nTrianglesReturned = 1;
         }
         break;
