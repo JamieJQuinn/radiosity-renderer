@@ -101,39 +101,11 @@ TEST_CASE("Render single hemicube face to ID index", "[hemicube]") {
 TEST_CASE("Render hemicube to ID index", "[hemicube]") {
   Model model("test/scene.obj", "test/scene.mtl");
   int nFaces = model.nfaces() + 1;
-  int faceIdx = 0;
+  int faceIdx = 8;
   int gridSize = 100;
   Buffer<int> mainBuffer(gridSize*2, gridSize*2, 0);
 
-  renderHemicubeFront(mainBuffer, model, faceIdx);
-  for(int j=0; j<mainBuffer.height; ++j) {
-    for(int i=0; i<mainBuffer.width; ++i) {
-      REQUIRE(mainBuffer.get(i, j) < nFaces);
-    }
-  }
-
-  renderHemicubeUp(mainBuffer, model, faceIdx);
-  for(int j=0; j<mainBuffer.height; ++j) {
-    for(int i=0; i<mainBuffer.width; ++i) {
-      REQUIRE(mainBuffer.get(i, j) < nFaces);
-    }
-  }
-
-  renderHemicubeDown(mainBuffer, model, faceIdx);
-  for(int j=0; j<mainBuffer.height; ++j) {
-    for(int i=0; i<mainBuffer.width; ++i) {
-      REQUIRE(mainBuffer.get(i, j) < nFaces);
-    }
-  }
-
-  renderHemicubeLeft(mainBuffer, model, faceIdx);
-  for(int j=0; j<mainBuffer.height; ++j) {
-    for(int i=0; i<mainBuffer.width; ++i) {
-      REQUIRE(mainBuffer.get(i, j) < nFaces);
-    }
-  }
-
-  renderHemicubeRight(mainBuffer, model, faceIdx);
+  renderToHemicube(mainBuffer, model, faceIdx);
   for(int j=0; j<mainBuffer.height; ++j) {
     for(int i=0; i<mainBuffer.width; ++i) {
       REQUIRE(mainBuffer.get(i, j) < nFaces);
