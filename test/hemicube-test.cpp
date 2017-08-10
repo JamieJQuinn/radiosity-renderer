@@ -5,7 +5,7 @@
 #include "rendering.hpp"
 
 TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
-  Model model("test/simple_box_subdivided.obj", "test/simple_box_subdivided.mtl");
+  Model model("test/scene.obj", "test/scene.mtl");
 
   int gridSize = 500;
 
@@ -79,4 +79,66 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
   }
 
   renderColourBuffer(mainBuffer, "test/hemicubeMVP.tga");
+}
+
+TEST_CASE("Render single hemicube face to ID index", "[hemicube]") {
+  Model model("test/scene.obj", "test/scene.mtl");
+  int nFaces = model.nfaces() + 1;
+  int faceIdx = 0;
+  int gridSize = 100;
+  Buffer<int> buffer(gridSize, gridSize, 0);
+  renderHemicubeFront(buffer, model, faceIdx);
+
+  for(int j=0; j<buffer.height; ++j) {
+    for(int i=0; i<buffer.width; ++i) {
+      REQUIRE(buffer.get(i, j) < nFaces);
+    }
+  }
+
+  renderIdsToColour(buffer, model, "test/hemicube_face_IDs.tga");
+}
+
+TEST_CASE("Render hemicube to ID index", "[hemicube]") {
+  Model model("test/scene.obj", "test/scene.mtl");
+  int nFaces = model.nfaces() + 1;
+  int faceIdx = 0;
+  int gridSize = 100;
+  Buffer<int> mainBuffer(gridSize*2, gridSize*2, 0);
+
+  renderHemicubeFront(mainBuffer, model, faceIdx);
+  for(int j=0; j<mainBuffer.height; ++j) {
+    for(int i=0; i<mainBuffer.width; ++i) {
+      REQUIRE(mainBuffer.get(i, j) < nFaces);
+    }
+  }
+
+  renderHemicubeUp(mainBuffer, model, faceIdx);
+  for(int j=0; j<mainBuffer.height; ++j) {
+    for(int i=0; i<mainBuffer.width; ++i) {
+      REQUIRE(mainBuffer.get(i, j) < nFaces);
+    }
+  }
+
+  renderHemicubeDown(mainBuffer, model, faceIdx);
+  for(int j=0; j<mainBuffer.height; ++j) {
+    for(int i=0; i<mainBuffer.width; ++i) {
+      REQUIRE(mainBuffer.get(i, j) < nFaces);
+    }
+  }
+
+  renderHemicubeLeft(mainBuffer, model, faceIdx);
+  for(int j=0; j<mainBuffer.height; ++j) {
+    for(int i=0; i<mainBuffer.width; ++i) {
+      REQUIRE(mainBuffer.get(i, j) < nFaces);
+    }
+  }
+
+  renderHemicubeRight(mainBuffer, model, faceIdx);
+  for(int j=0; j<mainBuffer.height; ++j) {
+    for(int i=0; i<mainBuffer.width; ++i) {
+      REQUIRE(mainBuffer.get(i, j) < nFaces);
+    }
+  }
+
+  renderIdsToColour(mainBuffer, model, "test/hemicubeIDs.tga");
 }

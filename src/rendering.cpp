@@ -125,6 +125,32 @@ void renderModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const
   }
 }
 
+void renderModelIds(Buffer<int>& buffer, const Model& model, const Matrix& MVP, const Vec3f& dir, float nearPlane) {
+  Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
+  for (int i=0; i<model.nfaces(); ++i) {
+    Face face = model.face(i);
+    std::vector<Vec4f> pts = transformFace(face, model, MVP);
+
+    Vec3f n = model.norm(i, 0);
+    if( n.dot(dir) <= 0.f ) {
+      clipAndRenderTriangle(pts, zBuffer, buffer, i+1, nearPlane);
+    }
+  }
+}
+
+void renderIdsToColour(const Buffer<int>& itemBuffer, const Model& model, std::string fileName) {
+  Buffer<TGAColor> colourBuffer(itemBuffer.width, itemBuffer.height, black);
+  for(int j=0; j<itemBuffer.height; ++j) {
+    for(int i=0; i<itemBuffer.width; ++i) {
+      int faceIdx = itemBuffer.get(i, j);
+      if (faceIdx != 0) {
+        colourBuffer.set(i, j, model.getFaceColour(faceIdx-1));
+      }
+    }
+  }
+  renderColourBuffer(colourBuffer, fileName);
+}
+
 int clipTriangle(std::vector<Vec4f>& pts, float nearPlane) {
   // Default no triangles to be rendered
   int nTrianglesReturned = 0;

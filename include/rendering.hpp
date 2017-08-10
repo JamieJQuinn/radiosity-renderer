@@ -17,6 +17,8 @@ void calcFormFactorsFromBuffer(const Buffer<int>& itemBuffer, const Buffer<float
 void renderModel(Buffer<int>& buffer, const Model& model, const Matrix& MVP);
 void renderModel(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP);
 void renderModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP, const Vec3f& dir, float nearPlane);
+void renderModelIds(Buffer<int>& buffer, const Model& model, const Matrix& MVP, const Vec3f& dir, float nearPlane);
+void renderIdsToColour(const Buffer<int>& itemBuffer, const Model& model, std::string fileName);
 
 Vec3f interpolate(const Vec3f& v0, const Vec3f& v1, float t);
 float clipLineZ(const Vec3f& v0, const Vec3f& v1, float nearPlane);

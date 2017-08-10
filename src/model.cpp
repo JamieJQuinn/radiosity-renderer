@@ -101,6 +101,10 @@ TGAColor Model::getFaceColour(const Face& face) const {
   return TGAColor(matColour.r, matColour.g, matColour.b, 255);
 }
 
+TGAColor Model::getFaceColour(int faceIdx) const {
+  return getFaceColour(face(faceIdx));
+}
+
 int Model::nverts() const {
   return (int)verts_.size();
 }
@@ -109,29 +113,37 @@ int Model::nfaces() const {
   return (int)faces_.size();
 }
 
-const Face Model::face(int idx) const {
+Face Model::face(int idx) const {
+  assert(idx < nfaces());
   return faces_[idx];
 }
 
 Vec3f Model::vert(int i) const {
+  assert(i < nverts());
   return verts_[i];
 }
 
 Vec3f Model::norm(int iface, int nvert) const {
-    int idx = faces_[iface][nvert].inorm;
-    return norms_[idx];
+  assert(iface < nfaces());
+  assert(nvert < nverts());
+  int idx = faces_[iface][nvert].inorm;
+  return norms_[idx];
 }
 
 Vec3f Model::uv(int iface, int nvert) const {
-    int idx = faces_[iface][nvert].iuv;
-    return uv_[idx];
+  assert(iface < nfaces());
+  assert(nvert < nverts());
+  int idx = faces_[iface][nvert].iuv;
+  return uv_[idx];
 }
 
 const Material& Model::material(int idx) const {
-    return materials_[idx];
+  assert(idx < materials_.size());
+  return materials_[idx];
 }
 
 Vec3f Model::centreOf(int faceIdx) const {
+  assert(faceIdx < nfaces());
   Face f = face(faceIdx);
   int size = f.size();
   Vec3f total(0, 0, 0);

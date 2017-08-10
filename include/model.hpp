@@ -24,7 +24,8 @@ public:
   Vec3f norm(int i, int j) const;
   Vec3f uv(int iface, int nvert) const;
   const Material& material(int iface) const;
-  const Face face(int idx) const;
+  Face face(int idx) const;
   Vec3f centreOf(int faceIdx) const;
   TGAColor getFaceColour(const Face& face) const;
+  TGAColor getFaceColour(int faceIdx) const;
 };
