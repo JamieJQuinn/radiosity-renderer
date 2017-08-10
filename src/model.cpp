@@ -96,8 +96,16 @@ Model::Model(const char *objFilename, const char *mtlFilename) : verts_(), faces
 Model::~Model() {
 }
 
+Vec3f Model::getFaceReflectivity(int faceIdx) const {
+  return material(face(faceIdx).matIdx).reflectivity;
+}
+
+Vec3f Model::getFaceEmissivity(int faceIdx) const {
+  return material(face(faceIdx).matIdx).emissivity;
+}
+
 TGAColor Model::getFaceColour(const Face& face) const {
-  Vec3f matColour = material(face.matIdx).reflectivity*255;
+  Vec3f matColour = material(face.matIdx).reflectivity*255.0f;
   return TGAColor(matColour.r, matColour.g, matColour.b, 255);
 }
 
@@ -138,7 +146,7 @@ Vec3f Model::uv(int iface, int nvert) const {
 }
 
 const Material& Model::material(int idx) const {
-  assert(idx < materials_.size());
+  assert(idx < (int)materials_.size());
   return materials_[idx];
 }
 
@@ -151,4 +159,11 @@ Vec3f Model::centreOf(int faceIdx) const {
     total = total + vert(f[i].ivert);
   }
   return total*(1.f/size);
+}
+
+float Model::area(int faceIdx) const {
+  Face f = face(faceIdx);
+  Vec3f u = vert(f[1].ivert) - vert(f[0].ivert);
+  Vec3f v = vert(f[2].ivert) - vert(f[0].ivert);
+  return 0.5f*(u.cross(v).norm());
 }

@@ -86,6 +86,22 @@ void renderModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const
   }
 }
 
+void renderModelRadiosity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP, const Vec3f& dir, float nearPlane, std::vector<Vec3f>& radiosity) {
+  Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
+  for (int i=0; i<model.nfaces(); ++i) {
+    Face face = model.face(i);
+    Vec3f rad = radiosity[i]*255.f;
+    TGAColor colour = TGAColor(rad.r, rad.g, rad.b, 255);
+
+    std::vector<Vec4f> pts = transformFace(face, model, MVP);
+
+    Vec3f n = model.norm(i, 0);
+    if( n.dot(dir) <= 0.f ) {
+      clipAndRenderTriangle(pts, zBuffer, buffer, colour, nearPlane);
+    }
+  }
+}
+
 void renderModelIds(Buffer<int>& buffer, const Model& model, const Matrix& MVP, const Vec3f& dir, float nearPlane) {
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
   for (int i=0; i<model.nfaces(); ++i) {
@@ -173,4 +189,24 @@ int clipTriangle(std::vector<Vec4f>& pts, float nearPlane) {
     }
   }
   return nTrianglesReturned;
+}
+
+void shootRadiosity(const Model& model, int gridSize, std::vector<Vec3f>& radiosity, std::vector<Vec3f> radiosityToShoot, int faceIdx, const std::vector<float>& formFactors) {
+  for(int j=0; j<model.nfaces(); ++j) {
+    // Don't affect self
+    if( j==faceIdx ) {
+      continue;
+    }
+    float formFactor = formFactors[j+1];
+    float areaThisPatch = model.area(faceIdx);
+    float areaIthPatch = model.area(j);
+    Vec3f reflectivity = model.getFaceReflectivity(j);
+
+    Vec3f radiosityOut = radiosityToShoot[faceIdx].piecewise(reflectivity)
+                         *(formFactor*areaThisPatch/areaIthPatch);
+
+    radiosity[j] += radiosityOut;
+    radiosityToShoot[j] += radiosityOut;
+  }
+  radiosityToShoot[faceIdx] = Vec3f(0,0,0);
 }

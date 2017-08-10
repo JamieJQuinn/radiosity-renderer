@@ -130,3 +130,98 @@ TEST_CASE("Calculate form factors", "[hemicube]") {
   // sum should be as close to 1 as possible
   REQUIRE(sum > 0.95f);
 }
+
+TEST_CASE("Calculate radiosity from one patch", "[radiosity]") {
+  Model model("test/scene.obj", "test/scene.mtl");
+  int faceIdx = 12;
+  int gridSize = 100;
+
+  std::vector<float> formFactors(model.nfaces()+1);
+  calcFormFactorsFromModel(model, faceIdx, formFactors, gridSize);
+
+  std::vector<Vec3f> radiosity(model.nfaces());
+  std::vector<Vec3f> radiosityToShoot(model.nfaces());
+  for(int i=0; i<model.nfaces(); ++i) {
+    radiosityToShoot[i] = model.getFaceEmissivity(i);
+    radiosity[i] = model.getFaceEmissivity(i);
+  }
+
+  shootRadiosity(model, gridSize, radiosity, radiosityToShoot, faceIdx, formFactors);
+}
+
+TEST_CASE("Render radiosity simple scene (single pass)", "[radiosity]") {
+  Model model("test/scene.obj", "test/scene.mtl");
+  int gridSize = 100;
+
+  // Setup radiosity
+  std::vector<Vec3f> radiosity(model.nfaces());
+  std::vector<Vec3f> radiosityToShoot(model.nfaces());
+  for(int i=0; i<model.nfaces(); ++i) {
+    radiosityToShoot[i] = model.getFaceEmissivity(i);
+    radiosity[i] = model.getFaceEmissivity(i);
+  }
+
+  std::vector<float> formFactors(model.nfaces()+1);
+
+  for(int i=0; i<model.nfaces(); ++i) {
+    calcFormFactorsFromModel(model, i, formFactors, gridSize);
+    shootRadiosity(model, gridSize, radiosity, radiosityToShoot, i, formFactors);
+  }
+
+  Vec3f eye(-4, -5, 6);
+  Vec3f dir = eye*-1;
+  Vec3f up(0, 0, 1);
+  int size = 800;
+  float nearPlane = 0.05f;
+  Matrix MVP = formHemicubeMVP(eye, dir, up);
+
+  Buffer<TGAColor> buffer(size, size, black);
+  renderModelRadiosity(buffer, model, MVP, dir, nearPlane, radiosity);
+
+  renderColourBuffer(buffer, "test/radiosity_single_pass.tga");
+}
+
+TEST_CASE("Render radiosity over complex scene", "[radiosity]") {
+  Model model("test/scene_subdivided.obj", "test/scene_subdivided.mtl");
+  int gridSize = 100;
+
+  // Setup radiosity
+  std::vector<Vec3f> radiosity(model.nfaces());
+  std::vector<Vec3f> radiosityToShoot(model.nfaces());
+  for(int i=0; i<model.nfaces(); ++i) {
+    radiosityToShoot[i] = model.getFaceEmissivity(i)*0.5f;
+    radiosity[i] = model.getFaceEmissivity(i)*0.5f;
+  }
+
+  std::vector<float> formFactors(model.nfaces()+1);
+
+  for(int passes=0; passes<2; ++passes) {
+    for(int i=0; i<model.nfaces(); ++i) {
+      calcFormFactorsFromModel(model, i, formFactors, gridSize);
+      shootRadiosity(model, gridSize, radiosity, radiosityToShoot, i, formFactors);
+    }
+  }
+
+  // Normalise radiosity
+  float max = 0.f;
+  for(int i=0; i<(int)radiosity.size(); ++i) {
+    for(int j=0; j<3; ++j) {
+      max = radiosity[i][j] > max ? radiosity[i][j] : max;
+    }
+  }
+  for(int i=0; i<(int)radiosity.size(); ++i) {
+    radiosity[i] = radiosity[i] * (1.f/max);
+  }
+
+  Vec3f eye(-4, -5, 6);
+  Vec3f dir = eye*-1;
+  Vec3f up(0, 0, 1);
+  int size = 800;
+  float nearPlane = 0.05f;
+  Matrix MVP = formHemicubeMVP(eye, dir, up);
+
+  Buffer<TGAColor> buffer(size, size, black);
+  renderModelRadiosity(buffer, model, MVP, dir, nearPlane, radiosity);
+
+  renderColourBuffer(buffer, "test/radiosity_complex.tga");
+}

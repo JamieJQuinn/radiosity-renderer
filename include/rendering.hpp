@@ -12,13 +12,13 @@ void renderColourBuffer(const Buffer<TGAColor>& buffer, std::string filename);
 void renderZBuffer(const Buffer<float>& zBuffer, TGAImage& image);
 void renderZBuffer(const Buffer<float>& zBuffer, std::string filename);
 void renderWireFrame(const Model& model, Buffer<TGAColor>& buffer, const Matrix& MVP);
-void calcFormFactorPerCell(const int sideLengthInPixels, Buffer<float>& topFace, Buffer<float>& sideFace);
-void calcFormFactorsFromBuffer(const Buffer<int>& itemBuffer, const Buffer<float>& factorsPerCell, std::vector<float>& formFactors);
 void renderModel(Buffer<int>& buffer, const Model& model, const Matrix& MVP);
 void renderModel(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP);
 void renderModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP, const Vec3f& dir, float nearPlane);
+void renderModelRadiosity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP, const Vec3f& dir, float nearPlane, std::vector<Vec3f>& radiosity);
 void renderModelIds(Buffer<int>& buffer, const Model& model, const Matrix& MVP, const Vec3f& dir, float nearPlane);
 void renderIdsToColour(const Buffer<int>& itemBuffer, const Model& model, std::string fileName);
+void shootRadiosity(const Model& model, int gridSize, std::vector<Vec3f>& radiosity, std::vector<Vec3f> radiosityToShoot, int faceIdx, const std::vector<float>& formFactors);
 
 Vec3f interpolate(const Vec3f& v0, const Vec3f& v1, float t);
 float clipLineZ(const Vec3f& v0, const Vec3f& v1, float nearPlane);

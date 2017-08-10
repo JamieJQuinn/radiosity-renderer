@@ -28,4 +28,7 @@ public:
   Vec3f centreOf(int faceIdx) const;
   TGAColor getFaceColour(const Face& face) const;
   TGAColor getFaceColour(int faceIdx) const;
+  float area(int faceIdx) const;
+  Vec3f getFaceReflectivity(int faceIdx) const;
+  Vec3f getFaceEmissivity(int faceIdx) const;
 };

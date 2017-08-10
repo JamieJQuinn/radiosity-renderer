@@ -69,6 +69,7 @@ template <class t> struct Vec2 {
   inline Vec2<t> operator +(const Vec2<t> &V) const { return Vec2<t>(u+V.u, v+V.v); }
   inline Vec2<t> operator -(const Vec2<t> &V) const { return Vec2<t>(u-V.u, v-V.v); }
   inline Vec2<t> operator *(float f)          const { return Vec2<t>(u*f, v*f); }
+  inline Vec2<t> piecewise(const Vec2<t> &v) const {return Vec2<t>(x*v.x, y*v.y);}
   inline bool operator==(const Vec2<t> &v) const { return x==v.x and y==v.y; }
   inline bool operator!=(const Vec2<t> &v) const { return !((*this)==v); }
   inline t& operator[](const int i) {return raw[i];}
@@ -96,8 +97,10 @@ template <class t> struct Vec3 {
     z = m.get(2,0);
   }
   inline Vec3<t> operator +(const Vec3<t> &v) const { return Vec3<t>(x+v.x, y+v.y, z+v.z); }
+  inline Vec3<t> operator +=(const Vec3<t> &v) { *this = Vec3<t>(x+v.x, y+v.y, z+v.z); return *this; }
   inline Vec3<t> operator -(const Vec3<t> &v) const { return Vec3<t>(x-v.x, y-v.y, z-v.z); }
   inline Vec3<t> operator *(float f)          const { return Vec3<t>(x*f, y*f, z*f); }
+  inline Vec3<t> piecewise(const Vec3<t> &v) const {return Vec3<t>(x*v.x, y*v.y, z*v.z);}
   inline bool operator==(const Vec3<t> &v) const { return x==v.x and y==v.y and z==v.z; }
   inline bool operator!=(const Vec3<t> &v) const { return !((*this)==v); }
   inline t& operator[](const int i) {return raw[i];}
@@ -131,6 +134,7 @@ template <class t> struct Vec4 {
   inline Vec4<t> operator +(const Vec4<t> &v) const { return Vec4<t>(x+v.x, y+v.y, z+v.z); }
   inline Vec4<t> operator -(const Vec4<t> &v) const { return Vec4<t>(x-v.x, y-v.y, z-v.z); }
   inline Vec4<t> operator *(float f)          const { return Vec4<t>(x*f, y*f, z*f, 1); }
+  inline Vec4<t> piecewise(const Vec4<t> &v) const {return Vec4<t>(x*v.x, y*v.y, z*v.z);}
   inline bool operator==(const Vec4<t> &v) const { return x==v.x and y==v.y and z==v.z and w==v.w; }
   inline bool operator!=(const Vec4<t> &v) const { return not (*this==v); }
   inline t& operator[](const int i) {return raw[i];}
