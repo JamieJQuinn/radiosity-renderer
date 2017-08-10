@@ -17,14 +17,8 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
   // Calc top face orientation
   Face f = model.face(faceIdx);
   Vec3f up = (model.vert(f[1].ivert) - model.vert(f[0].ivert)).normalise();
-  //Vec3f normal = calcNormal(model.vert(f[0].ivert), model.vert(f[1].ivert), model.vert(f[2].ivert));
-  //Vec3f dir = (normal*up.norm()).normalise();
   Vec3f dir = model.norm(faceIdx, 0);
-  //Vec3f dir = Vec3f(0,1,0);
   Vec3f eye = model.centreOf(faceIdx);
-
-  //Vec3f up(0,0,1);
-  //Vec3f eye(0.2f,-1.f,0.3f);
 
   Matrix MVP = formHemicubeMVP(eye, dir, up);
   Buffer<TGAColor> buffer(gridSize, gridSize, black);
@@ -42,8 +36,6 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
   buffer.fillAll(black);
   renderModelReflectivity(buffer, model, MVP, dir, 0.05f);
 
-  renderColourBuffer(buffer, "test/hemicubeMVP_up.tga");
-
   for(int j=0; j<gridSize/2; ++j) {
     for(int i=0; i<gridSize; ++i) {
       mainBuffer.set(gridSize/2+i, j+3*gridSize/2, buffer.get(gridSize-i, j+gridSize/2));
@@ -55,8 +47,6 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
   MVP = formHemicubeMVP(eye, dir, up);
   buffer.fillAll(black);
   renderModelReflectivity(buffer, model, MVP, dir, 0.05f);
-
-  renderColourBuffer(buffer, "test/hemicubeMVP_down.tga");
 
   for(int j=0; j<gridSize/2; ++j) {
     for(int i=0; i<gridSize; ++i) {
@@ -70,8 +60,6 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
   buffer.fillAll(black);
   renderModelReflectivity(buffer, model, MVP, dir, 0.05f);
 
-  renderColourBuffer(buffer, "test/hemicubeMVP_right.tga");
-
   for(int j=0; j<gridSize/2; ++j) {
     for(int i=0; i<gridSize; ++i) {
       mainBuffer.set(j+3*gridSize/2, i+gridSize/2, buffer.get(i, j+gridSize/2));
@@ -83,8 +71,6 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
   MVP = formHemicubeMVP(eye, dir, up);
   buffer.fillAll(black);
   renderModelReflectivity(buffer, model, MVP, dir, 0.05f);
-
-  renderColourBuffer(buffer, "test/hemicubeMVP_left.tga");
 
   for(int j=0; j<gridSize/2; ++j) {
     for(int i=0; i<gridSize; ++i) {
