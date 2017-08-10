@@ -54,45 +54,6 @@ void renderWireFrame(const Model& model, Buffer<TGAColor>& buffer, const Matrix&
   }
 }
 
-void calcFormFactorPerCell(const int sideLengthInPixels, Buffer<float>& topFace, Buffer<float>& sideFace) {
-  assert(sideLengthInPixels%2==0); // Need to half for side face
-
-  float pixelLength = 2.f/sideLengthInPixels;
-  float dA = pixelLength*pixelLength;
-
-  float initialX = -1.f + pixelLength/2.f;
-  float initialY = -1.f + pixelLength/2.f;
-  for(int j=0; j<sideLengthInPixels; ++j) {
-    for(int i=0; i<sideLengthInPixels; ++i) {
-      float x = initialX + pixelLength*i;
-      float y = initialY + pixelLength*j;
-      float r = x*x + y*y + 1.f;
-      float factor = dA/(r*r*M_PI);
-      topFace.set(i, j, factor);
-    }
-  }
-
-  float initialZ = pixelLength/2.f;
-  for(int j=0; j<sideLengthInPixels/2; ++j) {
-    for(int i=0; i<sideLengthInPixels; ++i) {
-      float z = initialZ + pixelLength*j;
-      float y = initialY + pixelLength*i;
-      float r = z*z + y*y + 1.f;
-      float factor = z*dA/(r*r*M_PI);
-      sideFace.set(i, j, factor);
-    }
-  }
-}
-
-void calcFormFactorsFromBuffer(const Buffer<int>& itemBuffer, const Buffer<float>& factorsPerCell, std::vector<float>& formFactors) {
-  for(int j=0; j<itemBuffer.height; ++j) {
-    for(int i=0; i<itemBuffer.width; ++i) {
-      int idx = itemBuffer.get(i, j);
-      formFactors[idx] += factorsPerCell.get(i, j);
-    }
-  }
-}
-
 float clipLineZ(const Vec3f& v0, const Vec3f& v1, float nearPlane) {
   return (v0.z - nearPlane)/(v0.z - v1.z);
 }

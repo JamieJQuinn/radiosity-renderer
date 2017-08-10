@@ -114,3 +114,19 @@ TEST_CASE("Render hemicube to ID index", "[hemicube]") {
 
   renderIdsToColour(mainBuffer, model, "test/hemicubeIDs.tga");
 }
+
+TEST_CASE("Calculate form factors", "[hemicube]") {
+  Model model("test/scene.obj", "test/scene.mtl");
+  int faceIdx = 0;
+  int gridSize = 100;
+  std::vector<float> formFactors(model.nfaces()+1);
+
+  calcFormFactorsFromModel(model, faceIdx, formFactors, gridSize);
+
+  float sum = 0;
+  for(int i=1; i<(int)formFactors.size(); ++i) {
+    sum += formFactors[i];
+  }
+  // sum should be as close to 1 as possible
+  REQUIRE(sum > 0.95f);
+}
