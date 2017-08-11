@@ -37,7 +37,7 @@ TEST_CASE("Output radiosity text file", "[output]") {
 
 TEST_CASE("Output texture based on input uv coords", "[output]") {
   Model model("test/simple_box.obj", "test/simple_box.mtl");
-  int size = 1200;
+  int size = 150;
   Buffer<TGAColor> buffer(size, size, black);
 
   for (int i=0; i<model.nfaces(); ++i) {

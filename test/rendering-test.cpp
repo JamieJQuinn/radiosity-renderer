@@ -6,7 +6,7 @@
 #include "colours.hpp"
 #include "hemicube.hpp"
 
-TEST_CASE("fillTriangle works on single triangle (const z)", "[renderer]") {
+TEST_CASE("rasterising works for single triangle", "[renderer]") {
   int solution[] = {
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -41,12 +41,9 @@ TEST_CASE("fillTriangle works on single triangle (const z)", "[renderer]") {
       REQUIRE(zBuffer.get(i, j) == solution[j*size+i]);
     }
   }
-
-  renderZBuffer(zBuffer, "test/single_tri_const_z_zbuffer.tga");
-  renderColourBuffer(buffer, "test/single_tri_const_z_colour.tga");
 }
 
-TEST_CASE("fillTriangle works on single triangle (varying z)", "[renderer]") {
+TEST_CASE("rasterising works on a single triangle with varying z", "[renderer]") {
   int solution[] = {
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -81,12 +78,9 @@ TEST_CASE("fillTriangle works on single triangle (varying z)", "[renderer]") {
       REQUIRE(int(zBuffer.get(i, j)) == solution[j*size+i]);
     }
   }
-
-  renderZBuffer(zBuffer, "test/single_tri_vary_z_zbuffer.tga");
-  renderColourBuffer(buffer, "test/single_tri_vary_z_colour.tga");
 }
 
-TEST_CASE("fillTriangle works on two triangles", "[renderer]") {
+TEST_CASE("rasteriser & z-buffer works with non-intersecting tris", "[renderer]") {
   int solution[] = {
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -123,12 +117,9 @@ TEST_CASE("fillTriangle works on two triangles", "[renderer]") {
       REQUIRE(int(zBuffer.get(i, j)) == solution[j*size+i]);
     }
   }
-
-  renderZBuffer(zBuffer, "test/two_tri_const_z_zbuffer.tga");
-  renderColourBuffer(buffer, "test/two_tri_const_z_colour.tga");
 }
 
-TEST_CASE("fillTriangle works on two intersecting triangles", "[renderer]") {
+TEST_CASE("rasteriser & z-buffer works with intersecting tris", "[renderer]") {
   int solution[] = {
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -165,9 +156,6 @@ TEST_CASE("fillTriangle works on two intersecting triangles", "[renderer]") {
       REQUIRE(int(zBuffer.get(i, j)) == solution[j*size+i]);
     }
   }
-
-  renderZBuffer(zBuffer, "test/two_tri_intersect_zbuffer.tga");
-  renderColourBuffer(buffer, "test/two_tri_intersect_colour.tga");
 }
 
 TEST_CASE("Test calculation of form factors per cell", "[form_factors]") {
@@ -196,61 +184,89 @@ TEST_CASE("Test clipping produces correct w values", "[clipping]") {
 TEST_CASE("Test clipping against back wall (no need to clip)", "[clipping]") {
   Buffer<TGAColor> buffer(500, 500, black);
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
-  TGAColor colour(255, 0, 0, 255);
 
   std::vector<Vec4f> pts(3);
   pts[0] = Vec3f(-0.5, -0.5, -0.5f);
   pts[1] = Vec3f(0, 0.8, -0.6f);
   pts[2] = Vec3f(0.7, -0.4, -0.4f);
 
-  clipAndRenderTriangle(pts, zBuffer, buffer, colour, 0.05f);
+  float nearPlane = 0.05f;
+  int numTriangles = clipTriangle(pts, nearPlane);
+  REQUIRE(numTriangles == 1);
+  Matrix viewport = viewportRelative(0, 0, buffer.width, buffer.height);
+  for(int i=0; i<numTriangles*3; i+=3) {
+    // Transform into viewport
+    for(int j=0; j<3; ++j) {
+      pts[j+i] = viewport*pts[j+i];
+    }
+    renderTriangle(pts[i+0], pts[i+1], pts[i+2], zBuffer, buffer, red);
+  }
 
   renderColourBuffer(buffer, "test/clipping_test_no_need.tga");
 }
 
-// TODO fix this test
-//TEST_CASE("Test clipping against back wall splitting tri", "[clipping]") {
-  //Buffer<TGAColor> buffer(500, 500, black);
-  //Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
-  //TGAColor colour(255, 0, 0, 255);
+TEST_CASE("Test clipping against back wall (clipping away entire tri)", "[clipping]") {
+  std::vector<Vec4f> pts(3);
+  pts[0] = Vec3f(-0.5, -0.5, 0.5f);
+  pts[1] = Vec3f(0, 0.8, 0.6f);
+  pts[2] = Vec3f(0.7, -0.4, 0.4f);
 
-  //std::vector<Vec4f> pts(3);
-  //pts[0] = Vec3f(0, 0.8, -0.6f);
-  //pts[1] = Vec3f(-0.5, -0.5, -0.5f);
-  //pts[2] = Vec3f(0.7, -0.4, 1.4f);
+  float nearPlane = 0.05f;
+  int numTriangles = clipTriangle(pts, nearPlane);
+  REQUIRE(numTriangles == 0);
+}
 
-  //clipAndRenderTriangle(pts, zBuffer, buffer, colour, 0.05f);
-
-  //renderColourBuffer(buffer, "test/clipping_test_split.tga");
-//}
-
-// TODO Fix this test
-//TEST_CASE("Test clipping against back wall without splitting tri", "[clipping]") {
-  //Buffer<TGAColor> buffer(500, 500, black);
-  //Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
-  //TGAColor colour(255, 0, 0, 255);
-
-  //std::vector<Vec4f> pts(3);
-  //pts[0] = Vec3f(-0.5, -0.5, -0.5f);
-  //pts[1] = Vec3f(0, 0.8, 1.6f);
-  //pts[2] = Vec3f(0.7, -0.4, 1.4f);
-
-  //clipAndRenderTriangle(pts, zBuffer, buffer, colour, 0.05f);
-
-  //renderColourBuffer(buffer, "test/clipping_test_nosplit.tga");
-//}
-
-TEST_CASE("Test clipping in extreme situation", "[clipping]") {
+TEST_CASE("Test clipping against back wall splitting tri", "[clipping]") {
   Buffer<TGAColor> buffer(500, 500, black);
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
-  TGAColor colour(255, 0, 0, 255);
 
   std::vector<Vec4f> pts(3);
-  pts[0] = Vec3f(25250, -49750.1, 5.01003);
-  pts[1] = Vec3f(25250, 50250.1, 5.01003);
-  pts[2] = Vec3f(-0.5, -0.5, -0.1);
+  pts[0] = Vec3f(0, 0.8, -0.6f);
+  pts[1] = Vec3f(-0.5, -0.5, -0.5f);
+  pts[2] = Vec3f(0.7, -0.4, 1.4f);
 
-  clipAndRenderTriangle(pts, zBuffer, buffer, colour, 0.05f);
+  float nearPlane = 0.05f;
+  int numTriangles = clipTriangle(pts, nearPlane);
+  // Simulate homogenisation without actually doing it, that messes with x-y coords
+  for(int i=0; i<pts.size(); ++i) {
+    pts[i].w = 1;
+  }
+  REQUIRE(numTriangles == 2);
+  Matrix viewport = viewportRelative(0, 0, buffer.width, buffer.height);
+  for(int i=0; i<numTriangles*3; i+=3) {
+    // Transform into viewport
+    for(int j=0; j<3; ++j) {
+      pts[j+i] = viewport*pts[j+i];
+    }
+    renderTriangle(pts[i+0], pts[i+1], pts[i+2], zBuffer, buffer, red);
+  }
 
-  renderColourBuffer(buffer, "test/clipping_test_extreme.tga");
+  renderColourBuffer(buffer, "test/clipping_test_split.tga");
+}
+
+TEST_CASE("Test clipping against back wall without splitting tri", "[clipping]") {
+  Buffer<TGAColor> buffer(500, 500, black);
+  Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
+
+  std::vector<Vec4f> pts(3);
+  pts[0] = Vec3f(0, 0.8, 0.5f);
+  pts[1] = Vec3f(-0.5, -0.5, -0.5f);
+  pts[2] = Vec3f(0.7, -0.4, 1.4f);
+
+  float nearPlane = 0.05f;
+  int numTriangles = clipTriangle(pts, nearPlane);
+  REQUIRE(numTriangles == 1);
+  for(int i=0; i<pts.size(); ++i) {
+    pts[i].w = 1;
+  }
+  Matrix viewport = viewportRelative(0, 0, buffer.width, buffer.height);
+  for(int i=0; i<numTriangles*3; i+=3) {
+    // Transform into viewport
+    for(int j=0; j<3; ++j) {
+      pts[j+i] = viewport*pts[j+i];
+    }
+    renderTriangle(pts[i+0], pts[i+1], pts[i+2], zBuffer, buffer, red);
+  }
+
+  renderColourBuffer(buffer, "test/clipping_test_nosplit.tga");
 }

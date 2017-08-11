@@ -68,7 +68,7 @@ void renderHemicubeFront(Buffer<int>& buffer, const Model& model, int faceIdx) {
   Vec3f eye = model.centreOf(faceIdx);
 
   Matrix MVP = formHemicubeMVP(eye, dir, up);
-  renderModelIds(buffer, model, MVP, dir, 0.05f);
+  renderModelIds(buffer, model, MVP, eye, 0.05f);
 }
 
 void renderHemicubeDown(Buffer<int>& buffer, const Model& model, int faceIdx) {
@@ -80,7 +80,7 @@ void renderHemicubeDown(Buffer<int>& buffer, const Model& model, int faceIdx) {
   std::swap(up, dir);
 
   Matrix MVP = formHemicubeMVP(eye, dir, up);
-  renderModelIds(buffer, model, MVP, dir, 0.05f);
+  renderModelIds(buffer, model, MVP, eye, 0.05f);
 }
 
 void renderHemicubeUp(Buffer<int>& buffer, const Model& model, int faceIdx) {
@@ -93,7 +93,7 @@ void renderHemicubeUp(Buffer<int>& buffer, const Model& model, int faceIdx) {
   dir = dir*-1.f;
 
   Matrix MVP = formHemicubeMVP(eye, dir, up);
-  renderModelIds(buffer, model, MVP, dir, 0.05f);
+  renderModelIds(buffer, model, MVP, eye, 0.05f);
 }
 
 void renderHemicubeRight(Buffer<int>& buffer, const Model& model, int faceIdx) {
@@ -106,7 +106,7 @@ void renderHemicubeRight(Buffer<int>& buffer, const Model& model, int faceIdx) {
   dir = dir.cross(up)*-1.f;
 
   Matrix MVP = formHemicubeMVP(eye, dir, up);
-  renderModelIds(buffer, model, MVP, dir, 0.05f);
+  renderModelIds(buffer, model, MVP, eye, 0.05f);
 }
 
 void renderHemicubeLeft(Buffer<int>& buffer, const Model& model, int faceIdx) {
@@ -119,7 +119,7 @@ void renderHemicubeLeft(Buffer<int>& buffer, const Model& model, int faceIdx) {
   dir = dir.cross(up);
 
   Matrix MVP = formHemicubeMVP(eye, dir, up);
-  renderModelIds(buffer, model, MVP, dir, 0.05f);
+  renderModelIds(buffer, model, MVP, eye, 0.05f);
 }
 
 void renderToHemicube(Buffer<int>& mainBuffer, const Model& model, int faceIdx) {

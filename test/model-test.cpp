@@ -24,97 +24,21 @@ void verifyModelNormalsConsistent(std::string objFilename, std::string mtlFilena
 
 TEST_CASE("Test model normals are same as normals calculated from winding", "[model]") {
   verifyModelNormalsConsistent("test/scene.obj", "test/scene.mtl");
-  //verifyModelNormalsConsistent("test/scene_subdivided.obj", "test/scene_subdivided.mtl");
   verifyModelNormalsConsistent("test/simple_box.obj", "test/simple_box.mtl");
-  //verifyModelNormalsConsistent("test/simple_box_subdivided.obj", "test/simple_box_subdivided.mtl");
   verifyModelNormalsConsistent("test/dual_cube_different_normals.obj", "test/dual_cube_different_normals.mtl");
-}
-
-TEST_CASE("Test loading of materials", "[model]") {
-  Model model("test/scene_subdivided.obj", "test/scene_subdivided.mtl");
-
-  int gridSize = 500;
-
-  // Choose random face
-  int faceIdx = 0;
-
-  Face f = model.face(faceIdx);
-  Vec3f up = model.vert(f[1].ivert) - model.vert(f[0].ivert);
-  Vec3f dir = model.norm(faceIdx, 0);
-  Vec3f eye = model.centreOf(faceIdx);
-
-  Matrix MVP = formHemicubeMVP(eye, dir, up);
-
-  Buffer<TGAColor> buffer(gridSize, gridSize, black);
-
-  renderModelReflectivity(buffer, model, MVP, dir, 0.05f);
-
-  renderColourBuffer(buffer, "test/scene_subdivided_inside.tga");
-}
-
-TEST_CASE("Test looking at scene from inside", "[model]") {
-  Model model("test/scene.obj", "test/scene.mtl");
-
-  int gridSize = 500;
-
-  // Choose random face
-  int faceIdx = 0;
-
-  Face f = model.face(faceIdx);
-  Vec3f up = model.vert(f[1].ivert) - model.vert(f[0].ivert);
-  Vec3f dir = model.norm(faceIdx, 0)*up.norm();
-  Vec3f eye = model.centreOf(faceIdx);
-
-  Matrix MVP = formHemicubeMVP(eye, dir, up);
-
-  Buffer<TGAColor> buffer(gridSize, gridSize, black);
-
-  renderModelReflectivity(buffer, model, MVP, dir, 0.05f);
-
-  renderColourBuffer(buffer, "test/scene_inside.tga");
-}
-
-TEST_CASE("Test viewing subdivided model", "[model]") {
-  Model model("test/simple_box_subdivided.obj", "test/simple_box_subdivided.mtl");
-
-  Vec3f eye(-1.5, -1, -3);
-  Vec3f dir = eye*-1;
-  Vec3f up(0, 0, 1);
-  int size = 800;
-  Matrix MVP = formHemicubeMVP(eye, dir, up);
-
-  Buffer<TGAColor> buffer(size, size, black);
-  renderModelReflectivity(buffer, model, MVP, dir, 0.05f);
-
-  renderColourBuffer(buffer, "test/simple_box_subdivided_inside_normals.tga");
 }
 
 TEST_CASE("Test viewing subdivided scene", "[model]") {
   Model model("test/scene_subdivided.obj", "test/scene_subdivided.mtl");
 
-  Vec3f eye(-4, -5, 6);
+  Vec3f eye(-3, -4, 5);
   Vec3f dir = eye*-1;
   Vec3f up(0, 0, 1);
   int size = 800;
   Matrix MVP = formHemicubeMVP(eye, dir, up);
 
   Buffer<TGAColor> buffer(size, size, black);
-  renderModelReflectivity(buffer, model, MVP, dir, 0.05f);
-
-  renderColourBuffer(buffer, "test/scene_subdivided_outside.tga");
-}
-
-TEST_CASE("Test viewing simple scene", "[model]") {
-  Model model("test/scene.obj", "test/scene.mtl");
-
-  Vec3f eye(-4, -5, 6);
-  Vec3f dir = eye*-1;
-  Vec3f up(0, 0, 1);
-  int size = 800;
-  Matrix MVP = formHemicubeMVP(eye, dir, up);
-
-  Buffer<TGAColor> buffer(size, size, black);
-  renderModelReflectivity(buffer, model, MVP, dir, 0.05f);
+  renderModelReflectivity(buffer, model, MVP, eye, 0.05f);
 
   renderColourBuffer(buffer, "test/scene_outside.tga");
 }
@@ -129,57 +53,7 @@ TEST_CASE("Test viewing two boxes with different normals", "[model]") {
   Matrix MVP = formHemicubeMVP(eye, dir, up);
 
   Buffer<TGAColor> buffer(size, size, black);
-  renderModelReflectivity(buffer, model, MVP, dir, 0.05f);
+  renderModelReflectivity(buffer, model, MVP, eye, 0.05f);
 
   renderColourBuffer(buffer, "test/dual_cube_different_normals.tga");
-}
-
-TEST_CASE("Test looking at scene from inside DEBUG", "[model]") {
-  Model model("test/scene.obj", "test/scene.mtl");
-
-  int gridSize = 500;
-  float nearPlane = 0.05f;
-
-  // Choose random face
-  int faceIdx = 0;
-
-  Face f = model.face(faceIdx);
-  Vec3f up = (model.vert(f[1].ivert) - model.vert(f[0].ivert)).normalise();
-  Vec3f dir = model.norm(faceIdx, 0);
-  Vec3f eye = model.centreOf(faceIdx);
-
-  Matrix MVP = formHemicubeMVP(eye, dir, up);
-
-  Buffer<TGAColor> buffer(gridSize, gridSize, black);
-  TGAColor colours[] = {red, green, blue, yellow, white};
-  int colourIdx = 0;
-
-  Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
-  for (int i=0; i<model.nfaces(); ++i) {
-    //std::cout << i << std::endl;
-
-    Face face = model.face(i);
-    TGAColor colour = model.getFaceColour(face);
-
-    //std::cout << model.material(face.matIdx).reflectivity*255;
-
-    std::vector<Vec4f> pts = transformFace(face, model, MVP);
-
-    std::vector<Vec3f> worldCoords(3);
-    for(int j=0; j<3; ++j) {
-      worldCoords[j] = model.vert(face[j].ivert);
-      //std::cout << worldCoords[j];
-      //std::cout << pts[j];
-    }
-    Vec3f n = model.norm(i, 0);
-    if( n.dot(dir) <= 0.f ) {
-      //clipAndRenderTriangle(pts, zBuffer, buffer, colours[colourIdx], nearPlane);
-      clipAndRenderTriangle(pts, zBuffer, buffer, colour, nearPlane);
-      ++colourIdx;
-      colourIdx %= 5;
-    }
-  }
-
-  renderColourBuffer(buffer, "test/scene_inside_debug.tga");
-  renderZBuffer(zBuffer, "test/scene_inside_debug_z.tga");
 }

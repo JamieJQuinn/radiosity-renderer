@@ -72,7 +72,7 @@ std::vector<Vec4f> transformFace(const Face& face, const Model& model, const Mat
   return outScreenCoords;
 }
 
-void renderModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP, const Vec3f& dir, float nearPlane) {
+void renderModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP, const Vec3f& eye, float nearPlane) {
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
   for (int i=0; i<model.nfaces(); ++i) {
     Face face = model.face(i);
@@ -81,13 +81,13 @@ void renderModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const
     std::vector<Vec4f> pts = transformFace(face, model, MVP);
 
     Vec3f n = model.norm(i, 0);
-    if( n.dot(dir) <= 0.f ) {
+    if( n.dot(model.centreOf(i)-eye) <= 0.f ) {
       clipAndRenderTriangle(pts, zBuffer, buffer, colour, nearPlane);
     }
   }
 }
 
-void renderModelRadiosity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP, const Vec3f& dir, float nearPlane, std::vector<Vec3f>& radiosity) {
+void renderModelRadiosity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP, const Vec3f& eye, float nearPlane, std::vector<Vec3f>& radiosity) {
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
   for (int i=0; i<model.nfaces(); ++i) {
     Face face = model.face(i);
@@ -97,20 +97,20 @@ void renderModelRadiosity(Buffer<TGAColor>& buffer, const Model& model, const Ma
     std::vector<Vec4f> pts = transformFace(face, model, MVP);
 
     Vec3f n = model.norm(i, 0);
-    if( n.dot(dir) <= 0.f ) {
+    if( n.dot(model.centreOf(i)-eye) <= 0.f ) {
       clipAndRenderTriangle(pts, zBuffer, buffer, colour, nearPlane);
     }
   }
 }
 
-void renderModelIds(Buffer<int>& buffer, const Model& model, const Matrix& MVP, const Vec3f& dir, float nearPlane) {
+void renderModelIds(Buffer<int>& buffer, const Model& model, const Matrix& MVP, const Vec3f& eye, float nearPlane) {
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
   for (int i=0; i<model.nfaces(); ++i) {
     Face face = model.face(i);
     std::vector<Vec4f> pts = transformFace(face, model, MVP);
 
     Vec3f n = model.norm(i, 0);
-    if( n.dot(dir) <= 0.f ) {
+    if( n.dot(model.centreOf(i)-eye) <= 0.f ) {
       clipAndRenderTriangle(pts, zBuffer, buffer, i+1, nearPlane);
     }
   }
@@ -222,13 +222,16 @@ void calculateRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int g
     radiosity[i] = model.getFaceEmissivity(i)*0.5f;
   }
 
-  std::vector<std::vector<float>> totalFormFactors(model.nfaces());
   std::vector<float> formFactors(model.nfaces()+1);
+  std::vector<std::vector<float>> totalFormFactors(model.nfaces());
+  for(int i=0; i<model.nfaces(); ++i) {
+    calcFormFactorsFromModel(model, i, formFactors, gridSize);
+    totalFormFactors[i] = formFactors;
+  }
 
   for(int passes=0; passes<nPasses; ++passes) {
     for(int i=0; i<model.nfaces(); ++i) {
-      calcFormFactorsFromModel(model, i, formFactors, gridSize);
-      shootRadiosity(model, gridSize, radiosity, radiosityToShoot, i, formFactors);
+      shootRadiosity(model, gridSize, radiosity, radiosityToShoot, i, totalFormFactors[i]);
     }
   }
 
@@ -239,6 +242,7 @@ void calculateRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int g
       max = radiosity[i][j] > max ? radiosity[i][j] : max;
     }
   }
+  std::cout << max << std::endl;
   for(int i=0; i<(int)radiosity.size(); ++i) {
     radiosity[i] = radiosity[i] * (1.f/max);
   }

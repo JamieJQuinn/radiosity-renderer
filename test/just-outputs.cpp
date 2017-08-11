@@ -5,66 +5,59 @@
 #include "tgaimage.hpp"
 #include "rendering.hpp"
 #include "colours.hpp"
+#include "hemicube.hpp"
 
-TEST_CASE("Test moving the camera (orthographic)", "[camera]") {
-  int size = 800;
+TEST_CASE("Output scene + z-buffer", "[output]") {
+  Model model("test/scene.obj", "test/scene.mtl");
 
-  Model model("test/simple_box.obj", "test/simple_box.mtl");
+  int gridSize = 500;
+  float nearPlane = 0.05f;
 
-  Vec3f eye(2, 2.5, 3);
-  Vec3f centre(0,0,0);
-  Vec3f up(0, 1, 0);
-  Matrix modelView = lookAt(eye, centre, up);
+  // Choose random face
+  int faceIdx = 0;
 
-  Matrix MVP = modelView;
+  Face f = model.face(faceIdx);
+  //Vec3f up = (model.vert(f[1].ivert) - model.vert(f[0].ivert)).normalise();
+  //Vec3f dir = model.norm(faceIdx, 0);
+  Vec3f up(0,0,1);
+  Vec3f dir(1,0,0);
+  //Vec3f eye = model.centreOf(faceIdx);
+  Vec3f eye(-2,1,2);
 
-  Buffer<TGAColor> buffer(size, size, black);
-  renderWireFrame(model, buffer, MVP);
+  Matrix MVP = formHemicubeMVP(eye, dir, up);
 
-  renderColourBuffer(buffer, "test/model_view_orthographic.tga");
+  Buffer<TGAColor> buffer(gridSize, gridSize, black);
+  TGAColor colours[] = {red, green, blue, yellow, white};
+  int colourIdx = 0;
+
+  Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
+  for (int i=0; i<model.nfaces(); ++i) {
+    Face face = model.face(i);
+    TGAColor colour = model.getFaceColour(face);
+
+    std::vector<Vec4f> pts = transformFace(face, model, MVP);
+
+    Vec3f n = model.norm(i, 0);
+    if( n.dot(model.centreOf(i)-eye) <= 0.f ) {
+      clipAndRenderTriangle(pts, zBuffer, buffer, colour, nearPlane);
+      ++colourIdx;
+      colourIdx %= 5;
+    }
+  }
+
+  renderColourBuffer(buffer, "test/scene_inside.tga");
+  renderZBuffer(zBuffer, "test/scene_inside_z.tga");
 }
 
-// TODO if needed - fix this
-//TEST_CASE("Test moving the camera (filled triangles, shaded)", "[camera]") {
-  //int size = 800;
+TEST_CASE("Output z-buffer of single triangle", "[output]") {
+  int size = 500;
+  Buffer<TGAColor> buffer(size, size, black);
+  Buffer<float> zBuffer(size, size, 0);
+  std::vector<Vec3f> pts1({Vec3f(0.6, 0.1, 0.05)*size, Vec3f(0.25, 0.8, 0.25)*size, Vec3f(0.8, 0.5, 0.5)*size});
+  std::vector<Vec3f> pts2({Vec3f(0.35, 0.2, 0.25)*size, Vec3f(0.2, 0.5, 0.35)*size, Vec3f(0.8, 0.9, 0.35)*size});
+  renderTriangle(pts1, zBuffer, buffer, red);
+  renderTriangle(pts2, zBuffer, buffer, blue);
 
-  //Model model("test/simple_box.obj", "test/simple_box.mtl");
-
-  //Vec3f eye(2, 2.5, 3);
-  //Vec3f centre(0,0,0);
-  //Vec3f up(0, 1, 0);
-  //Matrix modelView = lookAt(eye, centre, up);
-
-  //Matrix P = Matrix::identity(4);
-  //P.set(3, 2, -1.f/(eye-centre).norm());
-  //Matrix MVP = P*modelView;
-
-  //Buffer<TGAColor> buffer(size, size, black);
-  //Buffer<float> zBuffer(size, size, -255);
-
-  //TGAColor colours[] = {white, red, blue, green, yellow, TGAColor(200, 200, 200, 255)};
-  //int colourIndex = 0;
-
-  //for (int i=0; i<model.nfaces(); ++i) {
-    //Face face = model.face(i);
-    //std::vector<Vec3f> screen_coords(3);
-    //std::vector<Vec3f> world_coords(3);
-    //for (int j=0; j<3; j++) {
-      //Vec3f v = model.vert(face[j].ivert);
-      //screen_coords[j] = m2v(MVP*v2m(v));
-      //world_coords[j] = v;
-    //}
-    //Vec3f n = (screen_coords[2]-screen_coords[0]).cross(screen_coords[1]-screen_coords[0]);
-    //float intensities[4];
-    //for(int j=0; j<4; ++j) {
-      //intensities[j] = std::max(1.f-((eye-world_coords[j]).norm()-2.f)/5.f, 0.f);
-    //}
-    //if (n.z<0) {
-      //renderTriangle(screen_coords, intensities, zBuffer, buffer, colours[colourIndex]);
-      //renderTriangle(screen_coords+1, intensities+1, zBuffer, buffer, colours[colourIndex+1]);
-      //colourIndex+=2;
-    //}
-  //}
-
-  //renderColourBuffer(buffer, "test/model_view_shaded.tga");
-//}
+  renderZBuffer(zBuffer, "test/two_tri_zbuffer.tga");
+  renderColourBuffer(buffer, "test/two_tri_colour.tga");
+}
