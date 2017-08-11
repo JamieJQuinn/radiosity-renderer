@@ -1,6 +1,6 @@
 CC=g++
-CFLAGS=-c -Wall -I$(INCLUDE_DIR) -g
-LDFLAGS=
+CFLAGS=-c -g -pg -Wall -I$(INCLUDE_DIR)
+LDFLAGS=-pg
 SRC_DIR=src
 BUILD_DIR=build
 INCLUDE_DIR=include
