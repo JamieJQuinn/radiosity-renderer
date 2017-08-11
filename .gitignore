@@ -2,3 +2,5 @@ build
 *.tga
 test/simple_box_radiosity.txt
 *.blend1
+analysis.txt
+gmon.out
