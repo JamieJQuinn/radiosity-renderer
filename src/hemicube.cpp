@@ -169,6 +169,10 @@ void renderToHemicube(Buffer<int>& mainBuffer, const Model& model, int faceIdx) 
 void calcFormFactorsFromModel(const Model& model, const int faceIdx, std::vector<float>& formFactors, int gridSize) {
   assert(gridSize%2 == 0);
 
+  for(int i=0; i<(int)formFactors.size(); ++i) {
+    formFactors[i] = 0.f;
+  }
+
   // Precalculate form factors per cell
   Buffer<float> topFace(gridSize, gridSize, 0);
   Buffer<float> sideFace(gridSize, gridSize/2, 0);

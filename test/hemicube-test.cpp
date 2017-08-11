@@ -153,20 +153,8 @@ TEST_CASE("Render radiosity simple scene (single pass)", "[radiosity]") {
   Model model("test/scene.obj", "test/scene.mtl");
   int gridSize = 100;
 
-  // Setup radiosity
   std::vector<Vec3f> radiosity(model.nfaces());
-  std::vector<Vec3f> radiosityToShoot(model.nfaces());
-  for(int i=0; i<model.nfaces(); ++i) {
-    radiosityToShoot[i] = model.getFaceEmissivity(i);
-    radiosity[i] = model.getFaceEmissivity(i);
-  }
-
-  std::vector<float> formFactors(model.nfaces()+1);
-
-  for(int i=0; i<model.nfaces(); ++i) {
-    calcFormFactorsFromModel(model, i, formFactors, gridSize);
-    shootRadiosity(model, gridSize, radiosity, radiosityToShoot, i, formFactors);
-  }
+  calculateRadiosity(radiosity, model, gridSize, 5);
 
   Vec3f eye(-4, -5, 6);
   Vec3f dir = eye*-1;
@@ -185,33 +173,8 @@ TEST_CASE("Render radiosity over complex scene", "[radiosity]") {
   Model model("test/scene_subdivided.obj", "test/scene_subdivided.mtl");
   int gridSize = 100;
 
-  // Setup radiosity
   std::vector<Vec3f> radiosity(model.nfaces());
-  std::vector<Vec3f> radiosityToShoot(model.nfaces());
-  for(int i=0; i<model.nfaces(); ++i) {
-    radiosityToShoot[i] = model.getFaceEmissivity(i)*0.5f;
-    radiosity[i] = model.getFaceEmissivity(i)*0.5f;
-  }
-
-  std::vector<float> formFactors(model.nfaces()+1);
-
-  for(int passes=0; passes<2; ++passes) {
-    for(int i=0; i<model.nfaces(); ++i) {
-      calcFormFactorsFromModel(model, i, formFactors, gridSize);
-      shootRadiosity(model, gridSize, radiosity, radiosityToShoot, i, formFactors);
-    }
-  }
-
-  // Normalise radiosity
-  float max = 0.f;
-  for(int i=0; i<(int)radiosity.size(); ++i) {
-    for(int j=0; j<3; ++j) {
-      max = radiosity[i][j] > max ? radiosity[i][j] : max;
-    }
-  }
-  for(int i=0; i<(int)radiosity.size(); ++i) {
-    radiosity[i] = radiosity[i] * (1.f/max);
-  }
+  calculateRadiosity(radiosity, model, gridSize, 5);
 
   Vec3f eye(-4, -5, 6);
   Vec3f dir = eye*-1;
@@ -224,4 +187,25 @@ TEST_CASE("Render radiosity over complex scene", "[radiosity]") {
   renderModelRadiosity(buffer, model, MVP, dir, nearPlane, radiosity);
 
   renderColourBuffer(buffer, "test/radiosity_complex.tga");
+}
+
+TEST_CASE("Render radiosity inside lit box", "[radiosity]") {
+  Model model("test/simple_box_subdivided.obj", "test/simple_box_subdivided.mtl");
+  int gridSize = 100;
+
+  std::vector<Vec3f> radiosity(model.nfaces());
+  calculateRadiosity(radiosity, model, 100, 5);
+
+  // Render
+  Vec3f eye(-1.5, 0, 0.5);
+  Vec3f dir(1, 0, 0);
+  Vec3f up(0, 0, 1);
+  int size = 800;
+  float nearPlane = 0.05f;
+  Matrix MVP = formHemicubeMVP(eye, dir, up);
+
+  Buffer<TGAColor> buffer(size, size, black);
+  renderModelRadiosity(buffer, model, MVP, dir, nearPlane, radiosity);
+
+  renderColourBuffer(buffer, "test/radiosity_box.tga");
 }

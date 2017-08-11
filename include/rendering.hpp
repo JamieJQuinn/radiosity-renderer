@@ -18,7 +18,8 @@ void renderModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const
 void renderModelRadiosity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP, const Vec3f& dir, float nearPlane, std::vector<Vec3f>& radiosity);
 void renderModelIds(Buffer<int>& buffer, const Model& model, const Matrix& MVP, const Vec3f& dir, float nearPlane);
 void renderIdsToColour(const Buffer<int>& itemBuffer, const Model& model, std::string fileName);
-void shootRadiosity(const Model& model, int gridSize, std::vector<Vec3f>& radiosity, std::vector<Vec3f> radiosityToShoot, int faceIdx, const std::vector<float>& formFactors);
+void shootRadiosity(const Model& model, int gridSize, std::vector<Vec3f>& radiosity, std::vector<Vec3f>& radiosityToShoot, int faceIdx, const std::vector<float>& formFactors);
+void calculateRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses);
 
 Vec3f interpolate(const Vec3f& v0, const Vec3f& v1, float t);
 float clipLineZ(const Vec3f& v0, const Vec3f& v1, float nearPlane);

@@ -4,6 +4,7 @@
 #include "rendering.hpp"
 #include "geometry.hpp"
 #include "colours.hpp"
+#include "hemicube.hpp"
 
 TEST_CASE("fillTriangle works on single triangle (const z)", "[renderer]") {
   int solution[] = {

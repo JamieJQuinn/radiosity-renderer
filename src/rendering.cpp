@@ -7,6 +7,7 @@
 #include "buffer.hpp"
 #include "model.hpp"
 #include "colours.hpp"
+#include "hemicube.hpp"
 
 void renderColourBuffer(const Buffer<TGAColor>& buffer, TGAImage& image) {
   for(int j=0; j<buffer.height; ++j) {
@@ -191,7 +192,7 @@ int clipTriangle(std::vector<Vec4f>& pts, float nearPlane) {
   return nTrianglesReturned;
 }
 
-void shootRadiosity(const Model& model, int gridSize, std::vector<Vec3f>& radiosity, std::vector<Vec3f> radiosityToShoot, int faceIdx, const std::vector<float>& formFactors) {
+void shootRadiosity(const Model& model, int gridSize, std::vector<Vec3f>& radiosity, std::vector<Vec3f>& radiosityToShoot, int faceIdx, const std::vector<float>& formFactors) {
   for(int j=0; j<model.nfaces(); ++j) {
     // Don't affect self
     if( j==faceIdx ) {
@@ -199,14 +200,46 @@ void shootRadiosity(const Model& model, int gridSize, std::vector<Vec3f>& radios
     }
     float formFactor = formFactors[j+1];
     float areaThisPatch = model.area(faceIdx);
-    float areaIthPatch = model.area(j);
+    float areaJthPatch = model.area(j);
     Vec3f reflectivity = model.getFaceReflectivity(j);
 
     Vec3f radiosityOut = radiosityToShoot[faceIdx].piecewise(reflectivity)
-                         *(formFactor*areaThisPatch/areaIthPatch);
+                         *(formFactor*areaThisPatch/areaJthPatch);
+
+    assert(radiosityOut.norm() <= 100.f);
 
     radiosity[j] += radiosityOut;
     radiosityToShoot[j] += radiosityOut;
   }
   radiosityToShoot[faceIdx] = Vec3f(0,0,0);
+}
+
+void calculateRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses)  {
+  // Setup radiosity
+  std::vector<Vec3f> radiosityToShoot(model.nfaces());
+  for(int i=0; i<model.nfaces(); ++i) {
+    radiosityToShoot[i] = model.getFaceEmissivity(i)*0.5f;
+    radiosity[i] = model.getFaceEmissivity(i)*0.5f;
+  }
+
+  std::vector<std::vector<float>> totalFormFactors(model.nfaces());
+  std::vector<float> formFactors(model.nfaces()+1);
+
+  for(int passes=0; passes<nPasses; ++passes) {
+    for(int i=0; i<model.nfaces(); ++i) {
+      calcFormFactorsFromModel(model, i, formFactors, gridSize);
+      shootRadiosity(model, gridSize, radiosity, radiosityToShoot, i, formFactors);
+    }
+  }
+
+  // Normalise radiosity
+  float max = 0.f;
+  for(int i=0; i<(int)radiosity.size(); ++i) {
+    for(int j=0; j<3; ++j) {
+      max = radiosity[i][j] > max ? radiosity[i][j] : max;
+    }
+  }
+  for(int i=0; i<(int)radiosity.size(); ++i) {
+    radiosity[i] = radiosity[i] * (1.f/max);
+  }
 }
