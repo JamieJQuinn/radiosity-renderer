@@ -284,7 +284,6 @@ void radiosityFaceToVertex(std::vector<Vec3f>& vertexRadiosity, const Model& mod
       vertexRadiosity[i] += tempRadiosity[i][j];
     }
     vertexRadiosity[i] = vertexRadiosity[i] * (1.f/tempRadiosity[i].size());
-    std::cout << vertexRadiosity[i];
   }
 }
 

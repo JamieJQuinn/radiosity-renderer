@@ -13,8 +13,14 @@ int main(int argc, char* argv[]) {
 
   int nPasses = atoi(argv[3]);
 
+  std::cout << "obj: " << modelObj << std::endl;
+  std::cout << "mtl: " << modelMtl << std::endl;
+  std::cout << "Iterations: " << nPasses << std::endl;
+
   Model model(modelObj.c_str(), modelMtl.c_str());
   int gridSize = 128;
+
+  std::cout << "Grid size: " << gridSize << std::endl;
 
   std::vector<Vec3f> radiosity(model.nfaces());
   calculateRadiosity(radiosity, model, gridSize, nPasses);
@@ -23,20 +29,12 @@ int main(int argc, char* argv[]) {
   for(int i=0; i<(int)radiosity.size(); ++i) {
     sum += radiosity[i];
   }
-  std::cout << sum;
+  std::cout << "Total radiosity: " << sum;
 
-  // Render
-  Vec3f eye(-1.5, 0, 0);
-  Vec3f dir(1, 0, 0);
-  Vec3f up(0, 0, 1);
-  int size = 800;
-  float nearPlane = 0.05f;
-  Matrix MVP = formHemicubeMVP(eye, dir, up);
+  std::vector<Vec3f> vertexRadiosity(model.nverts());
+  radiosityFaceToVertex(vertexRadiosity, model, radiosity);
 
-  Buffer<TGAColor> buffer(size, size, black);
-  renderModelRadiosity(buffer, model, MVP, eye, nearPlane, radiosity);
-
-  renderColourBuffer(buffer, "output.tga");
+  renderVertexRadiosityToTexture(model, vertexRadiosity, 1200, "output.tga");
 
   return 0;
 }
