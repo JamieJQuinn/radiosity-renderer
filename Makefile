@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-c -g -pg -Wall -I$(INCLUDE_DIR)
+CFLAGS=-c -pg -g -Wall -I$(INCLUDE_DIR)
 LDFLAGS=-pg
 SRC_DIR=src
 BUILD_DIR=build

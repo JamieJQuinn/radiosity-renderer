@@ -4,14 +4,7 @@
 #include "buffer.hpp"
 #include "rendering.hpp"
 
-TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
-  Model model("test/scene.obj", "test/scene.mtl");
-
-  int gridSize = 200;
-
-  // Choose random face
-  int faceIdx = 8;
-
+void renderViewFromFace(int faceIdx, int gridSize, const Model& model, std::string filename) {
   Buffer<TGAColor> mainBuffer(gridSize*2, gridSize*2, black);
 
   // Calc top face orientation
@@ -38,7 +31,7 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
 
   for(int j=0; j<gridSize/2; ++j) {
     for(int i=0; i<gridSize; ++i) {
-      mainBuffer.set(gridSize/2+i, j+3*gridSize/2, buffer.get(gridSize-i, j+gridSize/2));
+      mainBuffer.set(gridSize/2+i, j+3*gridSize/2, buffer.get(gridSize-i, gridSize-j-1));
     }
   }
 
@@ -78,7 +71,36 @@ TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
     }
   }
 
-  renderColourBuffer(mainBuffer, "test/hemicubeMVP.tga");
+  renderColourBuffer(mainBuffer, filename);
+}
+
+TEST_CASE("Test two adjacent faces hemicube", "[hemicube]") {
+  Model model("test/scene.obj", "test/scene.mtl");
+  int gridSize = 200;
+  int faceIdx = 0;
+  renderViewFromFace(faceIdx, gridSize, model, "test/hemicubeFromFace1.tga");
+  faceIdx = 7;
+  renderViewFromFace(faceIdx, gridSize, model, "test/hemicubeFromFace2.tga");
+}
+
+//TEST_CASE("Render whole scene hemicubes", "[hemicube]") {
+  //Model model("test/scene_subdivided.obj", "test/scene_subdivided.mtl");
+  //int gridSize = 200;
+  //Buffer<int> buffer(gridSize, gridSize, 0);
+
+  //for(int faceIdx=0; faceIdx<model.nfaces(); ++faceIdx) {
+    //std::stringstream s;
+    //s << "test/hemicube_scene/" << faceIdx << ".tga";
+    //renderToHemicube(buffer, model, faceIdx);
+    //renderIdsToColour(buffer, model, s.str());
+  //}
+//}
+
+TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
+  Model model("test/scene.obj", "test/scene.mtl");
+  int gridSize = 200;
+  int faceIdx = 8;
+  renderViewFromFace(faceIdx, gridSize, model, "test/hemicubeMVP.tga");
 }
 
 TEST_CASE("Render single hemicube face to colour buffer", "[hemicube]") {
@@ -115,6 +137,23 @@ TEST_CASE("Render single hemicube face to ID buffer", "[hemicube]") {
   renderIdsToColour(buffer, model, "test/hemicube_face_IDs.tga");
 }
 
+TEST_CASE("Render side hemicube face to ID buffer", "[hemicube]") {
+  Model model("test/scene.obj", "test/scene.mtl");
+  int nFaces = model.nfaces() + 1;
+  int faceIdx = 0;
+  int gridSize = 200;
+  Buffer<int> buffer(gridSize, gridSize, 0);
+  renderHemicubeUp(buffer, model, faceIdx);
+
+  for(int j=0; j<buffer.height; ++j) {
+    for(int i=0; i<buffer.width; ++i) {
+      REQUIRE(buffer.get(i, j) < nFaces);
+    }
+  }
+
+  renderIdsToColour(buffer, model, "test/hemicube_side_face_IDs.tga");
+}
+
 TEST_CASE("Render hemicube to ID index", "[hemicube]") {
   Model model("test/scene.obj", "test/scene.mtl");
   int nFaces = model.nfaces() + 1;
@@ -148,22 +187,17 @@ TEST_CASE("Calculate form factors", "[hemicube]") {
   REQUIRE(sum > 0.95f);
 }
 
-TEST_CASE("Calculate radiosity from one patch", "[radiosity]") {
-  Model model("test/scene.obj", "test/scene.mtl");
-  int faceIdx = 0;
-  int gridSize = 100;
-
-  std::vector<float> formFactors(model.nfaces()+1);
-  calcFormFactorsFromModel(model, faceIdx, formFactors, gridSize);
+TEST_CASE("Render radiosity to texture", "[radiosity]") {
+  Model model("test/red_green_walls.obj", "test/red_green_walls.mtl");
+  int gridSize = 128;
 
   std::vector<Vec3f> radiosity(model.nfaces());
-  std::vector<Vec3f> radiosityToShoot(model.nfaces());
-  for(int i=0; i<model.nfaces(); ++i) {
-    radiosityToShoot[i] = model.getFaceEmissivity(i);
-    radiosity[i] = model.getFaceEmissivity(i);
-  }
+  calculateRadiosity(radiosity, model, gridSize, 1);
 
-  shootRadiosity(model, gridSize, radiosity, radiosityToShoot, faceIdx, formFactors);
+  std::vector<Vec3f> vertexRadiosity(model.nverts());
+  radiosityFaceToVertex(vertexRadiosity, model, radiosity);
+
+  renderVertexRadiosityToTexture(model, vertexRadiosity, 600, "test/radiosity_texture.tga");
 }
 
 //TEST_CASE("Render radiosity simple scene (single pass)", "[radiosity]") {
@@ -214,7 +248,7 @@ TEST_CASE("Calculate radiosity from one patch", "[radiosity]") {
   //calculateRadiosity(radiosity, model, 100, 5);
 
   //// Render
-  //Vec3f eye(-1.5, 0, 0.5);
+  //Vec3f eye(-1.5, 0, 0);
   //Vec3f dir(1, 0, 0);
   //Vec3f up(0, 0, 1);
   //int size = 800;

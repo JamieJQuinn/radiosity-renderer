@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
   int nPasses = atoi(argv[3]);
 
   Model model(modelObj.c_str(), modelMtl.c_str());
-  int gridSize = 100;
+  int gridSize = 128;
 
   std::vector<Vec3f> radiosity(model.nfaces());
   calculateRadiosity(radiosity, model, gridSize, nPasses);
@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
   for(int i=0; i<(int)radiosity.size(); ++i) {
     sum += radiosity[i];
   }
-  std::cout << sum*(1.f/128.f);
+  std::cout << sum;
 
   // Render
   Vec3f eye(-1.5, 0, 0);

@@ -50,7 +50,7 @@ TEST_CASE("Output scene + z-buffer", "[output]") {
 }
 
 TEST_CASE("Output z-buffer of single triangle", "[output]") {
-  int size = 500;
+  int size = 400;
   Buffer<TGAColor> buffer(size, size, black);
   Buffer<float> zBuffer(size, size, 0);
   std::vector<Vec3f> pts1({Vec3f(0.6, 0.1, 0.05)*size, Vec3f(0.25, 0.8, 0.25)*size, Vec3f(0.8, 0.5, 0.5)*size});

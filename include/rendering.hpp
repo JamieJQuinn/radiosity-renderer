@@ -18,12 +18,16 @@ void renderModelIds(Buffer<int>& buffer, const Model& model, const Matrix& MVP, 
 void renderIdsToColour(const Buffer<int>& itemBuffer, const Model& model, std::string fileName);
 void shootRadiosity(const Model& model, int gridSize, std::vector<Vec3f>& radiosity, std::vector<Vec3f>& radiosityToShoot, int faceIdx, const std::vector<float>& formFactors);
 void calculateRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses);
+void normaliseRadiosity(std::vector<Vec3f>& radiosity);
 
 Vec3f interpolate(const Vec3f& v0, const Vec3f& v1, float t);
 float clipLineZ(const Vec3f& v0, const Vec3f& v1, float nearPlane);
 std::vector<Vec4f> transformFace(const Face& face, const Model& model, const Matrix& MVP);
 TGAColor getFaceColour(const Face& face, const Model& model);
 int clipTriangle(std::vector<Vec4f>& pts, float nearPlane);
+void renderInterpolatedTriangle(const std::vector<Vec3f>& pts, Buffer<TGAColor> &buffer, const Vec3f intensities[3]);
+void renderVertexRadiosityToTexture(const Model& model, const std::vector<Vec3f>& radiosity, int size, std::string filename);
+void radiosityFaceToVertex(std::vector<Vec3f>& vertexRadiosity, const Model& model, const std::vector<Vec3f>& faceRadiosity);
 
 template <class T>
 void renderLine(int x0, int y0, int x1, int y1, Buffer<T> &buffer, const T& fillValue) {
@@ -109,41 +113,6 @@ void renderTriangle(const std::vector<Vec3f>& pts, Buffer<fillType> &buffer, con
       Vec3f bc_screen = getBarycentricCoords(pts[0], pts[1], pts[2], P);
       if (bc_screen.x<0 || bc_screen.y<0 || bc_screen.z<0) continue;
       buffer.set(int(P.x), int(P.y), fillValue);
-    }
-  }
-}
-
-// ZBuffer & Interpolation
-template <class fillType, class zBufferType>
-void renderTriangle(const std::vector<Vec3f>& pts, const float *intensities, Buffer<zBufferType>& zBuffer, Buffer<fillType> &buffer, const fillType& fillValue) {
-  // Create bounding box
-  Vec2f bboxmin(buffer.width-1, buffer.height-1);
-  Vec2f bboxmax(0, 0);
-  Vec2f clamp(buffer.width-1, buffer.height-1);
-  for (int i=0; i<3; i++) {
-    for (int j=0; j<2; j++) {
-      // clip against buffer sides
-      bboxmin[j] = std::max(0.f, std::min(bboxmin[j], pts[i][j]));
-      bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts[i][j]));
-    }
-  }
-
-  // Check every pixel in bounding box
-  Vec3f P;
-  for (P.x=bboxmin.x; P.x<=bboxmax.x; ++P.x) {
-    for (P.y=bboxmin.y; P.y<=bboxmax.y; ++P.y) {
-      Vec3f bc_screen = getBarycentricCoords(pts[0], pts[1], pts[2], P);
-      if (bc_screen.x<0 || bc_screen.y<0 || bc_screen.z<0) continue;
-      P.z = 0;
-      float intensity = 0.f;
-      for (int i=0; i<3; i++) {
-        P.z += pts[i].z*bc_screen[i];
-        intensity += intensities[i]*bc_screen[i];
-      }
-      if(zBuffer.get(int(P.x), int(P.y)) < P.z) {
-        buffer.set(int(P.x), int(P.y), fillValue*intensity);
-        zBuffer.set(int(P.x), int(P.y), P.z);
-      }
     }
   }
 }

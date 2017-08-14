@@ -103,6 +103,28 @@ void renderModelRadiosity(Buffer<TGAColor>& buffer, const Model& model, const Ma
   }
 }
 
+void renderVertexRadiosityToTexture(const Model& model, const std::vector<Vec3f>& radiosity, int size, std::string filename) {
+  Buffer<TGAColor> buffer(size, size, black);
+
+  for (int i=0; i<model.nfaces(); ++i) {
+    Face face = model.face(i);
+    std::vector<Vec3f> screen_coords(3);
+    // Get uv coords of face in buffer space
+    for (int j=0; j<3; j++) {
+      screen_coords[j] = model.uv(i, j)*size;
+    }
+
+    Vec3f intensities[3] = {
+      radiosity[face[0].ivert],
+      radiosity[face[1].ivert],
+      radiosity[face[2].ivert]
+    };
+    renderInterpolatedTriangle(screen_coords, buffer, intensities);
+  }
+
+  renderColourBuffer(buffer, filename);
+}
+
 void renderModelIds(Buffer<int>& buffer, const Model& model, const Matrix& MVP, const Vec3f& eye, float nearPlane) {
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
   for (int i=0; i<model.nfaces(); ++i) {
@@ -206,20 +228,30 @@ void shootRadiosity(const Model& model, int gridSize, std::vector<Vec3f>& radios
     Vec3f radiosityOut = radiosityToShoot[faceIdx].piecewise(reflectivity)
                          *(formFactor*areaThisPatch/areaJthPatch);
 
-    assert(radiosityOut.norm() <= 100.f);
-
     radiosity[j] += radiosityOut;
     radiosityToShoot[j] += radiosityOut;
   }
   radiosityToShoot[faceIdx] = Vec3f(0,0,0);
 }
 
+void normaliseRadiosity(std::vector<Vec3f>& radiosity) {
+  float max = 0.f;
+  for(int i=0; i<(int)radiosity.size(); ++i) {
+    for(int j=0; j<3; ++j) {
+      max = radiosity[i][j] > max ? radiosity[i][j] : max;
+    }
+  }
+  for(int i=0; i<(int)radiosity.size(); ++i) {
+    radiosity[i] = radiosity[i] * (1.f/max);
+  }
+}
+
 void calculateRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses)  {
   // Setup radiosity
   std::vector<Vec3f> radiosityToShoot(model.nfaces());
   for(int i=0; i<model.nfaces(); ++i) {
-    radiosityToShoot[i] = model.getFaceEmissivity(i)*0.5f;
-    radiosity[i] = model.getFaceEmissivity(i)*0.5f;
+    radiosityToShoot[i] = model.getFaceEmissivity(i);
+    radiosity[i] = model.getFaceEmissivity(i);
   }
 
   std::vector<float> formFactors(model.nfaces()+1);
@@ -235,15 +267,55 @@ void calculateRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int g
     }
   }
 
-  // Normalise radiosity
-  float max = 0.f;
-  for(int i=0; i<(int)radiosity.size(); ++i) {
-    for(int j=0; j<3; ++j) {
-      max = radiosity[i][j] > max ? radiosity[i][j] : max;
+  normaliseRadiosity(radiosity);
+}
+
+void radiosityFaceToVertex(std::vector<Vec3f>& vertexRadiosity, const Model& model, const std::vector<Vec3f>& faceRadiosity) {
+  std::vector<std::vector<Vec3f>> tempRadiosity(model.nverts());
+  for(int i=0; i<model.nfaces(); ++i) {
+    Face face = model.face(i);
+    for(int j=0; j<face.size(); ++j) {
+      tempRadiosity[face[j].ivert].push_back(faceRadiosity[i]);
     }
   }
-  std::cout << max << std::endl;
-  for(int i=0; i<(int)radiosity.size(); ++i) {
-    radiosity[i] = radiosity[i] * (1.f/max);
+  for(int i=0; i<(int)vertexRadiosity.size(); ++i) {
+    vertexRadiosity[i] = Vec3f(0,0,0);
+    for(int j=0; j<(int)tempRadiosity[i].size(); ++j) {
+      vertexRadiosity[i] += tempRadiosity[i][j];
+    }
+    vertexRadiosity[i] = vertexRadiosity[i] * (1.f/tempRadiosity[i].size());
+    std::cout << vertexRadiosity[i];
+  }
+}
+
+void renderInterpolatedTriangle(const std::vector<Vec3f>& pts, Buffer<TGAColor> &buffer, const Vec3f intensities[3]) {
+  // Create bounding box
+  Vec2f bboxmin(buffer.width-1, buffer.height-1);
+  Vec2f bboxmax(0, 0);
+  Vec2f clamp(buffer.width-1, buffer.height-1);
+  for (int i=0; i<3; i++) {
+    for (int j=0; j<2; j++) {
+      // clip against buffer sides
+      bboxmin[j] = std::max(0.f, std::min(bboxmin[j], pts[i][j]));
+      bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts[i][j]));
+    }
+  }
+
+  // Check every pixel in bounding box
+  Vec3f P;
+  for (P.x=bboxmin.x; P.x<=bboxmax.x; ++P.x) {
+    for (P.y=bboxmin.y; P.y<=bboxmax.y; ++P.y) {
+      Vec3f bc_screen = getBarycentricCoords(pts[0], pts[1], pts[2], P);
+      if (bc_screen.x<0 || bc_screen.y<0 || bc_screen.z<0) continue;
+      P.z = 0;
+      Vec3f intensity(0,0,0);
+      for (int i=0; i<3; i++) {
+        for(int j=0; j<3; ++j) {
+          intensity[j] += intensities[i][j]*bc_screen[i];
+        }
+      }
+      TGAColor colour(intensity.r*255, intensity.g*255, intensity.b*255, 255);
+      buffer.set(int(P.x), int(P.y), colour);
+    }
   }
 }
