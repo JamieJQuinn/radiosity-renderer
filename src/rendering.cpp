@@ -125,6 +125,25 @@ void renderVertexRadiosityToTexture(const Model& model, const std::vector<Vec3f>
   renderColourBuffer(buffer, filename);
 }
 
+void renderFaceRadiosityToTexture(const Model& model, const std::vector<Vec3f>& radiosity, int size, std::string filename) {
+  Buffer<TGAColor> buffer(size, size, black);
+
+  for (int i=0; i<model.nfaces(); ++i) {
+    Face face = model.face(i);
+    std::vector<Vec3f> screen_coords(3);
+    // Get uv coords of face in buffer space
+    for (int j=0; j<3; j++) {
+      screen_coords[j] = model.uv(i, j)*size;
+    }
+
+    Vec3f rad = radiosity[i];
+    TGAColor colour(rad.r*255, rad.g*255, rad.b*255, 255);
+    renderTriangle(screen_coords, buffer, colour);
+  }
+
+  renderColourBuffer(buffer, filename);
+}
+
 void renderModelIds(Buffer<int>& buffer, const Model& model, const Matrix& MVP, const Vec3f& eye, float nearPlane) {
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
   for (int i=0; i<model.nfaces(); ++i) {

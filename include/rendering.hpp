@@ -28,6 +28,7 @@ int clipTriangle(std::vector<Vec4f>& pts, float nearPlane);
 void renderInterpolatedTriangle(const std::vector<Vec3f>& pts, Buffer<TGAColor> &buffer, const Vec3f intensities[3]);
 void renderVertexRadiosityToTexture(const Model& model, const std::vector<Vec3f>& radiosity, int size, std::string filename);
 void radiosityFaceToVertex(std::vector<Vec3f>& vertexRadiosity, const Model& model, const std::vector<Vec3f>& faceRadiosity);
+void renderFaceRadiosityToTexture(const Model& model, const std::vector<Vec3f>& radiosity, int size, std::string filename);
 
 template <class T>
 void renderLine(int x0, int y0, int x1, int y1, Buffer<T> &buffer, const T& fillValue) {
