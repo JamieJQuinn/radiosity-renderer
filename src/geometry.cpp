@@ -178,13 +178,25 @@ Matrix::Matrix(const Vec4f& v):
 }
 
 Vec2f Matrix::operator*(const Vec2f& v) const {
-  return Vec2f(*this*Matrix(v));
+  return Vec2f(
+      get(0,0)*v[0] + get(0,1)*v[1],
+      get(1,0)*v[0] + get(1,1)*v[1]
+      );
 }
 
 Vec3f Matrix::operator*(const Vec3f& v) const {
-  return Vec3f(*this*Matrix(v));
+  return Vec3f(
+      get(0,0)*v[0] + get(0,1)*v[1] + get(0,2)*v[2],
+      get(1,0)*v[0] + get(1,1)*v[1] + get(1,2)*v[2],
+      get(2,0)*v[0] + get(2,1)*v[1] + get(2,2)*v[2]
+      );
 }
 
 Vec4f Matrix::operator*(const Vec4f& v) const {
-  return Vec4f(*this*Matrix(v));
+  return Vec4f(
+      get(0,0)*v[0] + get(0,1)*v[1] + get(0,2)*v[2] + get(0,3)*v[3],
+      get(1,0)*v[0] + get(1,1)*v[1] + get(1,2)*v[2] + get(1,3)*v[3],
+      get(2,0)*v[0] + get(2,1)*v[1] + get(2,2)*v[2] + get(2,3)*v[3],
+      get(3,0)*v[0] + get(3,1)*v[1] + get(3,2)*v[2] + get(3,3)*v[3]
+      );
 }

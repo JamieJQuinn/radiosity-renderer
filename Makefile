@@ -1,6 +1,6 @@
 CC=g++
-CFLAGS=-c -pg -g -Wall -I$(INCLUDE_DIR)
-LDFLAGS=-pg
+CFLAGS=-c -Wall -I$(INCLUDE_DIR)
+LDFLAGS=
 SRC_DIR=src
 BUILD_DIR=build
 INCLUDE_DIR=include
@@ -16,7 +16,17 @@ TEST_OBJECTS=$(patsubst $(TEST_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(TEST_SOURCES))
 
 TEST_EXECUTABLE=radiosity_test
 
-all: $(BUILD_DIR) $(BUILD_DIR)/$(EXECUTABLE)
+all: release
+
+debug: CFLAGS += -DDEBUG -g
+debug: $(BUILD_DIR) $(BUILD_DIR)/$(EXECUTABLE)
+
+release: CFLAGS += -DNDEBUG -O3
+release: $(BUILD_DIR) $(BUILD_DIR)/$(EXECUTABLE)
+
+profile: CFLAGS += -pg
+profile: LDFLAGS += -pg -no-pie
+profile: release
 
 $(BUILD_DIR)/$(EXECUTABLE): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
