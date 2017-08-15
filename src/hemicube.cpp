@@ -18,8 +18,8 @@ void calcFormFactorPerCell(const int sideLengthInPixels, Buffer<float>& topFace,
     for(int i=0; i<sideLengthInPixels; ++i) {
       float x = initialX + pixelLength*i;
       float y = initialY + pixelLength*j;
-      float r = x*x + y*y + 1.f;
-      float factor = dA/(r*r*M_PI);
+      float r2 = x*x + y*y + 1.f;
+      float factor = dA/(r2*r2*M_PI);
       topFace.set(i, j, factor);
     }
   }
@@ -29,8 +29,8 @@ void calcFormFactorPerCell(const int sideLengthInPixels, Buffer<float>& topFace,
     for(int i=0; i<sideLengthInPixels; ++i) {
       float z = initialZ + pixelLength*j;
       float y = initialY + pixelLength*i;
-      float r = z*z + y*y + 1.f;
-      float factor = z*dA/(r*r*M_PI);
+      float r2 = z*z + y*y + 1.f;
+      float factor = z*dA/(r2*r2*M_PI);
       sideFace.set(i, j, factor);
     }
   }
