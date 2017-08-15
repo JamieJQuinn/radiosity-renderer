@@ -84,13 +84,18 @@ Model::Model(const char *objFilename, const char *mtlFilename) : verts_(), faces
         inorm--;
         f.push_back(ivert, iuv, inorm);
       }
-      if(f.size() == 4) {
-        std::swap(f[2], f[3]);
-      }
       faces_.push_back(f);
     }
   }
   //std::cerr << "# v# " << verts_.size() << " f# "  << faces_.size() << std::endl;
+  for(int i=0; i<nfaces(); ++i) {
+    Face& f = face(i);
+    f.area = calcTriangleArea(
+      vert(f[0].ivert),
+      vert(f[1].ivert),
+      vert(f[2].ivert)
+      );
+  }
 }
 
 Model::~Model() {
@@ -121,7 +126,12 @@ int Model::nfaces() const {
   return (int)faces_.size();
 }
 
-Face Model::face(int idx) const {
+Face& Model::face(int idx) {
+  assert(idx < nfaces());
+  return faces_[idx];
+}
+
+const Face& Model::face(int idx) const {
   assert(idx < nfaces());
   return faces_[idx];
 }
@@ -162,8 +172,5 @@ Vec3f Model::centreOf(int faceIdx) const {
 }
 
 float Model::area(int faceIdx) const {
-  Face f = face(faceIdx);
-  Vec3f u = vert(f[1].ivert) - vert(f[0].ivert);
-  Vec3f v = vert(f[2].ivert) - vert(f[0].ivert);
-  return 0.5f*(u.cross(v).norm());
+  return face(faceIdx).area;
 }

@@ -36,7 +36,7 @@ void calcFormFactorPerCell(const int sideLengthInPixels, Buffer<float>& topFace,
   }
 }
 
-void calcFormFactorsFromBuffer(const Buffer<int>& itemBuffer, const Buffer<float>& factorsPerCell, std::vector<float>& formFactors) {
+void calcFormFactorsFromBuffer(const Buffer<int>& itemBuffer, const Buffer<float>& factorsPerCell, float* formFactors) {
   for(int j=0; j<factorsPerCell.height; ++j) {
     for(int i=0; i<factorsPerCell.width; ++i) {
       int idx = itemBuffer.get(i, j);
@@ -45,7 +45,7 @@ void calcFormFactorsFromBuffer(const Buffer<int>& itemBuffer, const Buffer<float
   }
 }
 
-void calcFormFactorsFromSideBuffer(const Buffer<int>& itemBuffer, const Buffer<float>& factorsPerCell, std::vector<float>& formFactors) {
+void calcFormFactorsFromSideBuffer(const Buffer<int>& itemBuffer, const Buffer<float>& factorsPerCell, float* formFactors) {
   for(int j=0; j<factorsPerCell.height; ++j) {
     for(int i=0; i<factorsPerCell.width; ++i) {
       int idx = itemBuffer.get(i, j+factorsPerCell.height);
@@ -166,17 +166,19 @@ void renderToHemicube(Buffer<int>& mainBuffer, const Model& model, int faceIdx) 
   }
 }
 
-void calcFormFactorsFromModel(const Model& model, const int faceIdx, std::vector<float>& formFactors, int gridSize) {
-  assert(gridSize%2 == 0);
-
-  for(int i=0; i<(int)formFactors.size(); ++i) {
-    formFactors[i] = 0.f;
-  }
-
-  // Precalculate form factors per cell
+void calcFormFactorsWholeModel(const Model& model, Buffer<float>& formFactors, int gridSize) {
+  // Precalculate face form factors
   Buffer<float> topFace(gridSize, gridSize, 0);
   Buffer<float> sideFace(gridSize, gridSize/2, 0);
   calcFormFactorPerCell(gridSize, topFace, sideFace);
+
+  for(int i=0; i<model.nfaces(); ++i) {
+    calcFormFactorsSingleFace(model, i, formFactors.getRow(i), gridSize, topFace, sideFace);
+  }
+}
+
+void calcFormFactorsSingleFace(const Model& model, const int faceIdx, float* formFactors, int gridSize, const Buffer<float>& topFace, const Buffer<float>& sideFace) {
+  assert(gridSize%2 == 0);
 
   Buffer<int> itemBuffer(gridSize, gridSize, 0);
   renderHemicubeFront(itemBuffer, model, faceIdx);

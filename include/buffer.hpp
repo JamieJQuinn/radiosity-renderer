@@ -7,6 +7,7 @@ class Buffer {
   public:
     void set(int i, int j, const T&);
     T get(int i, int j) const;
+    T* getRow(int j);
     Buffer(int _width, int _height);
     Buffer(int _width, int _height, T initial);
     void setup(int _width, int _height);
@@ -21,6 +22,11 @@ class Buffer {
     Buffer();
     Buffer(const Buffer&);
 };
+
+template <class T>
+T* Buffer<T>::getRow(int j) {
+  return buffer + j*width;
+}
 
 template <class T>
 T Buffer<T>::max() const {

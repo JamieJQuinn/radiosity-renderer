@@ -18,7 +18,8 @@ int main(int argc, char* argv[]) {
   std::cout << "Iterations: " << nPasses << std::endl;
 
   Model model(modelObj.c_str(), modelMtl.c_str());
-  int gridSize = 128;
+  std::cerr << "Model setup." << std::endl;
+  int gridSize = 64;
 
   std::cout << "Grid size: " << gridSize << std::endl;
 
@@ -34,7 +35,8 @@ int main(int argc, char* argv[]) {
   std::vector<Vec3f> vertexRadiosity(model.nverts());
   radiosityFaceToVertex(vertexRadiosity, model, radiosity);
 
-  renderVertexRadiosityToTexture(model, vertexRadiosity, 1200, "output.tga");
+  renderVertexRadiosityToTexture(model, vertexRadiosity, 1200, "outputSmooth.tga");
+  renderFaceRadiosityToTexture(model, radiosity, 1200, "output.tga");
 
   return 0;
 }

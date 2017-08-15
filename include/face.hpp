@@ -6,6 +6,7 @@
 class Face {
     std::vector<Vec3i> verts;
   public:
+    float area;
     int matIdx;
 
     Face(const Face& f);

@@ -8,6 +8,10 @@ Matrix::Matrix(int r, int c, float fillValue) {
   setAll(fillValue);
 }
 
+Matrix::~Matrix() {
+  delete [] m;
+}
+
 void Matrix::setAll(float f) {
   for(int j=0; j<cols; ++j) {
     for(int i=0; i<rows; ++i) {
@@ -199,4 +203,10 @@ Vec4f Matrix::operator*(const Vec4f& v) const {
       get(2,0)*v[0] + get(2,1)*v[1] + get(2,2)*v[2] + get(2,3)*v[3],
       get(3,0)*v[0] + get(3,1)*v[1] + get(3,2)*v[2] + get(3,3)*v[3]
       );
+}
+
+float calcTriangleArea(const Vec3f& v1, const Vec3f& v2, const Vec3f& v3) {
+  Vec3f u = v2 - v1;
+  Vec3f v = v3 - v1;;
+  return 0.5f*(u.cross(v).norm());
 }

@@ -26,6 +26,7 @@ public:
   Matrix(const Vec2f& v);
   Matrix(const Vec3f& v);
   Matrix(const Vec4f& v);
+  ~Matrix();
   inline int nrows() const {return rows;}
   inline int ncols() const {return cols;}
 
@@ -51,6 +52,7 @@ Matrix viewportAbsolute(int x0, int y0, int x1, int y1, int depth=1.0f);
 Matrix lookAt(Vec3f eye, Vec3f centre, Vec3f up);
 Matrix formRightAngledProjection(float n, float f);
 Matrix formProjection(float l, float r, float b, float t, float n, float f);
+float calcTriangleArea(const Vec3f& v1, const Vec3f& v2, const Vec3f& v3);
 
 template <class t> struct Vec2 {
   union {

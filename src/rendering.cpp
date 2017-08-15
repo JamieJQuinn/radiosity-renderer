@@ -233,14 +233,14 @@ int clipTriangle(std::vector<Vec4f>& pts, float nearPlane) {
   return nTrianglesReturned;
 }
 
-void shootRadiosity(const Model& model, int gridSize, std::vector<Vec3f>& radiosity, std::vector<Vec3f>& radiosityToShoot, int faceIdx, const std::vector<float>& formFactors) {
+void shootRadiosity(const Model& model, int gridSize, std::vector<Vec3f>& radiosity, std::vector<Vec3f>& radiosityToShoot, int faceIdx, const float* formFactors) {
+  float areaThisPatch = model.area(faceIdx);
   for(int j=0; j<model.nfaces(); ++j) {
     // Don't affect self
     if( j==faceIdx ) {
       continue;
     }
     float formFactor = formFactors[j+1];
-    float areaThisPatch = model.area(faceIdx);
     float areaJthPatch = model.area(j);
     Vec3f reflectivity = model.getFaceReflectivity(j);
 
@@ -254,14 +254,19 @@ void shootRadiosity(const Model& model, int gridSize, std::vector<Vec3f>& radios
 }
 
 void normaliseRadiosity(std::vector<Vec3f>& radiosity) {
-  float max = 0.f;
+  //float max = 0.f;
+  //for(int i=0; i<(int)radiosity.size(); ++i) {
+    //for(int j=0; j<3; ++j) {
+      //max = radiosity[i][j] > max ? radiosity[i][j] : max;
+    //}
+  //}
+  //for(int i=0; i<(int)radiosity.size(); ++i) {
+    //radiosity[i] = radiosity[i] * (1.f/max);
+  //}
   for(int i=0; i<(int)radiosity.size(); ++i) {
     for(int j=0; j<3; ++j) {
-      max = radiosity[i][j] > max ? radiosity[i][j] : max;
+      radiosity[i][j] = radiosity[i][j] < 1.0f ? radiosity[i][j] : 1.0f;
     }
-  }
-  for(int i=0; i<(int)radiosity.size(); ++i) {
-    radiosity[i] = radiosity[i] * (1.f/max);
   }
 }
 
@@ -273,19 +278,21 @@ void calculateRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int g
     radiosity[i] = model.getFaceEmissivity(i);
   }
 
-  std::vector<float> formFactors(model.nfaces()+1);
-  std::vector<std::vector<float>> totalFormFactors(model.nfaces());
-  for(int i=0; i<model.nfaces(); ++i) {
-    calcFormFactorsFromModel(model, i, formFactors, gridSize);
-    totalFormFactors[i] = formFactors;
-  }
+  std::cerr << "Form factor memory cost: " << sizeof(float)*model.nfaces()*model.nfaces()/(1024.f*1024.f) << " MB" << std::endl;
+  Buffer<float> totalFormFactors(model.nfaces()+1, model.nfaces()+1, 0.f);
+  std::cerr << "Calculating form factors" << std::endl;
+  calcFormFactorsWholeModel(model, totalFormFactors, gridSize);
+  std::cerr << "Calculated form factors" << std::endl;
 
   for(int passes=0; passes<nPasses; ++passes) {
+    std::cerr << "Pass: " << passes << std::endl;
     for(int i=0; i<model.nfaces(); ++i) {
-      shootRadiosity(model, gridSize, radiosity, radiosityToShoot, i, totalFormFactors[i]);
+      float* radiosityPtr = totalFormFactors.getRow(i);
+      shootRadiosity(model, gridSize, radiosity, radiosityToShoot, i, radiosityPtr);
     }
   }
 
+  std::cerr << "Normalising radiosity" << std::endl;
   normaliseRadiosity(radiosity);
 }
 
