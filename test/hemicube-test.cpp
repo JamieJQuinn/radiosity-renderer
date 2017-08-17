@@ -96,11 +96,31 @@ TEST_CASE("Test two adjacent faces hemicube", "[hemicube]") {
   //}
 //}
 
-TEST_CASE("Test formation of hemicube side face MVP", "[hemicube]") {
-  Model model("test/scene.obj", "test/scene.mtl");
-  int gridSize = 200;
-  int faceIdx = 8;
-  renderViewFromFace(faceIdx, gridSize, model, "test/hemicubeMVP.tga");
+TEST_CASE("Test two form factor of 2 different orientations of triangle", "[formFactor]") {
+  int size = 20;
+  Buffer<int> buffer(size, size, 0);
+  Buffer<float> zBuffer(size, size, 0);
+  std::vector<Vec3f> pts1({Vec3f(12, 2, 1), Vec3f(5, 16, 1), Vec3f(16, 10, 1)});
+  std::vector<Vec3f> pts2({Vec3f(16, 10, 1), Vec3f(12, 2, 1), Vec3f(5, 16, 1)});
+
+  renderTriangle(pts1, zBuffer, buffer, 1);
+  Buffer<float> topFace(size, size, 0);
+  Buffer<float> sideFace(size, size/2, 0);
+  calcFormFactorPerCell(size, topFace, sideFace);
+
+  float formFactors[] = {0.f, 0.f};
+  calcFormFactorsFromBuffer(buffer, topFace, formFactors);
+
+  float formFactor1 = formFactors[1];
+
+  zBuffer.fillAll(0.f);
+  buffer.fillAll(0);
+  renderTriangle(pts2, zBuffer, buffer, 1);
+
+  formFactors[0] = formFactors[1] = 0.f;
+  calcFormFactorsFromBuffer(buffer, topFace, formFactors);
+
+  REQUIRE(formFactor1 == formFactors[1]);
 }
 
 TEST_CASE("Render single hemicube face to colour buffer", "[hemicube]") {
