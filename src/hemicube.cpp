@@ -5,6 +5,7 @@
 #include "model.hpp"
 #include "buffer.hpp"
 #include "rendering.hpp"
+#include "omp.h"
 
 void calcFormFactorPerCell(const int sideLengthInPixels, Buffer<float>& topFace, Buffer<float>& sideFace) {
   assert(sideLengthInPixels%2==0); // Need to half for side face
@@ -172,6 +173,7 @@ void calcFormFactorsWholeModel(const Model& model, Buffer<float>& formFactors, i
   Buffer<float> sideFace(gridSize, gridSize/2, 0);
   calcFormFactorPerCell(gridSize, topFace, sideFace);
 
+  #pragma omp parallel for
   for(int i=0; i<model.nfaces(); ++i) {
     calcFormFactorsSingleFace(model, i, formFactors.getRow(i), gridSize, topFace, sideFace);
   }
