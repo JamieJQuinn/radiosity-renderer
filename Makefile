@@ -21,7 +21,8 @@ all: release
 debug: CFLAGS += -DDEBUG -g
 debug: $(BUILD_DIR) $(BUILD_DIR)/$(EXECUTABLE)
 
-release: CFLAGS += -DNDEBUG -O3
+release: CFLAGS += -fopenmp -DNDEBUG -O3
+release: LDFLAGS += -fopenmp
 release: $(BUILD_DIR) $(BUILD_DIR)/$(EXECUTABLE)
 
 profile: CFLAGS += -pg
@@ -42,7 +43,8 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 .PHONY: test
-test: all $(BUILD_DIR)/$(TEST_EXECUTABLE)
+test: CFLAGS += -DDEBUG -g
+test: debug $(BUILD_DIR)/$(TEST_EXECUTABLE)
 	$(BUILD_DIR)/$(TEST_EXECUTABLE)
 
 $(BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp
