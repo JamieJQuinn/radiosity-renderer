@@ -8,6 +8,26 @@ Matrix::Matrix(int r, int c, float fillValue) {
   setAll(fillValue);
 }
 
+Matrix::Matrix(const Matrix& mat) {
+  init(mat);
+}
+
+void Matrix::init(const Matrix& mat) {
+  rows = mat.rows;
+  cols = mat.cols;
+  m = new float[rows*cols];
+  for(int i=0; i<rows; ++i) {
+    for(int j=0; j<cols; ++j) {
+      set(i, j, mat.get(i, j));
+    }
+  }
+}
+
+Matrix& Matrix::operator= (const Matrix& mat) {
+  init(mat);
+  return *this;
+}
+
 Matrix::~Matrix() {
   delete [] m;
 }

@@ -26,6 +26,9 @@ public:
   Matrix(const Vec2f& v);
   Matrix(const Vec3f& v);
   Matrix(const Vec4f& v);
+  Matrix(const Matrix& m);
+  Matrix& operator= (const Matrix& mat);
+  void init(const Matrix& mat);
   ~Matrix();
   inline int nrows() const {return rows;}
   inline int ncols() const {return cols;}
