@@ -62,10 +62,18 @@ Matrix formHemicubeMVP(const Vec3f& eye, const Vec3f& dir, const Vec3f& up) {
   return projection*view;
 }
 
+Vec3f getUp(const Vec3f& dir) {
+  if(std::abs(dir.z) < 0.98f) {
+    return Vec3f(0,0,1);
+  } else {
+    return Vec3f(1,0,0);
+  }
+}
+
 void renderHemicubeFront(Buffer<int>& buffer, const Model& model, int faceIdx) {
   Face f = model.face(faceIdx);
-  Vec3f up = (model.vert(f[1].ivert) - model.vert(f[0].ivert)).normalise();
   Vec3f dir = model.norm(faceIdx, 0);
+  Vec3f up = getUp(dir);
   Vec3f eye = model.centreOf(faceIdx);
 
   Matrix MVP = formHemicubeMVP(eye, dir, up);
@@ -74,8 +82,8 @@ void renderHemicubeFront(Buffer<int>& buffer, const Model& model, int faceIdx) {
 
 void renderHemicubeDown(Buffer<int>& buffer, const Model& model, int faceIdx) {
   Face f = model.face(faceIdx);
-  Vec3f up = (model.vert(f[1].ivert) - model.vert(f[0].ivert)).normalise();
   Vec3f dir = model.norm(faceIdx, 0);
+  Vec3f up = getUp(dir);
   Vec3f eye = model.centreOf(faceIdx);
 
   std::swap(up, dir);
@@ -86,8 +94,8 @@ void renderHemicubeDown(Buffer<int>& buffer, const Model& model, int faceIdx) {
 
 void renderHemicubeUp(Buffer<int>& buffer, const Model& model, int faceIdx) {
   Face f = model.face(faceIdx);
-  Vec3f up = (model.vert(f[1].ivert) - model.vert(f[0].ivert)).normalise();
   Vec3f dir = model.norm(faceIdx, 0);
+  Vec3f up = getUp(dir);
   Vec3f eye = model.centreOf(faceIdx);
 
   std::swap(up, dir);
@@ -99,8 +107,8 @@ void renderHemicubeUp(Buffer<int>& buffer, const Model& model, int faceIdx) {
 
 void renderHemicubeRight(Buffer<int>& buffer, const Model& model, int faceIdx) {
   Face f = model.face(faceIdx);
-  Vec3f up = (model.vert(f[1].ivert) - model.vert(f[0].ivert)).normalise();
   Vec3f dir = model.norm(faceIdx, 0);
+  Vec3f up = getUp(dir);
   Vec3f eye = model.centreOf(faceIdx);
 
   std::swap(up, dir);
@@ -112,8 +120,8 @@ void renderHemicubeRight(Buffer<int>& buffer, const Model& model, int faceIdx) {
 
 void renderHemicubeLeft(Buffer<int>& buffer, const Model& model, int faceIdx) {
   Face f = model.face(faceIdx);
-  Vec3f up = (model.vert(f[1].ivert) - model.vert(f[0].ivert)).normalise();
   Vec3f dir = model.norm(faceIdx, 0);
+  Vec3f up = getUp(dir);
   Vec3f eye = model.centreOf(faceIdx);
 
   std::swap(up, dir);
