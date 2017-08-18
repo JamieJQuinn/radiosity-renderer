@@ -7,7 +7,7 @@
 #include "rendering.hpp"
 #include "colours.hpp"
 
-int main(int argc, char* argv[]) {
+void mainCPU(int argc, char* argv[]) {
   std::string modelObj(argv[1]);
   std::string modelMtl(argv[2]);
 
@@ -37,6 +37,10 @@ int main(int argc, char* argv[]) {
 
   renderVertexRadiosityToTexture(model, vertexRadiosity, 1200, "outputSmooth.tga");
   renderFaceRadiosityToTexture(model, radiosity, 1200, "output.tga");
+}
+
+int main(int argc, char* argv[]) {
+  mainCPU(argc, argv);
 
   return 0;
 }
