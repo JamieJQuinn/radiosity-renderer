@@ -143,6 +143,22 @@ TEST_CASE("Calculate form factors", "[hemicube]") {
 
   calcFormFactorsSingleFace(model, faceIdx, formFactors, gridSize, topFace, sideFace);
 
+  std::vector<Vec3f> formFactorColour(model.nfaces());
+  float maxFormFactor = formFactors[1];
+  for(int i=0; i<model.nfaces(); ++i) {
+    float formFactor = formFactors[i+1];
+    if(formFactor > maxFormFactor) {
+      maxFormFactor = formFactor;
+    }
+    formFactorColour[i] = Vec3f(formFactor, formFactor, formFactor);
+  }
+  for(int i=0; i<model.nfaces(); ++i) {
+    formFactorColour[i] = formFactorColour[i]*(1.f/maxFormFactor);
+  }
+  formFactorColour[faceIdx] = Vec3f(1.f,0,0);
+
+  renderFaceRadiosityToTexture(model, formFactorColour, gridSize, "test/formFactorsRendered.tga");
+
   float sum = 0;
   for(int i=1; i<model.nfaces()+1; ++i) {
     sum += formFactors[i];
