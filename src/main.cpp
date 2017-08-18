@@ -175,73 +175,52 @@ int mainOpenGL(int argc, char* argv[]) {
   // Dark blue background
   glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
-  double lastTime = glfwGetTime();
-  int nbFrames = 0;
+  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-  // Main loop
-  do{
-    double currentTime = glfwGetTime();
-    nbFrames++;
-    if ( currentTime - lastTime >= 1.0 ){ // If last prinf() was more than 1 sec ago
-        // printf and reset timer
-        printf("%f ms/frame\n", 1000.0/double(nbFrames));
-        nbFrames = 0;
-        lastTime += 1.0;
-    }
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+  glUseProgram(programID);
 
-    glUseProgram(programID);
+  glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+  // Vertices
+  glEnableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+  glVertexAttribPointer(
+     0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+     3,                  // size
+     GL_FLOAT,           // type
+     GL_FALSE,           // normalized?
+     0,                  // stride
+     (void*)0            // array buffer offset
+  );
 
-    // Vertices
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    glVertexAttribPointer(
-       0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-       3,                  // size
-       GL_FLOAT,           // type
-       GL_FALSE,           // normalized?
-       0,                  // stride
-       (void*)0            // array buffer offset
-    );
+  // Colours
+  glEnableVertexAttribArray(1);
+  glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+  glVertexAttribPointer(
+    1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
+    3,                                // size
+    GL_FLOAT,                         // type
+    GL_FALSE,                         // normalized?
+    0,                                // stride
+    (void*)0                          // array buffer offset
+  );
 
-    // Colours
-    glEnableVertexAttribArray(1);
-    glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-    glVertexAttribPointer(
-      1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
-      3,                                // size
-      GL_FLOAT,                         // type
-      GL_FALSE,                         // normalized?
-      0,                                // stride
-      (void*)0                          // array buffer offset
-    );
+  glEnableVertexAttribArray(2);
+  glBindBuffer(GL_ARRAY_BUFFER, idBuffer);
+  glVertexAttribPointer(
+    2,                                // attribute. No particular reason for 1, but must match the layout in the shader.
+    1,                                // size
+    GL_UNSIGNED_INT,                         // type
+    GL_FALSE,                         // normalized?
+    0,                                // stride
+    (void*)0                          // array buffer offset
+  );
 
-    glEnableVertexAttribArray(2);
-    glBindBuffer(GL_ARRAY_BUFFER, idBuffer);
-    glVertexAttribPointer(
-      2,                                // attribute. No particular reason for 1, but must match the layout in the shader.
-      1,                                // size
-      GL_UNSIGNED_INT,                         // type
-      GL_FALSE,                         // normalized?
-      0,                                // stride
-      (void*)0                          // array buffer offset
-    );
-
-    // Draw
-    glDrawArrays(GL_TRIANGLES, 0, nVerts);
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(2);
-
-    // Swap buffers
-    glfwSwapBuffers(window);
-    glfwPollEvents();
-
-  } // Check if the ESC key was pressed or the window was closed
-  while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-       glfwWindowShouldClose(window) == 0 );
+  // Draw
+  glDrawArrays(GL_TRIANGLES, 0, nVerts);
+  glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(1);
+  glDisableVertexAttribArray(2);
 
   GLubyte* textureOut = new GLubyte[HEMICUBE_GRID_SIZE*HEMICUBE_GRID_SIZE*3];
   glReadPixels(0,0,HEMICUBE_GRID_SIZE,HEMICUBE_GRID_SIZE,GL_RGB,GL_UNSIGNED_BYTE, textureOut);
