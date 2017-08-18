@@ -157,6 +157,9 @@ int mainOpenGL(int argc, char* argv[]) {
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
 
+  // enable back face culling
+  glEnable(GL_CULL_FACE);
+
   // Dark blue background
   glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
