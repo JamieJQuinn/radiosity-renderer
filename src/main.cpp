@@ -66,7 +66,7 @@ int mainOpenGL(int argc, char* argv[]) {
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
   // Open a window and create its OpenGL context
-  window = glfwCreateWindow( 1024, 768, "Radiosity", NULL, NULL);
+  window = glfwCreateWindow( 512, 512, "Radiosity", NULL, NULL);
   if( window == NULL ){
     fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
     getchar();
@@ -89,17 +89,47 @@ int mainOpenGL(int argc, char* argv[]) {
   // Load shaders
   GLuint programID = LoadShaders("shaders/colour_red.vertex", "shaders/colour_red.fragment");
 
+  // ======== TEST STUFF
+
+  Model model("test/red_green_walls.obj", "test/red_green_walls.mtl");
+  int faceIdx = 0;
+  Vec3f eye = model.centreOf(faceIdx);
+  Vec3f dir = model.norm(faceIdx, 0);
+  Vec3f up = getUp(dir);
+  //glm::vec3 glmEye = glmVec3FromVec3f(eye);
+  //glm::vec3 glmCentre = glmVec3FromVec3f(eye + dir);
+  glm::vec3 glmEye = glmVec3FromVec3f(Vec3f(2,3,4));
+  glm::vec3 glmCentre = glmVec3FromVec3f(Vec3f(0,0,0));
+  glm::vec3 glmUp = glmVec3FromVec3f(up);
+
+  // ========================
+
+  // create MVP
+  glm::mat4 CameraMatrix = glm::lookAt(glmEye,glmCentre,glmUp);
+  glm::mat4 Projection = glm::perspective(glm::radians(90.0f), 1.f, 0.1f, 100.0f);
+  glm::mat4 MVP = Projection*CameraMatrix;
+
+  GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+
   // Initialise vertex VBO
   GLuint VertexArrayID;
   glGenVertexArrays(1, &VertexArrayID);
   glBindVertexArray(VertexArrayID);
 
-  // Triangle data
-  static const GLfloat g_vertex_buffer_data[] = {
-    -1.0f, -1.0f, 0.0f,
-    1.0f, -1.0f, 0.0f,
-    0.0f,  1.0f, 0.0f,
-  };
+  // Load vertex info from model
+  const int nFaces = model.nfaces();
+  const int nVerts = nFaces*3;
+
+  GLfloat * g_vertex_buffer_data = new GLfloat [nVerts*3];
+  for(int i=0; i<nFaces; ++i) {
+    Face f = model.face(i);
+    for(int j=0; j<3; ++j) {
+      Vec3f vertex = model.vert(f[j].ivert);
+      for(int k=0; k<3; ++k) {
+        g_vertex_buffer_data[9*i+3*j+k] = vertex[k];
+      }
+    }
+  }
 
   // This will identify our vertex buffer
   GLuint vertexbuffer;
@@ -108,17 +138,17 @@ int mainOpenGL(int argc, char* argv[]) {
   // The following commands will talk about our 'vertexbuffer' buffer
   glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
   // Give our vertices to OpenGL.
-  glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*nVerts*3, g_vertex_buffer_data, GL_STATIC_DRAW);
 
   // Dark blue background
   glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
   do{
-    // Clear the screen. It's not mentioned before Tutorial 02, but it can cause flickering, so it's there nonetheless.
-
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     glUseProgram(programID);
+
+    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
@@ -131,8 +161,7 @@ int mainOpenGL(int argc, char* argv[]) {
        (void*)0            // array buffer offset
     );
 
-    // Draw the triangle !
-    glDrawArrays(GL_TRIANGLES, 0, 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
+    glDrawArrays(GL_TRIANGLES, 0, nVerts);
     glDisableVertexAttribArray(0);
 
     // Swap buffers
