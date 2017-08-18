@@ -5,73 +5,9 @@
 #include "rendering.hpp"
 
 void renderViewFromFace(int faceIdx, int gridSize, const Model& model, std::string filename) {
-  Buffer<TGAColor> mainBuffer(gridSize*2, gridSize*2, black);
-
-  // Calc top face orientation
-  Face f = model.face(faceIdx);
-  Vec3f up = (model.vert(f[1].ivert) - model.vert(f[0].ivert)).normalise();
-  Vec3f dir = model.norm(faceIdx, 0);
-  Vec3f eye = model.centreOf(faceIdx);
-
-  Matrix MVP = formHemicubeMVP(eye, dir, up);
-  Buffer<TGAColor> buffer(gridSize, gridSize, black);
-  renderModelReflectivity(buffer, model, MVP, eye, 0.05f);
-
-  for(int j=0; j<gridSize; ++j) {
-    for(int i=0; i<gridSize; ++i) {
-      mainBuffer.set(gridSize/2+i, gridSize/2+j, buffer.get(i, j));
-    }
-  }
-
-  // Move into side face orientation
-  std::swap(up, dir);
-  MVP = formHemicubeMVP(eye, dir, up);
-  buffer.fillAll(black);
-  renderModelReflectivity(buffer, model, MVP, eye, 0.05f);
-
-  for(int j=0; j<gridSize/2; ++j) {
-    for(int i=0; i<gridSize; ++i) {
-      mainBuffer.set(gridSize/2+i, j+3*gridSize/2, buffer.get(gridSize-i, gridSize-j-1));
-    }
-  }
-
-  // Second side face orientation
-  dir = dir*-1.f;
-  MVP = formHemicubeMVP(eye, dir, up);
-  buffer.fillAll(black);
-  renderModelReflectivity(buffer, model, MVP, eye, 0.05f);
-
-  for(int j=0; j<gridSize/2; ++j) {
-    for(int i=0; i<gridSize; ++i) {
-      mainBuffer.set(gridSize/2+i, j, buffer.get(i, j+gridSize/2));
-    }
-  }
-
-  // Third
-  dir = dir.cross(up);
-  MVP = formHemicubeMVP(eye, dir, up);
-  buffer.fillAll(black);
-  renderModelReflectivity(buffer, model, MVP, eye, 0.05f);
-
-  for(int j=0; j<gridSize/2; ++j) {
-    for(int i=0; i<gridSize; ++i) {
-      mainBuffer.set(j+3*gridSize/2, i+gridSize/2, buffer.get(i, gridSize-j-1));
-    }
-  }
-
-  // Fourth
-  dir = dir*-1.f;
-  MVP = formHemicubeMVP(eye, dir, up);
-  buffer.fillAll(black);
-  renderModelReflectivity(buffer, model, MVP, eye, 0.05f);
-
-  for(int j=0; j<gridSize/2; ++j) {
-    for(int i=0; i<gridSize; ++i) {
-      mainBuffer.set(j, i+gridSize/2, buffer.get(gridSize-i, gridSize/2+j));
-    }
-  }
-
-  renderColourBuffer(mainBuffer, filename);
+  Buffer<int> buffer(gridSize, gridSize, 0);
+  renderToHemicube(buffer, model, faceIdx);
+  renderIdsToColour(buffer, model, filename);
 }
 
 TEST_CASE("Test two adjacent faces hemicube", "[hemicube]") {
