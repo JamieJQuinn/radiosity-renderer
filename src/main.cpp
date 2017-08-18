@@ -87,7 +87,7 @@ int mainOpenGL(int argc, char* argv[]) {
   glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
   // Load shaders
-  GLuint programID = LoadShaders("shaders/colour_red.vertex", "shaders/colour_red.fragment");
+  GLuint programID = LoadShaders("shaders/main.vert", "shaders/main.frag");
 
   // ======== TEST STUFF
 
@@ -131,18 +131,32 @@ int mainOpenGL(int argc, char* argv[]) {
     }
   }
 
-  // This will identify our vertex buffer
   GLuint vertexbuffer;
-  // Generate 1 buffer, put the resulting identifier in vertexbuffer
   glGenBuffers(1, &vertexbuffer);
-  // The following commands will talk about our 'vertexbuffer' buffer
   glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-  // Give our vertices to OpenGL.
   glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*nVerts*3, g_vertex_buffer_data, GL_STATIC_DRAW);
+
+  // Load colour info
+
+  GLfloat * g_colour_buffer_data = new GLfloat [nVerts*3];
+  for(int i=0; i<nFaces; ++i) {
+    Vec3f colour = model.getFaceReflectivity(i);
+    for(int j=0; j<3; ++j) {
+      for(int k=0; k<3; ++k) {
+        g_colour_buffer_data[9*i+3*j+k] = colour[k];
+      }
+    }
+  }
+
+  GLuint colorbuffer;
+  glGenBuffers(1, &colorbuffer);
+  glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*nVerts*3, g_colour_buffer_data, GL_STATIC_DRAW);
 
   // Dark blue background
   glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
+  // Main loop
   do{
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
@@ -150,6 +164,7 @@ int mainOpenGL(int argc, char* argv[]) {
 
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
+    // Vertices
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     glVertexAttribPointer(
@@ -161,8 +176,22 @@ int mainOpenGL(int argc, char* argv[]) {
        (void*)0            // array buffer offset
     );
 
+    // Colours
+    glEnableVertexAttribArray(1);
+    glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+    glVertexAttribPointer(
+      1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
+      3,                                // size
+      GL_FLOAT,                         // type
+      GL_FALSE,                         // normalized?
+      0,                                // stride
+      (void*)0                          // array buffer offset
+    );
+
+    // Draw
     glDrawArrays(GL_TRIANGLES, 0, nVerts);
     glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
 
     // Swap buffers
     glfwSwapBuffers(window);
