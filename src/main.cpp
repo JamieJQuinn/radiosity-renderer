@@ -163,8 +163,19 @@ int mainOpenGL(int argc, char* argv[]) {
   // Dark blue background
   glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
+  double lastTime = glfwGetTime();
+  int nbFrames = 0;
+
   // Main loop
   do{
+    double currentTime = glfwGetTime();
+    nbFrames++;
+    if ( currentTime - lastTime >= 1.0 ){ // If last prinf() was more than 1 sec ago
+        // printf and reset timer
+        printf("%f ms/frame\n", 1000.0/double(nbFrames));
+        nbFrames = 0;
+        lastTime += 1.0;
+    }
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     glUseProgram(programID);
