@@ -137,7 +137,6 @@ int mainOpenGL(int argc, char* argv[]) {
   glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*nVerts*3, g_vertex_buffer_data, GL_STATIC_DRAW);
 
   // Load colour info
-
   GLfloat * g_colour_buffer_data = new GLfloat [nVerts*3];
   for(int i=0; i<nFaces; ++i) {
     Vec3f colour = model.getFaceReflectivity(i);
@@ -152,6 +151,17 @@ int mainOpenGL(int argc, char* argv[]) {
   glGenBuffers(1, &colorbuffer);
   glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
   glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*nVerts*3, g_colour_buffer_data, GL_STATIC_DRAW);
+
+  // Load ID info
+  GLuint *id_buffer_data = new GLuint [nFaces];
+  for(int i=0; i<nFaces; ++i) {
+    id_buffer_data[i] = i;
+  }
+
+  GLuint idBuffer;
+  glGenBuffers(1, &idBuffer);
+  glBindBuffer(GL_ARRAY_BUFFER, idBuffer);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(GLuint)*nFaces, id_buffer_data, GL_STATIC_DRAW);
 
   // Enable z-buffer
   glEnable(GL_DEPTH_TEST);
@@ -206,10 +216,22 @@ int mainOpenGL(int argc, char* argv[]) {
       (void*)0                          // array buffer offset
     );
 
+    glEnableVertexAttribArray(2);
+    glBindBuffer(GL_ARRAY_BUFFER, idBuffer);
+    glVertexAttribPointer(
+      2,                                // attribute. No particular reason for 1, but must match the layout in the shader.
+      1,                                // size
+      GL_UNSIGNED_INT,                         // type
+      GL_FALSE,                         // normalized?
+      0,                                // stride
+      (void*)0                          // array buffer offset
+    );
+
     // Draw
     glDrawArrays(GL_TRIANGLES, 0, nVerts);
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
 
     // Swap buffers
     glfwSwapBuffers(window);
