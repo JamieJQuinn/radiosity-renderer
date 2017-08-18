@@ -49,7 +49,7 @@ void calcFormFactorsFromBuffer(const Buffer<int>& itemBuffer, const Buffer<float
 void calcFormFactorsFromSideBuffer(const Buffer<int>& itemBuffer, const Buffer<float>& factorsPerCell, float* formFactors) {
   for(int j=0; j<factorsPerCell.height; ++j) {
     for(int i=0; i<factorsPerCell.width; ++i) {
-      int idx = itemBuffer.get(i, itemBuffer.height-j-1);
+      int idx = itemBuffer.get(i, j+itemBuffer.height/2);
       formFactors[idx] += factorsPerCell.get(i, j);
     }
   }
