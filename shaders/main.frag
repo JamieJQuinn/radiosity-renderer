@@ -3,7 +3,7 @@
 in vec3 fragmentColor;
 flat in uint fragmentID;
 
-out vec3 color;
+layout(location=0) out vec3 color;
 
 void main(){
   //float colour = float(fragmentID)/768.0f;
