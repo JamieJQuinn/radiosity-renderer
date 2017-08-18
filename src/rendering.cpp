@@ -174,6 +174,16 @@ void renderModelIds(Buffer<int>& buffer, const Model& model, const Matrix& MVP, 
   }
 }
 
+void renderIdsToColour(const GLuint * buffer, const int size, const Model& model, std::string fileName) {
+  Buffer<int> b(size, size, 0);
+  for(int j=0; j<size; ++j) {
+    for(int i=0; i<size; ++i) {
+      b.set(i, j, buffer[j*size+i]);
+    }
+  }
+  renderIdsToColour(b, model, fileName);
+}
+
 void renderIdsToColour(const Buffer<int>& itemBuffer, const Model& model, std::string fileName) {
   Buffer<TGAColor> colourBuffer(itemBuffer.width, itemBuffer.height, black);
   for(int j=0; j<itemBuffer.height; ++j) {

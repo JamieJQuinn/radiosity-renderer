@@ -22,6 +22,10 @@ opengl: LDFLAGS += -lglfw -lGLEW -lGL
 opengl: CFLAGS += -DOPENGL
 opengl: release
 
+debug-opengl: LDFLAGS += -lglfw -lGLEW -lGL
+debug-opengl: CFLAGS += -DOPENGL
+debug-opengl: debug
+
 debug: CFLAGS += -DDEBUG -g
 debug: $(BUILD_DIR) $(BUILD_DIR)/$(EXECUTABLE)
 

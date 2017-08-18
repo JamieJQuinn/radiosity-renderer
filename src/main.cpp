@@ -17,8 +17,6 @@
 #include "colours.hpp"
 #include "opengl_helper.hpp"
 
-#define HEMICUBE_GRID_SIZE 512
-
 void mainCPU(int argc, char* argv[]) {
   std::string modelObj(argv[1]);
   std::string modelMtl(argv[2]);
@@ -87,9 +85,6 @@ int mainOpenGL(int argc, char* argv[]) {
     return -1;
   }
 
-  // Ensure we can capture the escape key being pressed below
-  glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-
   // TEXTURE STUFF ======
 
   // Setup texture output
@@ -105,11 +100,7 @@ int mainOpenGL(int argc, char* argv[]) {
   glBindTexture(GL_TEXTURE_2D, renderedTexture);
 
   // Give an empty image to OpenGL ( the last "0" )
-  glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, HEMICUBE_GRID_SIZE, HEMICUBE_GRID_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-
-  // Poor filtering. Needed !
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_R32UI, HEMICUBE_GRID_SIZE, HEMICUBE_GRID_SIZE, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, 0);
 
   GLuint depthrenderbuffer;
   glGenRenderbuffers(1, &depthrenderbuffer);
@@ -130,8 +121,7 @@ int mainOpenGL(int argc, char* argv[]) {
   }
 
   // Render to our framebuffer
-  //glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
   glViewport(0,0,HEMICUBE_GRID_SIZE,HEMICUBE_GRID_SIZE);
 
   // END TEXTURE STUFF ========
@@ -140,18 +130,16 @@ int mainOpenGL(int argc, char* argv[]) {
   GLuint programID = LoadShaders("shaders/main.vert", "shaders/main.frag");
 
   // ======== TEST STUFF
-
-  Model model("test/red_green_walls.obj", "test/red_green_walls.mtl");
+  Model model("test/scene.obj", "test/scene.mtl");
   int faceIdx = 0;
   Vec3f eye = model.centreOf(faceIdx);
   Vec3f dir = model.norm(faceIdx, 0);
   Vec3f up = getUp(dir);
-  //glm::vec3 glmEye = glmVec3FromVec3f(eye);
-  //glm::vec3 glmCentre = glmVec3FromVec3f(eye + dir);
-  glm::vec3 glmEye = glmVec3FromVec3f(Vec3f(2,3,4));
-  glm::vec3 glmCentre = glmVec3FromVec3f(Vec3f(0,0,0));
+  glm::vec3 glmEye = glmVec3FromVec3f(eye);
+  glm::vec3 glmCentre = glmVec3FromVec3f(eye + dir);
+  //glm::vec3 glmEye = glmVec3FromVec3f(Vec3f(2,3,4));
+  //glm::vec3 glmCentre = glmVec3FromVec3f(Vec3f(0,0,0));
   glm::vec3 glmUp = glmVec3FromVec3f(up);
-
   // ========================
 
   // create MVP
@@ -203,15 +191,17 @@ int mainOpenGL(int argc, char* argv[]) {
   glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*nVerts*3, g_colour_buffer_data, GL_STATIC_DRAW);
 
   // Load ID info
-  GLuint *id_buffer_data = new GLuint [nFaces];
+  GLuint *id_buffer_data = new GLuint [nFaces*3];
   for(int i=0; i<nFaces; ++i) {
-    id_buffer_data[i] = i;
+    for(int j=0; j<3; ++j) {
+      id_buffer_data[3*i+j] = (GLuint)(i+1);
+    }
   }
 
   GLuint idBuffer;
   glGenBuffers(1, &idBuffer);
   glBindBuffer(GL_ARRAY_BUFFER, idBuffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(GLuint)*nFaces, id_buffer_data, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(GLuint)*nFaces*3, id_buffer_data, GL_STATIC_DRAW);
 
   // Enable z-buffer
   glEnable(GL_DEPTH_TEST);
@@ -255,13 +245,12 @@ int mainOpenGL(int argc, char* argv[]) {
 
   glEnableVertexAttribArray(2);
   glBindBuffer(GL_ARRAY_BUFFER, idBuffer);
-  glVertexAttribPointer(
+  glVertexAttribIPointer(
     2,                                // attribute. No particular reason for 1, but must match the layout in the shader.
     1,                                // size
     GL_UNSIGNED_INT,                         // type
-    GL_FALSE,                         // normalized?
     0,                                // stride
-    (void*)0                          // array buffer offset
+    0                          // array buffer offset
   );
 
   // Draw
@@ -270,13 +259,14 @@ int mainOpenGL(int argc, char* argv[]) {
   glDisableVertexAttribArray(1);
   glDisableVertexAttribArray(2);
 
-  GLubyte* textureOut = new GLubyte[HEMICUBE_GRID_SIZE*HEMICUBE_GRID_SIZE*3];
-  glReadPixels(0,0,HEMICUBE_GRID_SIZE,HEMICUBE_GRID_SIZE,GL_RGB,GL_UNSIGNED_BYTE, textureOut);
+  GLuint* textureOut = new GLuint[HEMICUBE_GRID_SIZE*HEMICUBE_GRID_SIZE];
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, textureOut);
+  renderIdsToColour(textureOut, HEMICUBE_GRID_SIZE, model, "test/gl_test_out.tga");
 
-  renderColourBuffer(textureOut, HEMICUBE_GRID_SIZE, "test/gl_test_out.tga");
+  //GLubyte* textureOut = new GLubyte[HEMICUBE_GRID_SIZE*HEMICUBE_GRID_SIZE*3];
+  //glReadPixels(0,0,HEMICUBE_GRID_SIZE,HEMICUBE_GRID_SIZE,GL_RGB,GL_UNSIGNED_BYTE, textureOut);
 
-  // Close OpenGL window and terminate GLFW
-  glfwTerminate();
+  //renderColourBuffer(textureOut, HEMICUBE_GRID_SIZE, "test/gl_test_out.tga");
 
   return 0;
 }
