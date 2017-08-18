@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <GL/gl.h>
 
 #include "rendering.hpp"
 #include "tgaimage.hpp"
@@ -8,6 +9,22 @@
 #include "model.hpp"
 #include "colours.hpp"
 #include "hemicube.hpp"
+
+void renderColourBuffer(const GLubyte* buffer, const int size, std::string filename) {
+  TGAImage frame(size, size, TGAImage::RGB);
+  for(int j=0; j<size; ++j) {
+    for(int i=0; i<size; ++i) {
+      frame.set(i, j, TGAColor(
+              short(buffer[j*3*size+3*i+0]),
+              short(buffer[j*3*size+3*i+1]),
+              short(buffer[j*3*size+3*i+2]),
+              255
+            ));
+    }
+  }
+  frame.flip_vertically();
+  frame.write_tga_file(filename.c_str());
+}
 
 void renderColourBuffer(const Buffer<TGAColor>& buffer, TGAImage& image) {
   for(int j=0; j<buffer.height; ++j) {

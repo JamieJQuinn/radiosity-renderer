@@ -8,6 +8,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #endif
 
+#define HEMICUBE_GRID_SIZE 512
+
 #include "model.hpp"
 #include "geometry.hpp"
 #include "hemicube.hpp"
@@ -66,7 +68,7 @@ int mainOpenGL(int argc, char* argv[]) {
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
   // Open a window and create its OpenGL context
-  window = glfwCreateWindow( 512, 512, "Radiosity", NULL, NULL);
+  window = glfwCreateWindow( HEMICUBE_GRID_SIZE, HEMICUBE_GRID_SIZE, "Radiosity", NULL, NULL);
   if( window == NULL ){
     fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
     getchar();
@@ -240,6 +242,11 @@ int mainOpenGL(int argc, char* argv[]) {
   } // Check if the ESC key was pressed or the window was closed
   while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
        glfwWindowShouldClose(window) == 0 );
+
+  GLubyte* textureOut = new GLubyte[HEMICUBE_GRID_SIZE*HEMICUBE_GRID_SIZE*3];
+  glReadPixels(0,0,HEMICUBE_GRID_SIZE,HEMICUBE_GRID_SIZE,GL_RGB,GL_UNSIGNED_BYTE, textureOut);
+
+  renderColourBuffer(textureOut, HEMICUBE_GRID_SIZE, "test/gl_test_out.tga");
 
   // Close OpenGL window and terminate GLFW
   glfwTerminate();

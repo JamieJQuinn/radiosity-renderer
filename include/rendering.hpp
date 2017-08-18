@@ -1,12 +1,14 @@
 #pragma once
 
 #include <iostream>
+#include <GL/gl.h>
 
 #include "tgaimage.hpp"
 #include "geometry.hpp"
 #include "buffer.hpp"
 #include "model.hpp"
 
+void renderColourBuffer(const GLubyte* buffer, const int size, std::string filename);
 void renderColourBuffer(const Buffer<TGAColor>& buffer, TGAImage& image);
 void renderColourBuffer(const Buffer<TGAColor>& buffer, std::string filename);
 void renderZBuffer(const Buffer<float>& zBuffer, TGAImage& image);
