@@ -18,6 +18,10 @@ TEST_EXECUTABLE=radiosity_test
 
 all: release
 
+opengl: LDFLAGS += -lglfw -lGLEW -lGL
+opengl: CFLAGS += -DOPENGL
+opengl: release
+
 debug: CFLAGS += -DDEBUG -g
 debug: $(BUILD_DIR) $(BUILD_DIR)/$(EXECUTABLE)
 
@@ -30,7 +34,7 @@ profile: LDFLAGS += -pg -no-pie
 profile: release
 
 $(BUILD_DIR)/$(EXECUTABLE): $(OBJECTS)
-	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
+	$(CC) $(OBJECTS) -o $@ $(LDFLAGS)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(DEPENDENCIES)
 	$(CC) $(CFLAGS) $< -o $@
@@ -51,4 +55,4 @@ $(BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp
 	$(CC) $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/$(TEST_EXECUTABLE): $(TEST_OBJECTS) $(OBJECTS)
-	$(CC) $(LDFLAGS) $(filter-out $(BUILD_DIR)/main.o, $(OBJECTS)) $(TEST_OBJECTS) -o $@
+	$(CC) $(filter-out $(BUILD_DIR)/main.o, $(OBJECTS)) $(TEST_OBJECTS) -o $@ $(LDFLAGS)
