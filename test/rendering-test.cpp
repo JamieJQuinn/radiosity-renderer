@@ -119,6 +119,25 @@ TEST_CASE("rasteriser & z-buffer works with non-intersecting tris", "[renderer]"
   }
 }
 
+TEST_CASE("Test areas of two triangles making up a quad are identicle", "[rendering]") {
+  int size = 512;
+  Buffer<int> buffer(size, size, 0);
+  Buffer<float> zBuffer(size, size, 0);
+  std::vector<Vec3f> pts1({Vec3f(0.1, 0.1, 1)*size, Vec3f(0.9, 0.1, 1)*size, Vec3f(0.9, 0.9, 1)*size});
+  std::vector<Vec3f> pts2({Vec3f(0.9, 0.9, 7.1)*size, Vec3f(0.1, 0.9, 7.1)*size, Vec3f(0.1, 0.1, 7.1)*size});
+  renderTriangle(pts1, zBuffer, buffer, 1);
+  renderTriangle(pts2, zBuffer, buffer, 2);
+
+  Buffer<float> topFace(size, size, 0);
+  Buffer<float> sideFace(size, size/2, 0);
+  calcFormFactorPerCell(size, topFace, sideFace);
+
+  float formFactors[] = {0.f, 0.f, 0.f};
+  calcFormFactorsFromBuffer(buffer, topFace, formFactors);
+
+  REQUIRE(formFactors[1] == Approx(formFactors[2]).epsilon(0.001));
+}
+
 TEST_CASE("rasteriser & z-buffer works with intersecting tris", "[renderer]") {
   int solution[] = {
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -159,12 +178,15 @@ TEST_CASE("rasteriser & z-buffer works with intersecting tris", "[renderer]") {
 }
 
 TEST_CASE("Test calculation of form factors per cell", "[form_factors]") {
-  int size = 200;
+  int size = 512;
   Buffer<float> topFace(size, size);
   Buffer<float> sideFace(size, size/2);
   calcFormFactorPerCell(size, topFace, sideFace);
 
   REQUIRE(topFace.sum() + 4*sideFace.sum() == Approx(1.0f));
+
+  renderZBuffer(topFace, "test/topFaceFactors.tga");
+  renderZBuffer(sideFace, "test/sideFaceFactors.tga");
 }
 
 TEST_CASE("Test clipping produces correct w values", "[clipping]") {
@@ -228,7 +250,7 @@ TEST_CASE("Test clipping against back wall splitting tri", "[clipping]") {
   float nearPlane = 0.05f;
   int numTriangles = clipTriangle(pts, nearPlane);
   // Simulate homogenisation without actually doing it, that messes with x-y coords
-  for(int i=0; i<pts.size(); ++i) {
+  for(int i=0; i<(int)pts.size(); ++i) {
     pts[i].w = 1;
   }
   REQUIRE(numTriangles == 2);
@@ -256,7 +278,7 @@ TEST_CASE("Test clipping against back wall without splitting tri", "[clipping]")
   float nearPlane = 0.05f;
   int numTriangles = clipTriangle(pts, nearPlane);
   REQUIRE(numTriangles == 1);
-  for(int i=0; i<pts.size(); ++i) {
+  for(int i=0; i<(int)pts.size(); ++i) {
     pts[i].w = 1;
   }
   Matrix viewport = viewportRelative(0, 0, buffer.width, buffer.height);

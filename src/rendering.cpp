@@ -234,18 +234,16 @@ int clipTriangle(std::vector<Vec4f>& pts, float nearPlane) {
 }
 
 void shootRadiosity(const Model& model, int gridSize, std::vector<Vec3f>& radiosity, std::vector<Vec3f>& radiosityToShoot, int faceIdx, const float* formFactors) {
-  float areaThisPatch = model.area(faceIdx);
   for(int j=0; j<model.nfaces(); ++j) {
     // Don't affect self
     if( j==faceIdx ) {
       continue;
     }
     float formFactor = formFactors[j+1];
-    float areaJthPatch = model.area(j);
     Vec3f reflectivity = model.getFaceReflectivity(j);
 
     Vec3f radiosityOut = radiosityToShoot[faceIdx].piecewise(reflectivity)
-                         *(formFactor*areaThisPatch/areaJthPatch);
+                         *formFactor;
 
     radiosity[j] += radiosityOut;
     radiosityToShoot[j] += radiosityOut;
@@ -284,11 +282,16 @@ void calculateRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int g
   calcFormFactorsWholeModel(model, totalFormFactors, gridSize);
   std::cerr << "Calculated form factors" << std::endl;
 
+  float * formFactorPtr = new float [model.nfaces()+1];
   for(int passes=0; passes<nPasses; ++passes) {
     std::cerr << "Pass: " << passes << std::endl;
     for(int i=0; i<model.nfaces(); ++i) {
-      float* radiosityPtr = totalFormFactors.getRow(i);
-      shootRadiosity(model, gridSize, radiosity, radiosityToShoot, i, radiosityPtr);
+      //float *formFactorPtr = totalFormFactors.getRow(i);
+      for(int j=1; j<model.nfaces()+1; ++j) {
+        formFactorPtr[j] = totalFormFactors.get(i+1, j-1);
+      }
+      shootRadiosity(model, gridSize, radiosity, radiosityToShoot, i, formFactorPtr);
+      //gatherRadiosity(model, gridSize, radiosity, radiosityToShoot, i, formFactorPtr);
     }
   }
 

@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
 
   Model model(modelObj.c_str(), modelMtl.c_str());
   std::cerr << "Model setup." << std::endl;
-  int gridSize = 64;
+  int gridSize = 256;
 
   std::cout << "Grid size: " << gridSize << std::endl;
 

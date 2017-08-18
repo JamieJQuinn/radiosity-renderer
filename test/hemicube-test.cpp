@@ -20,7 +20,7 @@ TEST_CASE("Test two adjacent faces hemicube", "[hemicube]") {
 }
 
 //TEST_CASE("Render whole scene hemicubes", "[hemicube]") {
-  //Model model("test/scene_subdivided.obj", "test/scene_subdivided.mtl");
+  //Model model("test/red_green_walls.obj", "test/red_green_walls.mtl");
   //int gridSize = 200;
   //Buffer<int> buffer(gridSize, gridSize, 0);
 
@@ -96,7 +96,7 @@ TEST_CASE("Render single hemicube face to ID buffer", "[hemicube]") {
 TEST_CASE("Render side hemicube face to ID buffer", "[hemicube]") {
   Model model("test/scene.obj", "test/scene.mtl");
   int nFaces = model.nfaces() + 1;
-  int faceIdx = 0;
+  int faceIdx = 8;
   int gridSize = 200;
   Buffer<int> buffer(gridSize, gridSize, 0);
   renderHemicubeUp(buffer, model, faceIdx);
@@ -128,33 +128,119 @@ TEST_CASE("Render hemicube to ID index", "[hemicube]") {
 }
 
 TEST_CASE("Calculate form factors", "[hemicube]") {
-  Model model("test/scene.obj", "test/scene.mtl");
+  Model model("test/red_green_walls.obj", "test/red_green_walls.mtl");
   int faceIdx = 0;
   int gridSize = 200;
-  std::vector<float> formFactors(model.nfaces()+1);
+  float* formFactors = new float[model.nfaces()+1];
 
-  calcFormFactorsFromModel(model, faceIdx, formFactors, gridSize);
+  for(int i=0; i<model.nfaces()+1; ++i) {
+    formFactors[i] = 0.f;
+  }
+
+  Buffer<float> topFace(gridSize, gridSize, 0);
+  Buffer<float> sideFace(gridSize, gridSize/2, 0);
+  calcFormFactorPerCell(gridSize, topFace, sideFace);
+
+  calcFormFactorsSingleFace(model, faceIdx, formFactors, gridSize, topFace, sideFace);
 
   float sum = 0;
-  for(int i=1; i<(int)formFactors.size(); ++i) {
+  for(int i=1; i<model.nfaces()+1; ++i) {
     sum += formFactors[i];
+    REQUIRE(formFactors[i] <= 1.0f);
+    REQUIRE(formFactors[i] >= 0.0f);
   }
   // sum should be as close to 1 as possible
   REQUIRE(sum > 0.95f);
 }
 
-TEST_CASE("Render radiosity to texture", "[radiosity]") {
-  Model model("test/red_green_walls.obj", "test/red_green_walls.mtl");
-  int gridSize = 128;
+TEST_CASE("Compare form factors", "[hemicube]") {
+  Model model("test/scene.obj", "test/scene.mtl");
+  int gridSize = 512;
 
-  std::vector<Vec3f> radiosity(model.nfaces());
-  calculateRadiosity(radiosity, model, gridSize, 1);
+  Buffer<float> totalFormFactors(model.nfaces()+1, model.nfaces(), 0.f);
+  calcFormFactorsWholeModel(model, totalFormFactors, gridSize);
+  for(int j=0; j<totalFormFactors.height; ++j) {
+    REQUIRE(totalFormFactors.get(j+1, j) == Approx(0.f));
 
-  std::vector<Vec3f> vertexRadiosity(model.nverts());
-  radiosityFaceToVertex(vertexRadiosity, model, radiosity);
-
-  renderVertexRadiosityToTexture(model, vertexRadiosity, 600, "test/radiosity_texture.tga");
+    float sum = 0.f;
+    for(int i=0; i<totalFormFactors.width; ++i) {
+      sum += totalFormFactors.get(i, j);
+    }
+    for(int i=1; i<totalFormFactors.width; ++i) {
+      float areaI = model.area(i);
+      float areaJ = model.area(j);
+      REQUIRE(totalFormFactors.get(i,j) == areaJ/areaI*totalFormFactors.get(j+1, i-1));
+    }
+    REQUIRE(sum >= 0.95f);
+    REQUIRE(sum <= 1.01f);
+  }
+  for(int i=1; i<totalFormFactors.width; ++i) {
+    float sum = 0.f;
+    std::cout << i << std::endl;
+    for(int j=0; j<totalFormFactors.height; ++j) {
+      sum += totalFormFactors.get(i, j);
+    }
+    REQUIRE(sum >= 0.95f);
+  }
 }
+
+TEST_CASE("Compare two side by side faces", "[faces]") {
+  Model model("test/red_green_walls.obj", "test/red_green_walls.mtl");
+
+  std::vector<int> faceIndices;
+  for(int i=0; i<model.nfaces(); ++i) {
+    Face f = model.face(i);
+    if(f[0].ivert == 23 and f[1].ivert == 135 and f[2].ivert == 341) {
+      //std::cout << i << std::endl;
+      faceIndices.push_back(i);
+    }
+    if(f[0].ivert == 23 and f[1].ivert == 341 and f[2].ivert == 184) {
+      //std::cout << i << std::endl;
+      faceIndices.push_back(i);
+    }
+  }
+  int gridSize = 1024;
+  float* formFactors1 = new float[model.nfaces()+1];
+  float* formFactors2 = new float[model.nfaces()+1];
+
+  for(int i=0; i<model.nfaces()+1; ++i) {
+    formFactors1[i] = 0.f;
+    formFactors2[i] = 0.f;
+  }
+
+  Buffer<float> topFace(gridSize, gridSize, 0);
+  Buffer<float> sideFace(gridSize, gridSize/2, 0);
+  calcFormFactorPerCell(gridSize, topFace, sideFace);
+
+  calcFormFactorsSingleFace(model, faceIndices[0], formFactors1, gridSize, topFace, sideFace);
+  calcFormFactorsSingleFace(model, faceIndices[1], formFactors2, gridSize, topFace, sideFace);
+
+  float sumFormFactor1 = 0;
+  float sumFormFactor2 = 0;
+  float sumDiff = 0;
+  for(int i=0; i<model.nfaces()+1; ++i) {
+    //std::cout << formFactors1[i] << ", " << formFactors2[i] << ", " << formFactors1[i] - formFactors2[i] << std::endl;
+    sumFormFactor1 += formFactors1[i];
+    sumFormFactor2 += formFactors2[i];
+    sumDiff += formFactors1[i] - formFactors2[i];
+  }
+  //std::cout << formFactors1[319] << ", " << formFactors2[319] << std::endl;
+  //std::cout << formFactors1[703] << ", " << formFactors2[703] << std::endl;
+  //std::cout << sumDiff << std::endl;
+}
+
+//TEST_CASE("Render radiosity to texture", "[radiosity]") {
+  //Model model("test/red_green_walls.obj", "test/red_green_walls.mtl");
+  //int gridSize = 128;
+
+  //std::vector<Vec3f> radiosity(model.nfaces());
+  //calculateRadiosity(radiosity, model, gridSize, 1);
+
+  //std::vector<Vec3f> vertexRadiosity(model.nverts());
+  //radiosityFaceToVertex(vertexRadiosity, model, radiosity);
+
+  //renderVertexRadiosityToTexture(model, vertexRadiosity, 600, "test/radiosity_texture.tga");
+//}
 
 //TEST_CASE("Render radiosity simple scene (single pass)", "[radiosity]") {
   //Model model("test/scene.obj", "test/scene.mtl");
