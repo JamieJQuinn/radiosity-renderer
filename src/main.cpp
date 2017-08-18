@@ -153,6 +153,10 @@ int mainOpenGL(int argc, char* argv[]) {
   glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
   glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*nVerts*3, g_colour_buffer_data, GL_STATIC_DRAW);
 
+  // Enable z-buffer
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LESS);
+
   // Dark blue background
   glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
