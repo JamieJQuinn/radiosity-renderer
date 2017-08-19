@@ -92,7 +92,7 @@ void renderHemicube(Buffer<unsigned int>& buffer, const Model& model, int faceId
 #endif
 }
 
-void renderToHemicube(Buffer<int>& mainBuffer, const Model& model, int faceIdx) {
+void renderToHemicube(Buffer<unsigned int>& mainBuffer, const Model& model, int faceIdx) {
   int gridSize = mainBuffer.width/2;
   Buffer<unsigned int> buffer(gridSize, gridSize, 0);
 
@@ -136,7 +136,7 @@ void renderToHemicube(Buffer<int>& mainBuffer, const Model& model, int faceIdx) 
   }
 
   buffer.fillAll(0);
-  dir = dir.cross(up);
+  dir = dir*-1.f;
   renderHemicube(buffer, model, faceIdx, eye, dir, up);
   for(int j=0; j<gridSize/2; ++j) {
     for(int i=0; i<gridSize; ++i) {
@@ -187,7 +187,7 @@ void calcFormFactorsSingleFace(const Model& model, const int faceIdx, float* for
   calcFormFactorsFromSideBuffer(itemBuffer, sideFace, formFactors);
 
   itemBuffer.fillAll(0);
-  dir = dir.cross(up);
+  dir = dir*-1.f;
   renderHemicube(itemBuffer, model, faceIdx, eye, dir, up);
   calcFormFactorsFromSideBuffer(itemBuffer, sideFace, formFactors);
 }

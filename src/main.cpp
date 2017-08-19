@@ -12,7 +12,7 @@
 
 OpenGLRenderer * renderer = NULL;
 
-void mainCPU(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
   std::string modelObj(argv[1]);
   std::string modelMtl(argv[2]);
 
@@ -24,7 +24,12 @@ void mainCPU(int argc, char* argv[]) {
 
   Model model(modelObj.c_str(), modelMtl.c_str());
   std::cerr << "Model setup." << std::endl;
-  int gridSize = 256;
+
+#ifdef OPENGL
+  renderer = new OpenGLRenderer(model);
+#endif
+
+  int gridSize = HEMICUBE_GRID_SIZE;
 
   std::cout << "Grid size: " << gridSize << std::endl;
 
@@ -49,33 +54,4 @@ void mainCPU(int argc, char* argv[]) {
 
   renderVertexRadiosityToTexture(model, vertexRadiosity, 1200, "outputSmooth.tga");
   renderFaceRadiosityToTexture(model, radiosity, 1200, "output.tga");
-}
-
-#ifdef OPENGL
-int mainOpenGL(int argc, char* argv[]) {
-
-  // ======== TEST STUFF
-  Model model("test/scene.obj", "test/scene.mtl");
-  int faceIdx = 0;
-  Vec3f eye = model.centreOf(faceIdx);
-  Vec3f dir = model.norm(faceIdx, 0);
-  Vec3f up = getUp(dir);
-
-  Buffer<unsigned int> textureOut(HEMICUBE_GRID_SIZE, HEMICUBE_GRID_SIZE, 0);
-  renderer = new OpenGLRenderer(model);
-  renderHemicube(textureOut, model, faceIdx, eye, dir, up);
-  renderIdsToColour(textureOut, model, "test/gl_test_out.tga");
-
-  return 0;
-}
-#endif
-
-int main(int argc, char* argv[]) {
-#ifndef OPENGL
-  mainCPU(argc, argv);
-#else
-  mainOpenGL(argc, argv);
-#endif
-
-  return 0;
 }
