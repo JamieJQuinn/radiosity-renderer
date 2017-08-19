@@ -318,7 +318,6 @@ void calculateRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int g
         formFactorPtr[j] = totalFormFactors.get(i+1, j-1);
       }
       shootRadiosity(model, gridSize, radiosity, radiosityToShoot, i, formFactorPtr);
-      //gatherRadiosity(model, gridSize, radiosity, radiosityToShoot, i, formFactorPtr);
     }
   }
 
