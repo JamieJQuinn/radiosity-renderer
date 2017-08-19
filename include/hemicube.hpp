@@ -8,12 +8,7 @@
 
 Matrix formHemicubeMVP(const Vec3f& eye, const Vec3f& dir, const Vec3f& up);
 
-void renderToHemicube(Buffer<int>& mainBuffer, const Model& model, int faceIdx);
-void renderHemicubeFront(Buffer<int>& mainBuffer, const Model& model, int faceIdx);
-void renderHemicubeDown(Buffer<int>& mainBuffer, const Model& model, int faceIdx);
-void renderHemicubeUp(Buffer<int>& mainBuffer, const Model& model, int faceIdx);
-void renderHemicubeRight(Buffer<int>& mainBuffer, const Model& model, int faceIdx);
-void renderHemicubeLeft(Buffer<int>& mainBuffer, const Model& model, int faceIdx);
+void renderHemicube(Buffer<int>& buffer, const Model& model, int faceIdx, const Vec3f& eye, const Vec3f& dir, const Vec3f& up);
 
 void calcFormFactorPerCell(const int sideLengthInPixels, Buffer<float>& topFace, Buffer<float>& sideFace);
 void calcFormFactorsFromBuffer(const Buffer<int>& itemBuffer, const Buffer<float>& factorsPerCell, float* formFactors);

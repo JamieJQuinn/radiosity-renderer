@@ -7,6 +7,7 @@
 #include "geometry.hpp"
 #include "buffer.hpp"
 #include "model.hpp"
+#include "colours.hpp"
 
 void renderColourBuffer(const GLubyte* buffer, const int size, std::string filename);
 void renderColourBuffer(const Buffer<TGAColor>& buffer, TGAImage& image);
@@ -19,8 +20,8 @@ void renderModelRadiosity(Buffer<TGAColor>& buffer, const Model& model, const Ma
 void renderModelIds(Buffer<int>& buffer, const Model& model, const Matrix& MVP, const Vec3f& eye, float nearPlane);
 void renderIdsToColour(const Buffer<int>& itemBuffer, const Model& model, std::string fileName);
 void renderIdsToColour(const GLuint * buffer, const int size, const Model& model, std::string fileName);
-void shootRadiosity(const Model& model, int gridSize, std::vector<Vec3f>& radiosity, std::vector<Vec3f>& radiosityToShoot, int faceIdx, const std::vector<float>& formFactors);
-void calculateRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses);
+void shootRadiositySingleFace(const Model& model, int gridSize, std::vector<Vec3f>& radiosity, std::vector<Vec3f>& radiosityToShoot, int faceIdx, const std::vector<float>& formFactors);
+void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses, Buffer<float>& totalFormFactors);
 void normaliseRadiosity(std::vector<Vec3f>& radiosity);
 
 Vec3f interpolate(const Vec3f& v0, const Vec3f& v1, float t);
@@ -136,3 +137,18 @@ void clipAndRenderTriangle(std::vector<Vec4f>& pts, Buffer<zBufferType>& zBuffer
     renderTriangle(pts[i+0], pts[i+1], pts[i+2], zBuffer, buffer, fillValue);
   }
 }
+
+template <class T>
+void renderIdsToColour(const Buffer<T>& itemBuffer, const Model& model, std::string fileName) {
+  Buffer<TGAColor> colourBuffer(itemBuffer.width, itemBuffer.height, black);
+  for(int j=0; j<itemBuffer.height; ++j) {
+    for(int i=0; i<itemBuffer.width; ++i) {
+      T faceIdx = itemBuffer.get(i, j);
+      if (faceIdx != 0) {
+        colourBuffer.set(i, j, model.getFaceColour(faceIdx-1));
+      }
+    }
+  }
+  renderColourBuffer(colourBuffer, fileName);
+}
+

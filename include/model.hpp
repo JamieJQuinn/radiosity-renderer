@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <GL/gl.h>
 
 #include "geometry.hpp"
 #include "material.hpp"
@@ -15,11 +14,6 @@ private:
   std::vector<Vec3f> uv_;
   std::vector<Material> materials_;
   std::vector<Face> faces_;
-#ifdef OPENGL
-  GLfloat * vertex_buffer_data;
-  GLfloat * colour_buffer_data;
-  GLuint * id_buffer_data;
-#endif
 public:
   Model(const char *objFilename, const char *mtlFilename = "");
   ~Model();
@@ -39,13 +33,4 @@ public:
   float area(int faceIdx) const;
   Vec3f getFaceReflectivity(int faceIdx) const;
   Vec3f getFaceEmissivity(int faceIdx) const;
-
-#ifdef OPENGL
-  void initVertexBuffer();
-  void initColourBuffer();
-  void initIndexBuffer();
-  GLfloat * getVertexBuffer();
-  GLfloat * getColourBuffer();
-  GLuint * getIndexBuffer();
-#endif
 };

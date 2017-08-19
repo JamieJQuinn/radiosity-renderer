@@ -174,29 +174,6 @@ void renderModelIds(Buffer<int>& buffer, const Model& model, const Matrix& MVP, 
   }
 }
 
-void renderIdsToColour(const GLuint * buffer, const int size, const Model& model, std::string fileName) {
-  Buffer<int> b(size, size, 0);
-  for(int j=0; j<size; ++j) {
-    for(int i=0; i<size; ++i) {
-      b.set(i, j, buffer[j*size+i]);
-    }
-  }
-  renderIdsToColour(b, model, fileName);
-}
-
-void renderIdsToColour(const Buffer<int>& itemBuffer, const Model& model, std::string fileName) {
-  Buffer<TGAColor> colourBuffer(itemBuffer.width, itemBuffer.height, black);
-  for(int j=0; j<itemBuffer.height; ++j) {
-    for(int i=0; i<itemBuffer.width; ++i) {
-      int faceIdx = itemBuffer.get(i, j);
-      if (faceIdx != 0) {
-        colourBuffer.set(i, j, model.getFaceColour(faceIdx-1));
-      }
-    }
-  }
-  renderColourBuffer(colourBuffer, fileName);
-}
-
 int clipTriangle(std::vector<Vec4f>& pts, float nearPlane) {
   // Default no triangles to be rendered
   int nTrianglesReturned = 0;
@@ -260,7 +237,7 @@ int clipTriangle(std::vector<Vec4f>& pts, float nearPlane) {
   return nTrianglesReturned;
 }
 
-void shootRadiosity(const Model& model, int gridSize, std::vector<Vec3f>& radiosity, std::vector<Vec3f>& radiosityToShoot, int faceIdx, const float* formFactors) {
+void shootRadiositySingleFace(const Model& model, int gridSize, std::vector<Vec3f>& radiosity, std::vector<Vec3f>& radiosityToShoot, int faceIdx, const float* formFactors) {
   for(int j=0; j<model.nfaces(); ++j) {
     // Don't affect self
     if( j==faceIdx ) {
@@ -295,19 +272,13 @@ void normaliseRadiosity(std::vector<Vec3f>& radiosity) {
   }
 }
 
-void calculateRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses)  {
+void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses, Buffer<float>& totalFormFactors) {
   // Setup radiosity
   std::vector<Vec3f> radiosityToShoot(model.nfaces());
   for(int i=0; i<model.nfaces(); ++i) {
     radiosityToShoot[i] = model.getFaceEmissivity(i);
     radiosity[i] = model.getFaceEmissivity(i);
   }
-
-  std::cerr << "Form factor memory cost: " << sizeof(float)*model.nfaces()*model.nfaces()/(1024.f*1024.f) << " MB" << std::endl;
-  Buffer<float> totalFormFactors(model.nfaces()+1, model.nfaces()+1, 0.f);
-  std::cerr << "Calculating form factors" << std::endl;
-  calcFormFactorsWholeModel(model, totalFormFactors, gridSize);
-  std::cerr << "Calculated form factors" << std::endl;
 
   float * formFactorPtr = new float [model.nfaces()+1];
   for(int passes=0; passes<nPasses; ++passes) {
@@ -317,7 +288,7 @@ void calculateRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int g
       for(int j=1; j<model.nfaces()+1; ++j) {
         formFactorPtr[j] = totalFormFactors.get(i+1, j-1);
       }
-      shootRadiosity(model, gridSize, radiosity, radiosityToShoot, i, formFactorPtr);
+      shootRadiositySingleFace(model, gridSize, radiosity, radiosityToShoot, i, formFactorPtr);
     }
   }
 
