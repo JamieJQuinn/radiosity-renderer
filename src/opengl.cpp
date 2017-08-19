@@ -173,7 +173,7 @@ void OpenGLRenderer::initIndexBuffer(const Model& model) {
   }
 }
 
-void OpenGLRenderer::renderHemicube(Buffer<GLuint>& buffer, const glm::mat4& MVP) {
+void OpenGLRenderer::renderHemicube(Buffer<unsigned>& buffer, const glm::mat4& MVP) {
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
   glUseProgram(programID);
@@ -220,5 +220,5 @@ void OpenGLRenderer::renderHemicube(Buffer<GLuint>& buffer, const glm::mat4& MVP
   glDisableVertexAttribArray(1);
   glDisableVertexAttribArray(2);
 
-  glGetTexImage(GL_TEXTURE_2D, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, buffer.getRow(0));
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, (GLuint*)buffer.getRow(0));
 }

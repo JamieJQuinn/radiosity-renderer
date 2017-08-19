@@ -17,7 +17,7 @@ void renderZBuffer(const Buffer<float>& zBuffer, std::string filename);
 void renderWireFrame(const Model& model, Buffer<TGAColor>& buffer, const Matrix& MVP);
 void renderModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP, const Vec3f& eye, float nearPlane);
 void renderModelRadiosity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP, const Vec3f& eye, float nearPlane, std::vector<Vec3f>& radiosity);
-void renderModelIds(Buffer<int>& buffer, const Model& model, const Matrix& MVP, const Vec3f& eye, float nearPlane);
+void renderModelIds(Buffer<unsigned int>& buffer, const Model& model, const Matrix& MVP, const Vec3f& eye, float nearPlane);
 void renderIdsToColour(const Buffer<int>& itemBuffer, const Model& model, std::string fileName);
 void renderIdsToColour(const GLuint * buffer, const int size, const Model& model, std::string fileName);
 void shootRadiositySingleFace(const Model& model, int gridSize, std::vector<Vec3f>& radiosity, std::vector<Vec3f>& radiosityToShoot, int faceIdx, const std::vector<float>& formFactors);

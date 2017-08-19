@@ -161,7 +161,7 @@ void renderFaceRadiosityToTexture(const Model& model, const std::vector<Vec3f>& 
   renderColourBuffer(buffer, filename);
 }
 
-void renderModelIds(Buffer<int>& buffer, const Model& model, const Matrix& MVP, const Vec3f& eye, float nearPlane) {
+void renderModelIds(Buffer<unsigned int>& buffer, const Model& model, const Matrix& MVP, const Vec3f& eye, float nearPlane) {
   Buffer<float> zBuffer(buffer.width, buffer.height, 0.f);
   for (int i=0; i<model.nfaces(); ++i) {
     Face face = model.face(i);
@@ -169,7 +169,7 @@ void renderModelIds(Buffer<int>& buffer, const Model& model, const Matrix& MVP, 
 
     Vec3f n = model.norm(i, 0);
     if( n.dot(model.centreOf(i)-eye) <= 0.f ) {
-      clipAndRenderTriangle(pts, zBuffer, buffer, i+1, nearPlane);
+      clipAndRenderTriangle(pts, zBuffer, buffer, (unsigned int)(i+1), nearPlane);
     }
   }
 }

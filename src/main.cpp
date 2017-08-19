@@ -1,13 +1,7 @@
 #include <iostream>
 #include <string>
 
-#ifdef OPENGL
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#endif
-
 #include "config.hpp"
-
 #include "model.hpp"
 #include "geometry.hpp"
 #include "hemicube.hpp"
@@ -15,6 +9,8 @@
 #include "colours.hpp"
 #include "opengl_helper.hpp"
 #include "opengl.hpp"
+
+OpenGLRenderer * renderer = NULL;
 
 void mainCPU(int argc, char* argv[]) {
   std::string modelObj(argv[1]);
@@ -64,22 +60,10 @@ int mainOpenGL(int argc, char* argv[]) {
   Vec3f eye = model.centreOf(faceIdx);
   Vec3f dir = model.norm(faceIdx, 0);
   Vec3f up = getUp(dir);
-  glm::vec3 glmEye = glmVec3FromVec3f(eye);
-  glm::vec3 glmCentre = glmVec3FromVec3f(eye + dir);
-  //glm::vec3 glmEye = glmVec3FromVec3f(Vec3f(2,3,4));
-  //glm::vec3 glmCentre = glmVec3FromVec3f(Vec3f(0,0,0));
-  glm::vec3 glmUp = glmVec3FromVec3f(up);
-  // ========================
 
-  // create MVP
-  glm::mat4 CameraMatrix = glm::lookAt(glmEye,glmCentre,glmUp);
-  glm::mat4 Projection = glm::perspective(glm::radians(90.0f), 1.f, 0.1f, 100.0f);
-  glm::mat4 MVP = Projection*CameraMatrix;
-
-  OpenGLRenderer renderer(model);
-  Buffer<GLuint> textureOut(HEMICUBE_GRID_SIZE, HEMICUBE_GRID_SIZE, 0);
-  renderer.renderHemicube(textureOut, MVP);
-
+  Buffer<unsigned int> textureOut(HEMICUBE_GRID_SIZE, HEMICUBE_GRID_SIZE, 0);
+  renderer = new OpenGLRenderer(model);
+  renderHemicube(textureOut, model, faceIdx, eye, dir, up);
   renderIdsToColour(textureOut, model, "test/gl_test_out.tga");
 
   return 0;

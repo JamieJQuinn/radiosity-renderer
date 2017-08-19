@@ -5,7 +5,12 @@
 #include "model.hpp"
 #include "buffer.hpp"
 #include "rendering.hpp"
-#include "omp.h"
+#include "opengl_helper.hpp"
+#include "opengl.hpp"
+
+#include <omp.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 void calcFormFactorPerCell(const int sideLengthInPixels, Buffer<float>& topFace, Buffer<float>& sideFace) {
   assert(sideLengthInPixels%2==0); // Need to half for side face
@@ -37,7 +42,7 @@ void calcFormFactorPerCell(const int sideLengthInPixels, Buffer<float>& topFace,
   }
 }
 
-void calcFormFactorsFromBuffer(const Buffer<int>& itemBuffer, const Buffer<float>& factorsPerCell, float* formFactors) {
+void calcFormFactorsFromBuffer(const Buffer<unsigned int>& itemBuffer, const Buffer<float>& factorsPerCell, float* formFactors) {
   for(int j=0; j<factorsPerCell.height; ++j) {
     for(int i=0; i<factorsPerCell.width; ++i) {
       int idx = itemBuffer.get(i, j);
@@ -46,7 +51,7 @@ void calcFormFactorsFromBuffer(const Buffer<int>& itemBuffer, const Buffer<float
   }
 }
 
-void calcFormFactorsFromSideBuffer(const Buffer<int>& itemBuffer, const Buffer<float>& factorsPerCell, float* formFactors) {
+void calcFormFactorsFromSideBuffer(const Buffer<unsigned int>& itemBuffer, const Buffer<float>& factorsPerCell, float* formFactors) {
   for(int j=0; j<factorsPerCell.height; ++j) {
     for(int i=0; i<factorsPerCell.width; ++i) {
       int idx = itemBuffer.get(i, j+itemBuffer.height/2);
@@ -70,14 +75,26 @@ Vec3f getUp(const Vec3f& dir) {
   }
 }
 
-void renderHemicube(Buffer<int>& buffer, const Model& model, int faceIdx, const Vec3f& eye, const Vec3f& dir, const Vec3f& up) {
+void renderHemicube(Buffer<unsigned int>& buffer, const Model& model, int faceIdx, const Vec3f& eye, const Vec3f& dir, const Vec3f& up) {
+#ifdef OPENGL
+  glm::vec3 glmEye = glmVec3FromVec3f(eye);
+  glm::vec3 glmCentre = glmVec3FromVec3f(eye + dir);
+  glm::vec3 glmUp = glmVec3FromVec3f(up);
+  glm::mat4 CameraMatrix = glm::lookAt(glmEye,glmCentre,glmUp);
+  glm::mat4 Projection = glm::perspective(glm::radians(90.0f), 1.f, 0.1f, 100.0f);
+  glm::mat4 MVP = Projection*CameraMatrix;
+
+  extern OpenGLRenderer * renderer;
+  renderer->renderHemicube(buffer, MVP);
+#else
   Matrix MVP = formHemicubeMVP(eye, dir, up);
   renderModelIds(buffer, model, MVP, eye, 0.05f);
+#endif
 }
 
 void renderToHemicube(Buffer<int>& mainBuffer, const Model& model, int faceIdx) {
   int gridSize = mainBuffer.width/2;
-  Buffer<int> buffer(gridSize, gridSize, 0);
+  Buffer<unsigned int> buffer(gridSize, gridSize, 0);
 
   Face f = model.face(faceIdx);
   Vec3f dir = model.norm(faceIdx, 0);
@@ -150,7 +167,7 @@ void calcFormFactorsSingleFace(const Model& model, const int faceIdx, float* for
   Vec3f up = getUp(dir);
   Vec3f eye = model.centreOf(faceIdx);
 
-  Buffer<int> itemBuffer(gridSize, gridSize, 0);
+  Buffer<unsigned int> itemBuffer(gridSize, gridSize, 0);
   renderHemicube(itemBuffer, model, faceIdx, eye, dir, up);
   calcFormFactorsFromBuffer(itemBuffer, topFace, formFactors);
 
