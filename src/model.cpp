@@ -96,6 +96,11 @@ Model::Model(const char *objFilename, const char *mtlFilename) : verts_(), faces
       vert(f[2].ivert)
       );
   }
+#ifdef OPENGL
+  initIndexBuffer();
+  initVertexBuffer();
+  initColourBuffer();
+#endif
 }
 
 Model::~Model() {
@@ -174,3 +179,54 @@ Vec3f Model::centreOf(int faceIdx) const {
 float Model::area(int faceIdx) const {
   return face(faceIdx).area;
 }
+
+#ifdef OPENGL
+GLfloat * Model::getVertexBuffer() {
+  return vertex_buffer_data;
+}
+
+GLfloat * Model::getColourBuffer() {
+  return colour_buffer_data;
+}
+
+GLuint * Model::getIndexBuffer() {
+  return id_buffer_data;
+}
+
+void Model::initVertexBuffer() {
+  vertex_buffer_data = new GLfloat [nfaces()*3*3];
+  int nFaces = nfaces();
+  for(int i=0; i<nFaces; ++i) {
+    Face f = face(i);
+    for(int j=0; j<3; ++j) {
+      Vec3f vertex = vert(f[j].ivert);
+      for(int k=0; k<3; ++k) {
+        vertex_buffer_data[9*i+3*j+k] = vertex[k];
+      }
+    }
+  }
+}
+
+void Model::initColourBuffer() {
+  colour_buffer_data = new GLfloat [nfaces()*3*3];
+  int nFaces = nfaces();
+  for(int i=0; i<nFaces; ++i) {
+    Vec3f colour =getFaceReflectivity(i);
+    for(int j=0; j<3; ++j) {
+      for(int k=0; k<3; ++k) {
+        colour_buffer_data[9*i+3*j+k] = colour[k];
+      }
+    }
+  }
+}
+
+void Model::initIndexBuffer() {
+  id_buffer_data = new GLuint [nfaces()*3];
+  int nFaces = nfaces();
+  for(int i=0; i<nFaces; ++i) {
+    for(int j=0; j<3; ++j) {
+      id_buffer_data[3*i+j] = (GLuint)(i+1);
+    }
+  }
+}
+#endif

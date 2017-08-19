@@ -158,16 +158,7 @@ int mainOpenGL(int argc, char* argv[]) {
   const int nFaces = model.nfaces();
   const int nVerts = nFaces*3;
 
-  GLfloat * g_vertex_buffer_data = new GLfloat [nVerts*3];
-  for(int i=0; i<nFaces; ++i) {
-    Face f = model.face(i);
-    for(int j=0; j<3; ++j) {
-      Vec3f vertex = model.vert(f[j].ivert);
-      for(int k=0; k<3; ++k) {
-        g_vertex_buffer_data[9*i+3*j+k] = vertex[k];
-      }
-    }
-  }
+  GLfloat * g_vertex_buffer_data = model.getVertexBuffer();
 
   GLuint vertexbuffer;
   glGenBuffers(1, &vertexbuffer);
@@ -175,15 +166,7 @@ int mainOpenGL(int argc, char* argv[]) {
   glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*nVerts*3, g_vertex_buffer_data, GL_STATIC_DRAW);
 
   // Load colour info
-  GLfloat * g_colour_buffer_data = new GLfloat [nVerts*3];
-  for(int i=0; i<nFaces; ++i) {
-    Vec3f colour = model.getFaceReflectivity(i);
-    for(int j=0; j<3; ++j) {
-      for(int k=0; k<3; ++k) {
-        g_colour_buffer_data[9*i+3*j+k] = colour[k];
-      }
-    }
-  }
+  GLfloat * g_colour_buffer_data = model.getColourBuffer();
 
   GLuint colorbuffer;
   glGenBuffers(1, &colorbuffer);
@@ -191,12 +174,7 @@ int mainOpenGL(int argc, char* argv[]) {
   glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*nVerts*3, g_colour_buffer_data, GL_STATIC_DRAW);
 
   // Load ID info
-  GLuint *id_buffer_data = new GLuint [nFaces*3];
-  for(int i=0; i<nFaces; ++i) {
-    for(int j=0; j<3; ++j) {
-      id_buffer_data[3*i+j] = (GLuint)(i+1);
-    }
-  }
+  GLuint *id_buffer_data = model.getIndexBuffer();
 
   GLuint idBuffer;
   glGenBuffers(1, &idBuffer);

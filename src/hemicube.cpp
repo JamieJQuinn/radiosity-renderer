@@ -70,63 +70,7 @@ Vec3f getUp(const Vec3f& dir) {
   }
 }
 
-void renderHemicubeFront(Buffer<int>& buffer, const Model& model, int faceIdx) {
-  Face f = model.face(faceIdx);
-  Vec3f dir = model.norm(faceIdx, 0);
-  Vec3f up = getUp(dir);
-  Vec3f eye = model.centreOf(faceIdx);
-
-  Matrix MVP = formHemicubeMVP(eye, dir, up);
-  renderModelIds(buffer, model, MVP, eye, 0.05f);
-}
-
-void renderHemicubeDown(Buffer<int>& buffer, const Model& model, int faceIdx) {
-  Face f = model.face(faceIdx);
-  Vec3f dir = model.norm(faceIdx, 0);
-  Vec3f up = getUp(dir);
-  Vec3f eye = model.centreOf(faceIdx);
-
-  std::swap(up, dir);
-
-  Matrix MVP = formHemicubeMVP(eye, dir, up);
-  renderModelIds(buffer, model, MVP, eye, 0.05f);
-}
-
-void renderHemicubeUp(Buffer<int>& buffer, const Model& model, int faceIdx) {
-  Face f = model.face(faceIdx);
-  Vec3f dir = model.norm(faceIdx, 0);
-  Vec3f up = getUp(dir);
-  Vec3f eye = model.centreOf(faceIdx);
-
-  std::swap(up, dir);
-  dir = dir*-1.f;
-
-  Matrix MVP = formHemicubeMVP(eye, dir, up);
-  renderModelIds(buffer, model, MVP, eye, 0.05f);
-}
-
-void renderHemicubeRight(Buffer<int>& buffer, const Model& model, int faceIdx) {
-  Face f = model.face(faceIdx);
-  Vec3f dir = model.norm(faceIdx, 0);
-  Vec3f up = getUp(dir);
-  Vec3f eye = model.centreOf(faceIdx);
-
-  std::swap(up, dir);
-  dir = dir.cross(up)*-1.f;
-
-  Matrix MVP = formHemicubeMVP(eye, dir, up);
-  renderModelIds(buffer, model, MVP, eye, 0.05f);
-}
-
-void renderHemicubeLeft(Buffer<int>& buffer, const Model& model, int faceIdx) {
-  Face f = model.face(faceIdx);
-  Vec3f dir = model.norm(faceIdx, 0);
-  Vec3f up = getUp(dir);
-  Vec3f eye = model.centreOf(faceIdx);
-
-  std::swap(up, dir);
-  dir = dir.cross(up);
-
+void renderHemicube(Buffer<int>& buffer, const Model& model, int faceIdx, const Vec3f& eye, const Vec3f& dir, const Vec3f& up) {
   Matrix MVP = formHemicubeMVP(eye, dir, up);
   renderModelIds(buffer, model, MVP, eye, 0.05f);
 }
@@ -135,7 +79,12 @@ void renderToHemicube(Buffer<int>& mainBuffer, const Model& model, int faceIdx) 
   int gridSize = mainBuffer.width/2;
   Buffer<int> buffer(gridSize, gridSize, 0);
 
-  renderHemicubeFront(buffer, model, faceIdx);
+  Face f = model.face(faceIdx);
+  Vec3f dir = model.norm(faceIdx, 0);
+  Vec3f up = getUp(dir);
+  Vec3f eye = model.centreOf(faceIdx);
+
+  renderHemicube(buffer, model, faceIdx, eye, dir, up);
   for(int j=0; j<gridSize; ++j) {
     for(int i=0; i<gridSize; ++i) {
       mainBuffer.set(gridSize/2+i, gridSize/2+j, buffer.get(i, j));
@@ -143,7 +92,8 @@ void renderToHemicube(Buffer<int>& mainBuffer, const Model& model, int faceIdx) 
   }
 
   buffer.fillAll(0);
-  renderHemicubeDown(buffer, model, faceIdx);
+  std::swap(up, dir);
+  renderHemicube(buffer, model, faceIdx, eye, dir, up);
   for(int j=0; j<gridSize/2; ++j) {
     for(int i=0; i<gridSize; ++i) {
       mainBuffer.set(gridSize/2+i, j+3*gridSize/2, buffer.get(gridSize-i-1, gridSize-j-1));
@@ -151,7 +101,8 @@ void renderToHemicube(Buffer<int>& mainBuffer, const Model& model, int faceIdx) 
   }
 
   buffer.fillAll(0);
-  renderHemicubeUp(buffer, model, faceIdx);
+  dir = dir*-1.f;
+  renderHemicube(buffer, model, faceIdx, eye, dir, up);
   for(int j=0; j<gridSize/2; ++j) {
     for(int i=0; i<gridSize; ++i) {
       mainBuffer.set(gridSize/2+i, j, buffer.get(i, j+gridSize/2));
@@ -159,7 +110,8 @@ void renderToHemicube(Buffer<int>& mainBuffer, const Model& model, int faceIdx) 
   }
 
   buffer.fillAll(0);
-  renderHemicubeLeft(buffer, model, faceIdx);
+  dir = dir.cross(up)*-1.f;
+  renderHemicube(buffer, model, faceIdx, eye, dir, up);
   for(int j=0; j<gridSize/2; ++j) {
     for(int i=0; i<gridSize; ++i) {
       mainBuffer.set(j, i+gridSize/2, buffer.get(gridSize-i-1, gridSize/2+j));
@@ -167,7 +119,8 @@ void renderToHemicube(Buffer<int>& mainBuffer, const Model& model, int faceIdx) 
   }
 
   buffer.fillAll(0);
-  renderHemicubeRight(buffer, model, faceIdx);
+  dir = dir.cross(up);
+  renderHemicube(buffer, model, faceIdx, eye, dir, up);
   for(int j=0; j<gridSize/2; ++j) {
     for(int i=0; i<gridSize; ++i) {
       mainBuffer.set(j+3*gridSize/2, i+gridSize/2, buffer.get(i, gridSize-j-1));
@@ -181,7 +134,9 @@ void calcFormFactorsWholeModel(const Model& model, Buffer<float>& formFactors, i
   Buffer<float> sideFace(gridSize, gridSize/2, 0);
   calcFormFactorPerCell(gridSize, topFace, sideFace);
 
+#ifndef OPENGL
   #pragma omp parallel for
+#endif
   for(int i=0; i<model.nfaces(); ++i) {
     calcFormFactorsSingleFace(model, i, formFactors.getRow(i), gridSize, topFace, sideFace);
   }
@@ -190,23 +145,32 @@ void calcFormFactorsWholeModel(const Model& model, Buffer<float>& formFactors, i
 void calcFormFactorsSingleFace(const Model& model, const int faceIdx, float* formFactors, int gridSize, const Buffer<float>& topFace, const Buffer<float>& sideFace) {
   assert(gridSize%2 == 0);
 
+  Face f = model.face(faceIdx);
+  Vec3f dir = model.norm(faceIdx, 0);
+  Vec3f up = getUp(dir);
+  Vec3f eye = model.centreOf(faceIdx);
+
   Buffer<int> itemBuffer(gridSize, gridSize, 0);
-  renderHemicubeFront(itemBuffer, model, faceIdx);
+  renderHemicube(itemBuffer, model, faceIdx, eye, dir, up);
   calcFormFactorsFromBuffer(itemBuffer, topFace, formFactors);
 
   itemBuffer.fillAll(0);
-  renderHemicubeUp(itemBuffer, model, faceIdx);
+  std::swap(up, dir);
+  renderHemicube(itemBuffer, model, faceIdx, eye, dir, up);
   calcFormFactorsFromSideBuffer(itemBuffer, sideFace, formFactors);
 
   itemBuffer.fillAll(0);
-  renderHemicubeDown(itemBuffer, model, faceIdx);
+  dir = dir*-1.f;
+  renderHemicube(itemBuffer, model, faceIdx, eye, dir, up);
   calcFormFactorsFromSideBuffer(itemBuffer, sideFace, formFactors);
 
   itemBuffer.fillAll(0);
-  renderHemicubeLeft(itemBuffer, model, faceIdx);
+  dir = dir.cross(up)*-1.f;
+  renderHemicube(itemBuffer, model, faceIdx, eye, dir, up);
   calcFormFactorsFromSideBuffer(itemBuffer, sideFace, formFactors);
 
   itemBuffer.fillAll(0);
-  renderHemicubeRight(itemBuffer, model, faceIdx);
+  dir = dir.cross(up);
+  renderHemicube(itemBuffer, model, faceIdx, eye, dir, up);
   calcFormFactorsFromSideBuffer(itemBuffer, sideFace, formFactors);
 }
