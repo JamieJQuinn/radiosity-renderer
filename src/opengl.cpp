@@ -1,3 +1,4 @@
+#ifdef OPENGL
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <GL/gl.h>
@@ -222,3 +223,4 @@ void OpenGLRenderer::renderHemicube(Buffer<unsigned>& buffer, const glm::mat4& M
 
   glGetTexImage(GL_TEXTURE_2D, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, (GLuint*)buffer.getRow(0));
 }
+#endif

@@ -1,3 +1,4 @@
+#ifdef OPENGL
 #include <string>
 #include <fstream>
 #include <vector>
@@ -104,3 +105,4 @@ glm::vec3 glmVec3FromVec3f(Vec3f v) {
 glm::vec3 glmVec3FromVec4f(Vec4f v) {
   return glm::vec3(v.x, v.y, v.z);
 }
+#endif
