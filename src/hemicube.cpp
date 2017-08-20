@@ -81,7 +81,7 @@ void renderHemicube(Buffer<unsigned int>& buffer, const Model& model, int faceId
   glm::vec3 glmCentre = glmVec3FromVec3f(eye + dir);
   glm::vec3 glmUp = glmVec3FromVec3f(up);
   glm::mat4 CameraMatrix = glm::lookAt(glmEye,glmCentre,glmUp);
-  glm::mat4 Projection = glm::perspective(glm::radians(90.0f), 1.f, 0.1f, 100.0f);
+  glm::mat4 Projection = glm::perspective(glm::radians(90.0f), 1.f, 0.05f, 100.0f);
   glm::mat4 MVP = Projection*CameraMatrix;
 
   extern OpenGLRenderer * renderer;
