@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <cmath>
 #include <GL/gl.h>
 
@@ -155,6 +156,9 @@ void renderFaceRadiosityToTexture(const Model& model, const std::vector<Vec3f>& 
     }
 
     Vec3f rad = radiosity[i];
+    for(int j=0; j<3; ++j) {
+      rad[j] = rad[j] > 1.0f ? 1.0f : rad[j];
+    }
     TGAColor colour(rad.r*255, rad.g*255, rad.b*255, 255);
     renderTriangle(screen_coords, buffer, colour);
   }
@@ -357,6 +361,9 @@ void gatherRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int grid
        sumDiff.b/sumRadiosity.b < DIFF_TO_TOTAL_CUTOFF) {
       break;
     }
+    std::stringstream iss;
+    iss << "output" << passes << ".tga";
+    renderFaceRadiosityToTexture(model, radiosity, 1200, iss.str());
   }
 
   std::cerr << "Normalising radiosity" << std::endl;

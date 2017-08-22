@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
   std::vector<Vec3f> radiosity(model.nfaces());
 
   std::cerr << "Form factor memory cost: " << sizeof(float)*model.nfaces()*model.nfaces()/(1024.f*1024.f) << " MB" << std::endl;
-  Buffer<float> totalFormFactors(model.nfaces()+1, model.nfaces()+1, 0.f);
+  //Buffer<float> totalFormFactors(model.nfaces()+1, model.nfaces()+1, 0.f);
   std::cerr << "Calculating form factors" << std::endl;
   //calcFormFactorsWholeModel(model, totalFormFactors, gridSize);
   std::cerr << "Calculated form factors" << std::endl;
