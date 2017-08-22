@@ -5,7 +5,7 @@
 #include "rendering.hpp"
 
 void renderViewFromFace(int faceIdx, int gridSize, const Model& model, std::string filename) {
-  Buffer<int> buffer(gridSize, gridSize, 0);
+  Buffer<unsigned int> buffer(gridSize, gridSize, 0);
   renderToHemicube(buffer, model, faceIdx);
   renderIdsToColour(buffer, model, filename);
 }
@@ -22,7 +22,7 @@ TEST_CASE("Test two adjacent faces hemicube", "[hemicube]") {
 //TEST_CASE("Render whole scene hemicubes", "[hemicube]") {
   //Model model("test/red_green_walls.obj", "test/red_green_walls.mtl");
   //int gridSize = 200;
-  //Buffer<int> buffer(gridSize, gridSize, 0);
+  //Buffer<unsigned int> buffer(gridSize, gridSize, 0);
 
   //for(int faceIdx=0; faceIdx<model.nfaces(); ++faceIdx) {
     //std::stringstream s;
@@ -34,12 +34,12 @@ TEST_CASE("Test two adjacent faces hemicube", "[hemicube]") {
 
 TEST_CASE("Test two form factor of 2 different orientations of triangle", "[formFactor]") {
   int size = 20;
-  Buffer<int> buffer(size, size, 0);
+  Buffer<unsigned int> buffer(size, size, 0);
   Buffer<float> zBuffer(size, size, 0);
   std::vector<Vec3f> pts1({Vec3f(12, 2, 1), Vec3f(5, 16, 1), Vec3f(16, 10, 1)});
   std::vector<Vec3f> pts2({Vec3f(16, 10, 1), Vec3f(12, 2, 1), Vec3f(5, 16, 1)});
 
-  renderTriangle(pts1, zBuffer, buffer, 1);
+  renderTriangle(pts1, zBuffer, buffer, (unsigned)1);
   Buffer<float> topFace(size, size, 0);
   Buffer<float> sideFace(size, size/2, 0);
   calcFormFactorPerCell(size, topFace, sideFace);
@@ -51,7 +51,7 @@ TEST_CASE("Test two form factor of 2 different orientations of triangle", "[form
 
   zBuffer.fillAll(0.f);
   buffer.fillAll(0);
-  renderTriangle(pts2, zBuffer, buffer, 1);
+  renderTriangle(pts2, zBuffer, buffer, (unsigned)1);
 
   formFactors[0] = formFactors[1] = 0.f;
   calcFormFactorsFromBuffer(buffer, topFace, formFactors);
@@ -81,8 +81,13 @@ TEST_CASE("Render single hemicube face to ID buffer", "[hemicube]") {
   int nFaces = model.nfaces() + 1;
   int faceIdx = 0;
   int gridSize = 200;
-  Buffer<int> buffer(gridSize, gridSize, 0);
-  renderHemicubeFront(buffer, model, faceIdx);
+  Buffer<unsigned int> buffer(gridSize, gridSize, 0);
+  Face f = model.face(faceIdx);
+  Vec3f dir = model.norm(faceIdx, 0);
+  Vec3f up = getUp(dir);
+  Vec3f eye = model.centreOf(faceIdx);
+
+  renderHemicube(buffer, model, faceIdx, eye, dir, up);
 
   for(int j=0; j<buffer.height; ++j) {
     for(int i=0; i<buffer.width; ++i) {
@@ -98,8 +103,14 @@ TEST_CASE("Render side hemicube face to ID buffer", "[hemicube]") {
   int nFaces = model.nfaces() + 1;
   int faceIdx = 8;
   int gridSize = 200;
-  Buffer<int> buffer(gridSize, gridSize, 0);
-  renderHemicubeUp(buffer, model, faceIdx);
+  Buffer<unsigned int> buffer(gridSize, gridSize, 0);
+  Face f = model.face(faceIdx);
+  Vec3f dir = model.norm(faceIdx, 0);
+  Vec3f up = getUp(dir);
+  Vec3f eye = model.centreOf(faceIdx);
+  std::swap(up, dir);
+
+  renderHemicube(buffer, model, faceIdx, eye, dir, up);
 
   for(int j=0; j<buffer.height; ++j) {
     for(int i=0; i<buffer.width; ++i) {
@@ -115,7 +126,7 @@ TEST_CASE("Render hemicube to ID index", "[hemicube]") {
   int nFaces = model.nfaces() + 1;
   int faceIdx = 8;
   int gridSize = 200;
-  Buffer<int> mainBuffer(gridSize*2, gridSize*2, 0);
+  Buffer<unsigned int> mainBuffer(gridSize*2, gridSize*2, 0);
 
   renderToHemicube(mainBuffer, model, faceIdx);
   for(int j=0; j<mainBuffer.height; ++j) {
@@ -159,7 +170,7 @@ TEST_CASE("Calculate and render form factors", "[hemicube]") {
 
   renderFaceRadiosityToTexture(model, formFactorColour, gridSize, "test/formFactorsRendered.tga");
 
-  Buffer<int> buffer(gridSize*2, gridSize*2, 0);
+  Buffer<unsigned int> buffer(gridSize*2, gridSize*2, 0);
   renderToHemicube(buffer, model, faceIdx);
   std::vector<int> areas(model.nfaces()+1);
   for(int j=0; j<gridSize*2; ++j) {
@@ -194,37 +205,6 @@ TEST_CASE("Calculate and render form factors", "[hemicube]") {
   REQUIRE(sum > 0.95f);
 }
 
-TEST_CASE("Compare form factors", "[hemicube]") {
-  Model model("test/scene.obj", "test/scene.mtl");
-  int gridSize = 256;
-
-  Buffer<float> totalFormFactors(model.nfaces()+1, model.nfaces(), 0.f);
-  calcFormFactorsWholeModel(model, totalFormFactors, gridSize);
-  for(int j=0; j<totalFormFactors.height; ++j) {
-    REQUIRE(totalFormFactors.get(j+1, j) <= 0.001);
-
-    float sum = 0.f;
-    for(int i=0; i<totalFormFactors.width; ++i) {
-      sum += totalFormFactors.get(i, j);
-    }
-    //for(int i=1; i<totalFormFactors.width; ++i) {
-      //float areaI = model.area(i);
-      //float areaJ = model.area(j);
-      ////REQUIRE(totalFormFactors.get(i,j) == Approx(areaJ/areaI*totalFormFactors.get(j+1, i-1)).epsilon(0.01));
-    //}
-    REQUIRE(sum >= 0.95f);
-    REQUIRE(sum <= 1.01f);
-  }
-  //for(int i=1; i<totalFormFactors.width; ++i) {
-    //float sum = 0.f;
-    //std::cout << i << std::endl;
-    //for(int j=0; j<totalFormFactors.height; ++j) {
-      //sum += model.area(j)/model.area(i)*totalFormFactors.get(i, j);
-    //}
-    //REQUIRE(sum >= 0.85f);
-  //}
-}
-
 TEST_CASE("Compare two side by side faces", "[faces]") {
   Model model("test/red_green_walls.obj", "test/red_green_walls.mtl");
 
@@ -256,18 +236,10 @@ TEST_CASE("Compare two side by side faces", "[faces]") {
   calcFormFactorsSingleFace(model, faceIndices[0], formFactors1, gridSize, topFace, sideFace);
   calcFormFactorsSingleFace(model, faceIndices[1], formFactors2, gridSize, topFace, sideFace);
 
-  float sumFormFactor1 = 0;
-  float sumFormFactor2 = 0;
-  float sumDiff = 0;
+  // Make sure that differences in form factors as seen from two similar faces is small
   for(int i=0; i<model.nfaces()+1; ++i) {
-    //std::cout << formFactors1[i] << ", " << formFactors2[i] << ", " << formFactors1[i] - formFactors2[i] << std::endl;
-    sumFormFactor1 += formFactors1[i];
-    sumFormFactor2 += formFactors2[i];
-    sumDiff += formFactors1[i] - formFactors2[i];
+    REQUIRE(std::abs(formFactors1[i] - formFactors2[i]) < 0.001f);
   }
-  //std::cout << formFactors1[319] << ", " << formFactors2[319] << std::endl;
-  //std::cout << formFactors1[703] << ", " << formFactors2[703] << std::endl;
-  //std::cout << sumDiff << std::endl;
 }
 
 //TEST_CASE("Render radiosity to texture", "[radiosity]") {

@@ -119,14 +119,14 @@ TEST_CASE("rasteriser & z-buffer works with non-intersecting tris", "[renderer]"
   }
 }
 
-TEST_CASE("Test areas of two triangles making up a quad are identicle", "[rendering]") {
+TEST_CASE("Test form factors of two triangles making up a quad are identicle", "[rendering]") {
   int size = 512;
-  Buffer<int> buffer(size, size, 0);
+  Buffer<unsigned int> buffer(size, size, 0);
   Buffer<float> zBuffer(size, size, 0);
   std::vector<Vec3f> pts1({Vec3f(0.1, 0.1, 1)*size, Vec3f(0.9, 0.1, 1)*size, Vec3f(0.9, 0.9, 1)*size});
   std::vector<Vec3f> pts2({Vec3f(0.9, 0.9, 7.1)*size, Vec3f(0.1, 0.9, 7.1)*size, Vec3f(0.1, 0.1, 7.1)*size});
-  renderTriangle(pts1, zBuffer, buffer, 1);
-  renderTriangle(pts2, zBuffer, buffer, 2);
+  renderTriangle(pts1, zBuffer, buffer, (unsigned)1);
+  renderTriangle(pts2, zBuffer, buffer, (unsigned)2);
 
   Buffer<float> topFace(size, size, 0);
   Buffer<float> sideFace(size, size/2, 0);

@@ -168,7 +168,7 @@ void calcFormFactorsSingleFace(const Model& model, const int faceIdx, float* for
   Vec3f up = getUp(dir);
   Vec3f eye = model.centreOf(faceIdx);
 
-  static Buffer<unsigned int> itemBuffer(gridSize, gridSize, 0);
+  Buffer<unsigned int> itemBuffer(gridSize, gridSize, 0);
 
   std::swap(up, dir);
   renderHemicube(itemBuffer, model, faceIdx, eye, dir, up);
