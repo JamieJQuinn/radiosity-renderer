@@ -237,7 +237,7 @@ int clipTriangle(std::vector<Vec4f>& pts, float nearPlane) {
   return nTrianglesReturned;
 }
 
-void shootRadiositySingleFace(const Model& model, int gridSize, std::vector<Vec3f>& radiosity, std::vector<Vec3f>& radiosityToShoot, int faceIdx, const float* formFactors) {
+void shootRadiositySingleFace(const Model& model, int gridSize, std::vector<Vec3f>& radiosity, std::vector<Vec3f>& radiosityGathered, const std::vector<Vec3f>& radiosityToShoot, int faceIdx, const float* formFactors) {
   for(int j=0; j<model.nfaces(); ++j) {
     // Don't affect self
     if( j==faceIdx ) {
@@ -250,9 +250,8 @@ void shootRadiositySingleFace(const Model& model, int gridSize, std::vector<Vec3
                          *formFactor;
 
     radiosity[j] += radiosityOut;
-    radiosityToShoot[j] += radiosityOut;
+    radiosityGathered[j] += radiosityOut;
   }
-  radiosityToShoot[faceIdx] = Vec3f(0,0,0);
 }
 
 void normaliseRadiosity(std::vector<Vec3f>& radiosity) {
@@ -272,9 +271,39 @@ void normaliseRadiosity(std::vector<Vec3f>& radiosity) {
   }
 }
 
+//void gatherRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses, Buffer<float>& totalFormFactors) {
+  //// Setup radiosity
+  //std::vector<Vec3f> radiosityToShoot(model.nfaces());
+  //for(int i=0; i<model.nfaces(); ++i) {
+    //radiosityToShoot[i] = model.getFaceEmissivity(i);
+    //radiosity[i] = model.getFaceEmissivity(i);
+  //}
+
+  //// Transpose form factors
+  ////for(int i=0; i<model.nfaces(); ++i) {
+    ////for(int j=i; j<model.nfaces(); ++j) {
+      ////float temp = totalFormFactors.get(i+1, j);
+      ////totalFormFactors.set(i+1, j, totalFormFactors.get(j+1, i));
+      ////totalFormFactors.set(j+1, i, temp);
+    ////}
+  ////}
+
+  //for(int passes=0; passes<nPasses; ++passes) {
+    //std::cerr << "Pass: " << passes << std::endl;
+    //for(int i=0; i<model.nfaces(); ++i) {
+      //float* formFactorPtr = totalFormFactors.getRow(i);
+      //gatherRadiositySingleFace(model, gridSize, radiosity, radiosityToShoot, i, formFactorPtr);
+    //}
+  //}
+
+  //std::cerr << "Normalising radiosity" << std::endl;
+  //normaliseRadiosity(radiosity);
+//}
+
 void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses, Buffer<float>& totalFormFactors) {
   // Setup radiosity
   std::vector<Vec3f> radiosityToShoot(model.nfaces());
+  std::vector<Vec3f> radiosityGathered(model.nfaces());
   for(int i=0; i<model.nfaces(); ++i) {
     radiosityToShoot[i] = model.getFaceEmissivity(i);
     radiosity[i] = model.getFaceEmissivity(i);
@@ -293,7 +322,11 @@ void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridS
     std::cerr << "Pass: " << passes << std::endl;
     for(int i=0; i<model.nfaces(); ++i) {
       float* formFactorPtr = totalFormFactors.getRow(i);
-      shootRadiositySingleFace(model, gridSize, radiosity, radiosityToShoot, i, formFactorPtr);
+      shootRadiositySingleFace(model, gridSize, radiosity, radiosityGathered, radiosityToShoot, i, formFactorPtr);
+    }
+    for(int i=0; i<model.nfaces(); ++i) {
+      radiosityToShoot[i] = radiosityGathered[i];
+      radiosityGathered[i] = Vec3f(0,0,0);
     }
   }
 
