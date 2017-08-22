@@ -8,6 +8,7 @@
 class OpenGLRenderer {
   public:
     OpenGLRenderer(const Model& model);
+    ~OpenGLRenderer();
     void renderHemicube(Buffer<unsigned int>& buffer, const glm::mat4& MVP);
   private:
     GLuint programID;

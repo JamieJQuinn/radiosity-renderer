@@ -7,6 +7,7 @@
 #include "rendering.hpp"
 #include "opengl_helper.hpp"
 #include "opengl.hpp"
+#include "config.hpp"
 
 #include <omp.h>
 #include <glm/glm.hpp>
@@ -63,7 +64,7 @@ void calcFormFactorsFromSideBuffer(const Buffer<unsigned int>& itemBuffer, const
 Matrix formHemicubeMVP(const Vec3f& eye, const Vec3f& dir, const Vec3f& up) {
   Matrix translation = formTranslation(eye*-1);
   Matrix view = lookAt(Vec3f(0, 0, 0), dir, up)*translation;
-  Matrix projection = formRightAngledProjection(0.05f, 20.0f);
+  Matrix projection = formRightAngledProjection(HEMICUBE_NEAR_PLANE, 20.0f);
   return projection*view;
 }
 
@@ -77,11 +78,11 @@ Vec3f getUp(const Vec3f& dir) {
 
 void renderHemicube(Buffer<unsigned int>& buffer, const Model& model, int faceIdx, const Vec3f& eye, const Vec3f& dir, const Vec3f& up) {
 #ifdef OPENGL
-  glm::vec3 glmEye = glmVec3FromVec3f(eye);
-  glm::vec3 glmCentre = glmVec3FromVec3f(eye + dir);
-  glm::vec3 glmUp = glmVec3FromVec3f(up);
-  glm::mat4 CameraMatrix = glm::lookAt(glmEye,glmCentre,glmUp);
-  glm::mat4 Projection = glm::perspective(glm::radians(90.0f), 1.f, 0.05f, 100.0f);
+  glm::mat4 CameraMatrix = glm::lookAt(
+      glmVec3FromVec3f(eye),
+      glmVec3FromVec3f(eye + dir),
+      glmVec3FromVec3f(up));
+  glm::mat4 Projection = glm::perspective(glm::radians(90.0f), 1.f, HEMICUBE_NEAR_PLANE, 20.0f);
   glm::mat4 MVP = Projection*CameraMatrix;
 
   extern OpenGLRenderer * renderer;
@@ -167,27 +168,25 @@ void calcFormFactorsSingleFace(const Model& model, const int faceIdx, float* for
   Vec3f up = getUp(dir);
   Vec3f eye = model.centreOf(faceIdx);
 
-  Buffer<unsigned int> itemBuffer(gridSize, gridSize, 0);
-  renderHemicube(itemBuffer, model, faceIdx, eye, dir, up);
-  calcFormFactorsFromBuffer(itemBuffer, topFace, formFactors);
+  static Buffer<unsigned int> itemBuffer(gridSize, gridSize, 0);
 
-  itemBuffer.fillAll(0);
   std::swap(up, dir);
   renderHemicube(itemBuffer, model, faceIdx, eye, dir, up);
   calcFormFactorsFromSideBuffer(itemBuffer, sideFace, formFactors);
 
-  itemBuffer.fillAll(0);
   dir = dir*-1.f;
   renderHemicube(itemBuffer, model, faceIdx, eye, dir, up);
   calcFormFactorsFromSideBuffer(itemBuffer, sideFace, formFactors);
 
-  itemBuffer.fillAll(0);
-  dir = dir.cross(up)*-1.f;
+  dir = dir.cross(up);
   renderHemicube(itemBuffer, model, faceIdx, eye, dir, up);
   calcFormFactorsFromSideBuffer(itemBuffer, sideFace, formFactors);
 
-  itemBuffer.fillAll(0);
   dir = dir*-1.f;
   renderHemicube(itemBuffer, model, faceIdx, eye, dir, up);
   calcFormFactorsFromSideBuffer(itemBuffer, sideFace, formFactors);
+
+  std::swap(up, dir);
+  renderHemicube(itemBuffer, model, faceIdx, eye, dir, up);
+  calcFormFactorsFromBuffer(itemBuffer, topFace, formFactors);
 }

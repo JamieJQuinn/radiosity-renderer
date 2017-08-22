@@ -118,11 +118,11 @@ TGAColor Model::getFaceColour(int faceIdx) const {
   return getFaceColour(face(faceIdx));
 }
 
-int Model::nverts() const {
+const int Model::nverts() const {
   return (int)verts_.size();
 }
 
-int Model::nfaces() const {
+const int Model::nfaces() const {
   return (int)faces_.size();
 }
 

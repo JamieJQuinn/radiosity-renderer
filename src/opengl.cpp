@@ -8,6 +8,12 @@
 #include "config.hpp"
 #include "opengl.hpp"
 
+OpenGLRenderer::~OpenGLRenderer() {
+  delete [] vertex_buffer_data;
+  delete [] colour_buffer_data;
+  delete [] id_buffer_data;
+}
+
 OpenGLRenderer::OpenGLRenderer(const Model& model) {
   // Generic opengl init =========
   GLFWwindow* window;
@@ -105,9 +111,9 @@ OpenGLRenderer::OpenGLRenderer(const Model& model) {
   glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*nVerts*3, vertex_buffer_data, GL_STATIC_DRAW);
 
   // Load colour info
-  glGenBuffers(1, &colorBuffer);
-  glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*nVerts*3, colour_buffer_data, GL_STATIC_DRAW);
+  //glGenBuffers(1, &colorBuffer);
+  //glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+  //glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*nVerts*3, colour_buffer_data, GL_STATIC_DRAW);
 
   // Load ID info
   glGenBuffers(1, &idBuffer);
@@ -194,16 +200,16 @@ void OpenGLRenderer::renderHemicube(Buffer<unsigned>& buffer, const glm::mat4& M
   );
 
   // Colours
-  glEnableVertexAttribArray(1);
-  glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
-  glVertexAttribPointer(
-    1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
-    3,                                // size
-    GL_FLOAT,                         // type
-    GL_FALSE,                         // normalized?
-    0,                                // stride
-    (void*)0                          // array buffer offset
-  );
+  //glEnableVertexAttribArray(1);
+  //glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+  //glVertexAttribPointer(
+    //1,                                // attribute. No particular reason for 1, but must match the layout in the shader.
+    //3,                                // size
+    //GL_FLOAT,                         // type
+    //GL_FALSE,                         // normalized?
+    //0,                                // stride
+    //(void*)0                          // array buffer offset
+  //);
 
   glEnableVertexAttribArray(2);
   glBindBuffer(GL_ARRAY_BUFFER, idBuffer);
@@ -218,7 +224,7 @@ void OpenGLRenderer::renderHemicube(Buffer<unsigned>& buffer, const glm::mat4& M
   // Draw
   glDrawArrays(GL_TRIANGLES, 0, nVerts);
   glDisableVertexAttribArray(0);
-  glDisableVertexAttribArray(1);
+  //glDisableVertexAttribArray(1);
   glDisableVertexAttribArray(2);
 
   glGetTexImage(GL_TEXTURE_2D, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, (GLuint*)buffer.getRow(0));

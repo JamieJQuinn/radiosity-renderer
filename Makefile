@@ -30,6 +30,10 @@ profile-opengl: CFLAGS += -DOPENGL
 profile-opengl: LDFLAGS += -lglfw -lGLEW -lGL
 profile-opengl: profile
 
+profile-debug-opengl: CFLAGS += -pg
+profile-debug-opengl: LDFLAGS += -pg -no-pie
+profile-debug-opengl: debug-opengl
+
 debug: CFLAGS += -DDEBUG -g
 debug: $(BUILD_DIR) $(BUILD_DIR)/$(EXECUTABLE)
 

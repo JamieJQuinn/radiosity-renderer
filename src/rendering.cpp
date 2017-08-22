@@ -280,6 +280,15 @@ void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridS
     radiosity[i] = model.getFaceEmissivity(i);
   }
 
+  // Transpose form factors
+  for(int i=0; i<model.nfaces(); ++i) {
+    for(int j=i; j<model.nfaces(); ++j) {
+      float temp = totalFormFactors.get(i+1, j);
+      totalFormFactors.set(i+1, j, totalFormFactors.get(j+1, i));
+      totalFormFactors.set(j+1, i, temp);
+    }
+  }
+
   for(int passes=0; passes<nPasses; ++passes) {
     std::cerr << "Pass: " << passes << std::endl;
     for(int i=0; i<model.nfaces(); ++i) {

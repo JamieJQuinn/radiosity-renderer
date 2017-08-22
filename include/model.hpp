@@ -18,8 +18,8 @@ public:
   Model(const char *objFilename, const char *mtlFilename = "");
   ~Model();
   // TODO fix names
-  int nverts() const;
-  int nfaces() const;
+  const int nverts() const;
+  const int nfaces() const;
   // TODO cleanup these functions - make consistent
   Vec3f vert(int i) const;
   Vec3f norm(int i, int j) const;

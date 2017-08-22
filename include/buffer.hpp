@@ -6,7 +6,8 @@ template <class T>
 class Buffer {
   public:
     void set(int i, int j, const T&);
-    T get(int i, int j) const;
+    const T get(int i, int j) const;
+    T& get(int i, int j);
     T* getRow(int j);
     Buffer(int _width, int _height);
     Buffer(int _width, int _height, T initial);
@@ -79,7 +80,12 @@ void Buffer<T>::set(int i, int j, const T& item) {
 }
 
 template <class T>
-T Buffer<T>::get(int i, int j) const {
+T& Buffer<T>::get(int i, int j) {
+  return buffer[j*width + i];
+}
+
+template <class T>
+const T Buffer<T>::get(int i, int j) const {
   return buffer[j*width + i];
 }
 
