@@ -87,6 +87,14 @@ Model::Model(const char *objFilename, const char *mtlFilename) : verts_(), faces
       faces_.push_back(f);
     }
   }
+  for(int i=0; i<nfaces(); ++i) {
+    Face& f = face(i);
+    f.area = calcTriangleArea(
+      vert(f[0].ivert),
+      vert(f[1].ivert),
+      vert(f[2].ivert)
+      );
+  }
 }
 
 Model::~Model() {

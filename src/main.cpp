@@ -13,18 +13,19 @@ OpenGLRenderer * renderer = NULL;
 
 int main(int argc, char* argv[]) {
   std::string modelObj(argv[1]);
-  std::string modelMtl(argv[2]);
-
-  int nPasses = atoi(argv[3]);
+  std::size_t pos = modelObj.find(".");
+  std::string modelMtl = modelObj.substr(0, pos) + std::string(".mtl");
 
   std::cout << "obj: " << modelObj << std::endl;
   std::cout << "mtl: " << modelMtl << std::endl;
-  std::cout << "Iterations: " << nPasses << std::endl;
 
   Model model(modelObj.c_str(), modelMtl.c_str());
   std::cerr << "Model setup." << std::endl;
+  std::cerr << "Num faces: " << model.nfaces() << std::endl;
+  std::cerr << "Num verts: " << model.nverts() << std::endl;
 
 #ifdef OPENGL
+  std::cerr << "USING OPENGL" << std::endl;
   renderer = new OpenGLRenderer(model);
 #endif
 
@@ -35,6 +36,7 @@ int main(int argc, char* argv[]) {
   std::vector<Vec3f> radiosity(model.nfaces());
 
 #ifndef PROGRESSIVE
+  std::cerr << "PRECALCULATING FORM FACTORS" << std::endl;
   std::cerr << "Form factor memory cost: " << sizeof(float)*model.nfaces()*model.nfaces()/(1024.f*1024.f) << " MB" << std::endl;
   Buffer<float> totalFormFactors(model.nfaces()+1, model.nfaces()+1, 0.f);
   std::cerr << "Calculating form factors" << std::endl;
@@ -43,21 +45,26 @@ int main(int argc, char* argv[]) {
 #endif
 
 #ifdef PROGRESSIVE
+  std::cerr << "USING PROGRESSIVE REFINEMENT" << std::endl;
 
 #ifdef SHOOTING
-  shootRadiosity(radiosity, model, gridSize, nPasses);
+  std::cerr << "Shooting radiosity" << std::endl;
+  shootRadiosity(radiosity, model, gridSize);
 #endif
 #ifdef GATHERING
-  gatherRadiosity(radiosity, model, gridSize, nPasses);
+  std::cerr << "gathering radiosity" << std::endl;
+  gatherRadiosity(radiosity, model, gridSize);
 #endif
 
 #else
 
 #ifdef SHOOTING
-  shootRadiosity(radiosity, model, gridSize, nPasses, totalFormFactors);
+  std::cerr << "Shooting radiosity" << std::endl;
+  shootRadiosity(radiosity, model, gridSize, totalFormFactors);
 #endif
 #ifdef GATHERING
-  gatherRadiosity(radiosity, model, gridSize, nPasses, totalFormFactors);
+  std::cerr << "gathering radiosity" << std::endl;
+  gatherRadiosity(radiosity, model, gridSize, totalFormFactors);
 #endif
 
 #endif

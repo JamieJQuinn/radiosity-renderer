@@ -18,11 +18,10 @@ void renderWireFrame(const Model& model, Buffer<TGAColor>& buffer, const Matrix&
 void renderModelReflectivity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP, const Vec3f& eye, float nearPlane);
 void renderModelRadiosity(Buffer<TGAColor>& buffer, const Model& model, const Matrix& MVP, const Vec3f& eye, float nearPlane, std::vector<Vec3f>& radiosity);
 void renderModelIds(Buffer<unsigned int>& buffer, const Model& model, const Matrix& MVP, const Vec3f& eye, float nearPlane);
-void shootRadiositySingleFace(const Model& model, int gridSize, std::vector<Vec3f>& radiosity, std::vector<Vec3f>& radiosityToShoot, int faceIdx, const std::vector<float>& formFactors);
-void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses, Buffer<float>& totalFormFactors);
-void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses);
-void gatherRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses);
-void gatherRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses, Buffer<float>& totalFormFactors);
+void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, Buffer<float>& totalFormFactors);
+void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize);
+void gatherRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize);
+void gatherRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, Buffer<float>& totalFormFactors);
 void normaliseRadiosity(std::vector<Vec3f>& radiosity);
 
 Vec3f interpolate(const Vec3f& v0, const Vec3f& v1, float t);

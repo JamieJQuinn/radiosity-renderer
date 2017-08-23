@@ -241,22 +241,23 @@ int clipTriangle(std::vector<Vec4f>& pts, float nearPlane) {
   return nTrianglesReturned;
 }
 
-void shootRadiositySingleFace(const Model& model, int gridSize, std::vector<Vec3f>& radiosity, std::vector<Vec3f>& radiosityToShoot, int faceIdx, const float* formFactors) {
+void shootRadiositySingleFace(const Model& model, int gridSize, std::vector<Vec3f>& radiosity, std::vector<Vec3f>& radiosityGathered, const std::vector<Vec3f>& radiosityDiff, int faceIdx, const float* formFactors) {
+  float areaThisPatch = model.area(faceIdx);
   for(int j=0; j<model.nfaces(); ++j) {
     // Don't affect self
     if( j==faceIdx ) {
       continue;
     }
     float formFactor = formFactors[j+1];
+    float areaJthPatch = model.area(j);
     Vec3f reflectivity = model.getFaceReflectivity(j);
 
-    Vec3f radiosityOut = radiosityToShoot[faceIdx].piecewise(reflectivity)
-                         *formFactor;
+    Vec3f radiosityOut = radiosityDiff[faceIdx].piecewise(reflectivity)
+                         *(formFactor*areaThisPatch/areaJthPatch);
 
     radiosity[j] += radiosityOut;
-    radiosityToShoot[j] += radiosityOut;
+    radiosityGathered[j] += radiosityOut;
   }
-  radiosityToShoot[faceIdx] = Vec3f(0,0,0);
 }
 
 void gatherRadiositySingleFace(const Model& model, int gridSize, std::vector<Vec3f>& radiosity, std::vector<Vec3f>& radiosityGathered, const std::vector<Vec3f>& radiosityDiff, int faceIdx, const float* formFactors) {
@@ -293,11 +294,12 @@ void normaliseRadiosity(std::vector<Vec3f>& radiosity) {
   }
 }
 
-void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses) {
+void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize) {
   // Setup radiosity
-  std::vector<Vec3f> radiosityToShoot(model.nfaces());
+  std::vector<Vec3f> radiosityDiff(model.nfaces());
+  std::vector<Vec3f> radiosityGathered(model.nfaces());
   for(int i=0; i<model.nfaces(); ++i) {
-    radiosityToShoot[i] = model.getFaceEmissivity(i);
+    radiosityDiff[i] = model.getFaceEmissivity(i);
     radiosity[i] = model.getFaceEmissivity(i);
   }
 
@@ -306,42 +308,75 @@ void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridS
   calcFormFactorPerCell(gridSize, topFace, sideFace);
 
   float * formFactorPtr = new float [model.nfaces()+1];
-  for(int passes=0; passes<nPasses; ++passes) {
+  for(int passes=0; passes<MAX_PASSES; ++passes) {
     std::cerr << "Pass: " << passes << std::endl;
     for(int i=0; i<model.nfaces(); ++i) {
       for(int j=0; j<model.nfaces()+1; ++j) {
         formFactorPtr[j] = 0.f;
       }
       calcFormFactorsSingleFace(model, i, formFactorPtr, gridSize,topFace, sideFace);
-      shootRadiositySingleFace(model, gridSize, radiosity, radiosityToShoot, i, formFactorPtr);
+      shootRadiositySingleFace(model, gridSize, radiosity, radiosityGathered, radiosityDiff, i, formFactorPtr);
     }
+    Vec3f sumDiff(0,0,0);
+    Vec3f sumRadiosity(0,0,0);
+    for(int i=0; i<model.nfaces(); ++i) {
+      radiosityDiff[i] = radiosityGathered[i];
+      radiosityGathered[i] = Vec3f(0,0,0);
+      sumDiff += radiosityDiff[i];
+      sumRadiosity += radiosity[i];
+    }
+    if(sumDiff.r/sumRadiosity.r < DIFF_TO_TOTAL_CUTOFF and
+       sumDiff.g/sumRadiosity.g < DIFF_TO_TOTAL_CUTOFF and
+       sumDiff.b/sumRadiosity.b < DIFF_TO_TOTAL_CUTOFF) {
+      break;
+    }
+    std::stringstream iss;
+    iss << "output" << passes << ".tga";
+    renderFaceRadiosityToTexture(model, radiosity, 1200, iss.str());
   }
 
   std::cerr << "Normalising radiosity" << std::endl;
   normaliseRadiosity(radiosity);
 }
 
-void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses, Buffer<float>& totalFormFactors) {
+void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, Buffer<float>& totalFormFactors) {
   // Setup radiosity
-  std::vector<Vec3f> radiosityToShoot(model.nfaces());
+  std::vector<Vec3f> radiosityDiff(model.nfaces());
+  std::vector<Vec3f> radiosityGathered(model.nfaces());
   for(int i=0; i<model.nfaces(); ++i) {
-    radiosityToShoot[i] = model.getFaceEmissivity(i);
+    radiosityDiff[i] = model.getFaceEmissivity(i);
     radiosity[i] = model.getFaceEmissivity(i);
   }
 
-  for(int passes=0; passes<nPasses; ++passes) {
+  for(int passes=0; passes<MAX_PASSES; ++passes) {
     std::cerr << "Pass: " << passes << std::endl;
     for(int i=0; i<model.nfaces(); ++i) {
       float* formFactorPtr = totalFormFactors.getRow(i);
-      shootRadiositySingleFace(model, gridSize, radiosity, radiosityToShoot, i, formFactorPtr);
+      shootRadiositySingleFace(model, gridSize, radiosity, radiosityGathered, radiosityDiff, i, formFactorPtr);
     }
+    Vec3f sumDiff(0,0,0);
+    Vec3f sumRadiosity(0,0,0);
+    for(int i=0; i<model.nfaces(); ++i) {
+      radiosityDiff[i] = radiosityGathered[i];
+      radiosityGathered[i] = Vec3f(0,0,0);
+      sumDiff += radiosityDiff[i];
+      sumRadiosity += radiosity[i];
+    }
+    if(sumDiff.r/sumRadiosity.r < DIFF_TO_TOTAL_CUTOFF and
+       sumDiff.g/sumRadiosity.g < DIFF_TO_TOTAL_CUTOFF and
+       sumDiff.b/sumRadiosity.b < DIFF_TO_TOTAL_CUTOFF) {
+      break;
+    }
+    std::stringstream iss;
+    iss << "output" << passes << ".tga";
+    renderFaceRadiosityToTexture(model, radiosity, 1200, iss.str());
   }
 
   std::cerr << "Normalising radiosity" << std::endl;
   normaliseRadiosity(radiosity);
 }
 
-void gatherRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses, Buffer<float>& totalFormFactors) {
+void gatherRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, Buffer<float>& totalFormFactors) {
   // Setup radiosity
 
   std::vector<Vec3f> radiosityDiff(model.nfaces());
@@ -351,15 +386,24 @@ void gatherRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int grid
     radiosity[i] = model.getFaceEmissivity(i);
   }
 
-  for(int passes=0; passes<nPasses; ++passes) {
+  for(int passes=0; passes<MAX_PASSES; ++passes) {
     std::cerr << "Pass: " << passes << std::endl;
     for(int i=0; i<model.nfaces(); ++i) {
       float* formFactorPtr = totalFormFactors.getRow(i);
       gatherRadiositySingleFace(model, gridSize, radiosity, radiosityGathered, radiosityDiff, i, formFactorPtr);
     }
+    Vec3f sumDiff(0,0,0);
+    Vec3f sumRadiosity(0,0,0);
     for(int i=0; i<model.nfaces(); ++i) {
       radiosityDiff[i] = radiosityGathered[i];
       radiosityGathered[i] = Vec3f(0,0,0);
+      sumDiff += radiosityDiff[i];
+      sumRadiosity += radiosity[i];
+    }
+    if(sumDiff.r/sumRadiosity.r < DIFF_TO_TOTAL_CUTOFF and
+       sumDiff.g/sumRadiosity.g < DIFF_TO_TOTAL_CUTOFF and
+       sumDiff.b/sumRadiosity.b < DIFF_TO_TOTAL_CUTOFF) {
+      break;
     }
     std::stringstream iss;
     iss << "output" << passes << ".tga";
@@ -371,7 +415,7 @@ void gatherRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int grid
 }
 
 // progressive refinement
-void gatherRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses) {
+void gatherRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize) {
   // Setup radiosity
   std::vector<Vec3f> radiosityDiff(model.nfaces());
   std::vector<Vec3f> radiosityGathered(model.nfaces());
@@ -385,7 +429,7 @@ void gatherRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int grid
   calcFormFactorPerCell(gridSize, topFace, sideFace);
 
   float * formFactorPtr = new float [model.nfaces()+1];
-  for(int passes=0; passes<nPasses; ++passes) {
+  for(int passes=0; passes<MAX_PASSES; ++passes) {
     std::cerr << "Pass: " << passes << std::endl;
     for(int i=0; i<model.nfaces(); ++i) {
       for(int j=0; j<model.nfaces()+1; ++j) {
@@ -402,8 +446,6 @@ void gatherRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int grid
       sumDiff += radiosityDiff[i];
       sumRadiosity += radiosity[i];
     }
-    std::cout << sumDiff << std::endl;
-    std::cout << sumRadiosity << std::endl;
     if(sumDiff.r/sumRadiosity.r < DIFF_TO_TOTAL_CUTOFF and
        sumDiff.g/sumRadiosity.g < DIFF_TO_TOTAL_CUTOFF and
        sumDiff.b/sumRadiosity.b < DIFF_TO_TOTAL_CUTOFF) {
