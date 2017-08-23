@@ -278,15 +278,6 @@ void gatherRadiositySingleFace(const Model& model, int gridSize, std::vector<Vec
 }
 
 void normaliseRadiosity(std::vector<Vec3f>& radiosity) {
-  //float max = 0.f;
-  //for(int i=0; i<(int)radiosity.size(); ++i) {
-    //for(int j=0; j<3; ++j) {
-      //max = radiosity[i][j] > max ? radiosity[i][j] : max;
-    //}
-  //}
-  //for(int i=0; i<(int)radiosity.size(); ++i) {
-    //radiosity[i] = radiosity[i] * (1.f/max);
-  //}
   for(int i=0; i<(int)radiosity.size(); ++i) {
     for(int j=0; j<3; ++j) {
       radiosity[i][j] = radiosity[i][j] < 1.0f ? radiosity[i][j] : 1.0f;
