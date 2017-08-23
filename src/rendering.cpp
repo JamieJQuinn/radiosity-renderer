@@ -316,6 +316,11 @@ void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridS
       }
       calcFormFactorsSingleFace(model, i, formFactorPtr, gridSize,topFace, sideFace);
       shootRadiositySingleFace(model, gridSize, radiosity, radiosityGathered, radiosityDiff, i, formFactorPtr);
+      //if(i%23 == 0) {
+        //std::stringstream iss;
+        //iss << "output" << passes << ".tga";
+        //renderFaceRadiosityToTexture(model, radiosity, 1200, iss.str());
+      //}
     }
     Vec3f sumDiff(0,0,0);
     Vec3f sumRadiosity(0,0,0);
@@ -334,9 +339,6 @@ void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridS
     iss << "output" << passes << ".tga";
     renderFaceRadiosityToTexture(model, radiosity, 1200, iss.str());
   }
-
-  std::cerr << "Normalising radiosity" << std::endl;
-  normaliseRadiosity(radiosity);
 }
 
 void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, Buffer<float>& totalFormFactors) {
@@ -371,9 +373,6 @@ void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridS
     iss << "output" << passes << ".tga";
     renderFaceRadiosityToTexture(model, radiosity, 1200, iss.str());
   }
-
-  std::cerr << "Normalising radiosity" << std::endl;
-  normaliseRadiosity(radiosity);
 }
 
 void gatherRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, Buffer<float>& totalFormFactors) {
@@ -409,9 +408,6 @@ void gatherRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int grid
     iss << "output" << passes << ".tga";
     renderFaceRadiosityToTexture(model, radiosity, 1200, iss.str());
   }
-
-  std::cerr << "Normalising radiosity" << std::endl;
-  normaliseRadiosity(radiosity);
 }
 
 // progressive refinement
@@ -455,9 +451,6 @@ void gatherRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int grid
     iss << "output" << passes << ".tga";
     renderFaceRadiosityToTexture(model, radiosity, 1200, iss.str());
   }
-
-  std::cerr << "Normalising radiosity" << std::endl;
-  normaliseRadiosity(radiosity);
 }
 
 void radiosityFaceToVertex(std::vector<Vec3f>& vertexRadiosity, const Model& model, const std::vector<Vec3f>& faceRadiosity) {

@@ -56,6 +56,9 @@ int main(int argc, char* argv[]) {
   gatherRadiosity(radiosity, model, gridSize);
 #endif
 
+  std::cerr << "Normalising radiosity" << std::endl;
+  normaliseRadiosity(radiosity);
+
 #else
 
 #ifdef SHOOTING
