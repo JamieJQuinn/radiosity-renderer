@@ -285,6 +285,18 @@ void normaliseRadiosity(std::vector<Vec3f>& radiosity) {
   }
 }
 
+bool isRadiosityDistributed(const std::vector<Vec3f>& radiosity, const std::vector<Vec3f>& radiosityDiff) {
+  Vec3f sumDiff(0,0,0);
+  Vec3f sumRadiosity(0,0,0);
+  for(int i=0; i<(int)radiosity.size(); ++i) {
+    sumDiff += radiosityDiff[i];
+    sumRadiosity += radiosity[i];
+  }
+  return (sumDiff.r/sumRadiosity.r < DIFF_TO_TOTAL_CUTOFF and
+          sumDiff.g/sumRadiosity.g < DIFF_TO_TOTAL_CUTOFF and
+          sumDiff.b/sumRadiosity.b < DIFF_TO_TOTAL_CUTOFF);
+}
+
 void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize) {
   // Setup radiosity
   std::vector<Vec3f> radiosityDiff(model.nfaces());
@@ -313,17 +325,11 @@ void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridS
         //renderFaceRadiosityToTexture(model, radiosity, 1200, iss.str());
       //}
     }
-    Vec3f sumDiff(0,0,0);
-    Vec3f sumRadiosity(0,0,0);
     for(int i=0; i<model.nfaces(); ++i) {
       radiosityDiff[i] = radiosityGathered[i];
       radiosityGathered[i] = Vec3f(0,0,0);
-      sumDiff += radiosityDiff[i];
-      sumRadiosity += radiosity[i];
     }
-    if(sumDiff.r/sumRadiosity.r < DIFF_TO_TOTAL_CUTOFF and
-       sumDiff.g/sumRadiosity.g < DIFF_TO_TOTAL_CUTOFF and
-       sumDiff.b/sumRadiosity.b < DIFF_TO_TOTAL_CUTOFF) {
+    if(isRadiosityDistributed(radiosity, radiosityDiff)) {
       break;
     }
     std::stringstream iss;
@@ -347,17 +353,11 @@ void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridS
       float* formFactorPtr = totalFormFactors.getRow(i);
       shootRadiositySingleFace(model, gridSize, radiosity, radiosityGathered, radiosityDiff, i, formFactorPtr);
     }
-    Vec3f sumDiff(0,0,0);
-    Vec3f sumRadiosity(0,0,0);
     for(int i=0; i<model.nfaces(); ++i) {
       radiosityDiff[i] = radiosityGathered[i];
       radiosityGathered[i] = Vec3f(0,0,0);
-      sumDiff += radiosityDiff[i];
-      sumRadiosity += radiosity[i];
     }
-    if(sumDiff.r/sumRadiosity.r < DIFF_TO_TOTAL_CUTOFF and
-       sumDiff.g/sumRadiosity.g < DIFF_TO_TOTAL_CUTOFF and
-       sumDiff.b/sumRadiosity.b < DIFF_TO_TOTAL_CUTOFF) {
+    if(isRadiosityDistributed(radiosity, radiosityDiff)) {
       break;
     }
     std::stringstream iss;
@@ -382,17 +382,11 @@ void gatherRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int grid
       float* formFactorPtr = totalFormFactors.getRow(i);
       gatherRadiositySingleFace(model, gridSize, radiosity, radiosityGathered, radiosityDiff, i, formFactorPtr);
     }
-    Vec3f sumDiff(0,0,0);
-    Vec3f sumRadiosity(0,0,0);
     for(int i=0; i<model.nfaces(); ++i) {
       radiosityDiff[i] = radiosityGathered[i];
       radiosityGathered[i] = Vec3f(0,0,0);
-      sumDiff += radiosityDiff[i];
-      sumRadiosity += radiosity[i];
     }
-    if(sumDiff.r/sumRadiosity.r < DIFF_TO_TOTAL_CUTOFF and
-       sumDiff.g/sumRadiosity.g < DIFF_TO_TOTAL_CUTOFF and
-       sumDiff.b/sumRadiosity.b < DIFF_TO_TOTAL_CUTOFF) {
+    if(isRadiosityDistributed(radiosity, radiosityDiff)) {
       break;
     }
     std::stringstream iss;
@@ -425,17 +419,11 @@ void gatherRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int grid
       calcFormFactorsSingleFace(model, i, formFactorPtr, gridSize,topFace, sideFace);
       gatherRadiositySingleFace(model, gridSize, radiosity, radiosityGathered, radiosityDiff, i, formFactorPtr);
     }
-    Vec3f sumDiff(0,0,0);
-    Vec3f sumRadiosity(0,0,0);
     for(int i=0; i<model.nfaces(); ++i) {
       radiosityDiff[i] = radiosityGathered[i];
       radiosityGathered[i] = Vec3f(0,0,0);
-      sumDiff += radiosityDiff[i];
-      sumRadiosity += radiosity[i];
     }
-    if(sumDiff.r/sumRadiosity.r < DIFF_TO_TOTAL_CUTOFF and
-       sumDiff.g/sumRadiosity.g < DIFF_TO_TOTAL_CUTOFF and
-       sumDiff.b/sumRadiosity.b < DIFF_TO_TOTAL_CUTOFF) {
+    if(isRadiosityDistributed(radiosity, radiosityDiff)) {
       break;
     }
     std::stringstream iss;
