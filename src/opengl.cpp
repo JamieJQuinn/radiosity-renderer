@@ -5,7 +5,6 @@
 #include <glm/glm.hpp>
 
 #include "opengl_helper.hpp"
-#include "config.hpp"
 #include "opengl.hpp"
 
 OpenGLRenderer::~OpenGLRenderer() {

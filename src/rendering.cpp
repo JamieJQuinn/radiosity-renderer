@@ -10,7 +10,6 @@
 #include "model.hpp"
 #include "colours.hpp"
 #include "hemicube.hpp"
-#include "config.hpp"
 
 void renderColourBuffer(const GLubyte* buffer, const int size, std::string filename) {
   TGAImage frame(size, size, TGAImage::RGB);
@@ -294,7 +293,7 @@ void normaliseRadiosity(std::vector<Vec3f>& radiosity) {
   }
 }
 
-void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses, Buffer<float>& totalFormFactors) {
+void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses) {
   // Setup radiosity
   std::vector<Vec3f> radiosityToShoot(model.nfaces());
   for(int i=0; i<model.nfaces(); ++i) {
@@ -302,13 +301,32 @@ void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridS
     radiosity[i] = model.getFaceEmissivity(i);
   }
 
-  // Transpose form factors
-  for(int i=0; i<model.nfaces(); ++i) {
-    for(int j=i; j<model.nfaces(); ++j) {
-      float temp = totalFormFactors.get(i+1, j);
-      totalFormFactors.set(i+1, j, totalFormFactors.get(j+1, i));
-      totalFormFactors.set(j+1, i, temp);
+  Buffer<float> topFace(gridSize, gridSize, 0);
+  Buffer<float> sideFace(gridSize, gridSize/2, 0);
+  calcFormFactorPerCell(gridSize, topFace, sideFace);
+
+  float * formFactorPtr = new float [model.nfaces()+1];
+  for(int passes=0; passes<nPasses; ++passes) {
+    std::cerr << "Pass: " << passes << std::endl;
+    for(int i=0; i<model.nfaces(); ++i) {
+      for(int j=0; j<model.nfaces()+1; ++j) {
+        formFactorPtr[j] = 0.f;
+      }
+      calcFormFactorsSingleFace(model, i, formFactorPtr, gridSize,topFace, sideFace);
+      shootRadiositySingleFace(model, gridSize, radiosity, radiosityToShoot, i, formFactorPtr);
     }
+  }
+
+  std::cerr << "Normalising radiosity" << std::endl;
+  normaliseRadiosity(radiosity);
+}
+
+void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses, Buffer<float>& totalFormFactors) {
+  // Setup radiosity
+  std::vector<Vec3f> radiosityToShoot(model.nfaces());
+  for(int i=0; i<model.nfaces(); ++i) {
+    radiosityToShoot[i] = model.getFaceEmissivity(i);
+    radiosity[i] = model.getFaceEmissivity(i);
   }
 
   for(int passes=0; passes<nPasses; ++passes) {
@@ -323,6 +341,36 @@ void shootRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridS
   normaliseRadiosity(radiosity);
 }
 
+void gatherRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses, Buffer<float>& totalFormFactors) {
+  // Setup radiosity
+
+  std::vector<Vec3f> radiosityDiff(model.nfaces());
+  std::vector<Vec3f> radiosityGathered(model.nfaces());
+  for(int i=0; i<model.nfaces(); ++i) {
+    radiosityDiff[i] = model.getFaceEmissivity(i);
+    radiosity[i] = model.getFaceEmissivity(i);
+  }
+
+  for(int passes=0; passes<nPasses; ++passes) {
+    std::cerr << "Pass: " << passes << std::endl;
+    for(int i=0; i<model.nfaces(); ++i) {
+      float* formFactorPtr = totalFormFactors.getRow(i);
+      gatherRadiositySingleFace(model, gridSize, radiosity, radiosityGathered, radiosityDiff, i, formFactorPtr);
+    }
+    for(int i=0; i<model.nfaces(); ++i) {
+      radiosityDiff[i] = radiosityGathered[i];
+      radiosityGathered[i] = Vec3f(0,0,0);
+    }
+    std::stringstream iss;
+    iss << "output" << passes << ".tga";
+    renderFaceRadiosityToTexture(model, radiosity, 1200, iss.str());
+  }
+
+  std::cerr << "Normalising radiosity" << std::endl;
+  normaliseRadiosity(radiosity);
+}
+
+// progressive refinement
 void gatherRadiosity(std::vector<Vec3f>& radiosity, const Model& model, int gridSize, int nPasses) {
   // Setup radiosity
   std::vector<Vec3f> radiosityDiff(model.nfaces());

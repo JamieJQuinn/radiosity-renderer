@@ -7,7 +7,6 @@
 #include "rendering.hpp"
 #include "opengl_helper.hpp"
 #include "opengl.hpp"
-#include "config.hpp"
 
 #include <omp.h>
 #include <glm/glm.hpp>

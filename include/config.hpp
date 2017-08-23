@@ -1,5 +1,0 @@
-#pragma once
-
-#define HEMICUBE_GRID_SIZE 512
-#define HEMICUBE_NEAR_PLANE 0.01f
-#define DIFF_TO_TOTAL_CUTOFF 0.01f

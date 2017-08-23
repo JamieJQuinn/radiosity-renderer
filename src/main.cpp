@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 
-#include "config.hpp"
 #include "model.hpp"
 #include "geometry.hpp"
 #include "hemicube.hpp"
@@ -35,14 +34,33 @@ int main(int argc, char* argv[]) {
 
   std::vector<Vec3f> radiosity(model.nfaces());
 
+#ifndef PROGRESSIVE
   std::cerr << "Form factor memory cost: " << sizeof(float)*model.nfaces()*model.nfaces()/(1024.f*1024.f) << " MB" << std::endl;
   Buffer<float> totalFormFactors(model.nfaces()+1, model.nfaces()+1, 0.f);
   std::cerr << "Calculating form factors" << std::endl;
   calcFormFactorsWholeModel(model, totalFormFactors, gridSize);
   std::cerr << "Calculated form factors" << std::endl;
+#endif
 
+#ifdef PROGRESSIVE
+
+#ifdef SHOOTING
+  shootRadiosity(radiosity, model, gridSize, nPasses);
+#endif
+#ifdef GATHERING
+  gatherRadiosity(radiosity, model, gridSize, nPasses);
+#endif
+
+#else
+
+#ifdef SHOOTING
   shootRadiosity(radiosity, model, gridSize, nPasses, totalFormFactors);
-  //gatherRadiosity(radiosity, model, gridSize, nPasses);
+#endif
+#ifdef GATHERING
+  gatherRadiosity(radiosity, model, gridSize, nPasses, totalFormFactors);
+#endif
+
+#endif
 
   Vec3f sum(0,0,0);
   for(int i=0; i<(int)radiosity.size(); ++i) {
