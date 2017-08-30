@@ -151,10 +151,14 @@ void calcFormFactorsWholeModel(const Model& model, Buffer<float>& formFactors, i
   Buffer<float> sideFace(gridSize, gridSize/2, 0);
   calcFormFactorPerCell(gridSize, topFace, sideFace);
 
+  int facesDone = 0;
+
 #ifndef OPENGL
   #pragma omp parallel for
 #endif
   for(int i=0; i<model.nfaces(); ++i) {
+    facesDone++;
+    std::cout << facesDone << std::endl;
     calcFormFactorsSingleFace(model, i, formFactors.getRow(i), gridSize, topFace, sideFace);
   }
 }
