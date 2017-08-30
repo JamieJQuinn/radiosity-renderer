@@ -154,7 +154,7 @@ void calcFormFactorsWholeModel(const Model& model, Buffer<float>& formFactors, i
   int facesDone = 0;
 
 #ifndef OPENGL
-  #pragma omp parallel for
+  #pragma omp parallel for schedule(dynamic)
 #endif
   for(int i=0; i<model.nfaces(); ++i) {
     facesDone++;
