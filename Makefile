@@ -80,4 +80,4 @@ $(BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp
 	$(CC) $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/$(TEST_EXECUTABLE): $(TEST_OBJECTS) $(OBJECTS)
-	$(CC) $(filter-out $(BUILD_DIR)/main.o, $(OBJECTS)) $(TEST_OBJECTS) -o $@ $(LDFLAGS)
+	$(CC) $(filter-out $(BUILD_DIR)/main.o $(BUILD_DIR)/opengl_helper.o $(BUILD_DIR)/opengl.o, $(OBJECTS)) $(TEST_OBJECTS) -o $@ $(LDFLAGS)
